@@ -1,0 +1,532 @@
+# =============================================================================
+# Routes & Presenter Actions
+# Backward-engineered from RouterFactory.php and all presenter files
+# Every route in RouterFactory is listed.
+# Every presenter action/render method is mapped to a route.
+# =============================================================================
+
+routes:
+
+  # ---------------------------------------------------------------------------
+  # Route: '' (homepage)
+  # ---------------------------------------------------------------------------
+  - url: "/"
+    method: GET
+    module: Core
+    presenter: News
+    action: pagedList
+    description: "Homepage -- displays paginated list of news items (page 1 by default)."
+    requires_auth: false
+    required_role: null
+    references:
+      form: null
+      operations:
+        - "news.getCount"
+        - "news.getLimited"
+      view: "core.news.pagedList"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'administrace'
+  # ---------------------------------------------------------------------------
+  - url: "/administrace"
+    method: both
+    module: Admin
+    presenter: Web
+    action: default
+    description: "Admin dashboard -- displays web properties form (webName, webDescription) for admin."
+    requires_auth: true
+    required_role: "admin"
+    references:
+      form: "webPropertiesForm"
+      operations:
+        - "project.getParameter"
+        - "admin.web.saveProperties"
+      view: "admin.web.default"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'administrace/redaktor'
+  # ---------------------------------------------------------------------------
+  - url: "/administrace/redaktor"
+    method: GET
+    module: Admin
+    presenter: Web
+    action: view
+    description: "Editor landing page in admin section -- simple view for editors."
+    requires_auth: true
+    required_role: "editor"
+    references:
+      form: null
+      operations: []
+      view: "admin.web.view"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'administrace/obrazky-zahlavi'
+  # ---------------------------------------------------------------------------
+  - url: "/administrace/obrazky-zahlavi"
+    method: both
+    module: Admin
+    presenter: HeaderImages
+    action: default
+    description: "Admin page to manage header images -- lists current header images and upload form."
+    requires_auth: true
+    required_role: "admin"
+    references:
+      form: "addHeaderImagesForm"
+      operations:
+        - "image.getHeaderImageNames"
+        - "admin.headerImage.upload"
+      view: "admin.headerImages.default"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'kontakt'
+  # ---------------------------------------------------------------------------
+  - url: "/kontakt"
+    method: both
+    module: Core
+    presenter: Contact
+    action: default
+    description: "Contact page with a form that sends email to site administrators."
+    requires_auth: false
+    required_role: null
+    references:
+      form: "contactForm"
+      operations:
+        - "contact.sendEmail"
+      view: "core.contact.default"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'prihlasit'
+  # ---------------------------------------------------------------------------
+  - url: "/prihlasit"
+    method: both
+    module: Core
+    presenter: Session
+    action: signIn
+    description: "Sign-in page with login form. Redirects already-logged-in users to their profile."
+    requires_auth: false
+    required_role: null
+    references:
+      form: "signInForm"
+      operations:
+        - "session.signIn"
+      view: "core.session.signIn"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'odhlasit'
+  # ---------------------------------------------------------------------------
+  - url: "/odhlasit"
+    method: GET
+    module: Core
+    presenter: Session
+    action: signOut
+    description: "Sign-out action -- destroys user session and redirects to homepage."
+    requires_auth: false
+    required_role: null
+    references:
+      form: null
+      operations:
+        - "session.signOut"
+      view: null
+
+  # ---------------------------------------------------------------------------
+  # Route: 'registrovat'
+  # ---------------------------------------------------------------------------
+  - url: "/registrovat"
+    method: both
+    module: Core
+    presenter: Session
+    action: signUp
+    description: "Registration page with sign-up form. Redirects already-logged-in users."
+    requires_auth: false
+    required_role: null
+    references:
+      form: "signUpForm"
+      operations:
+        - "session.signUp"
+      view: "core.session.signUp"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'clanky'
+  # ---------------------------------------------------------------------------
+  - url: "/clanky"
+    method: GET
+    module: Core
+    presenter: Article
+    action: pagedList
+    description: "Public paginated list of all articles (page 1 by default)."
+    requires_auth: false
+    required_role: null
+    references:
+      form: null
+      operations:
+        - "article.getCount"
+        - "article.getLimited"
+      view: "core.article.pagedList"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'clanky/seznam'
+  # ---------------------------------------------------------------------------
+  - url: "/clanky/seznam"
+    method: GET
+    module: Admin
+    presenter: Article
+    action: list
+    description: "Admin article list -- shows all articles with management options (edit, remove, toggle menu visibility)."
+    requires_auth: true
+    required_role: "editor"
+    references:
+      form: null
+      operations:
+        - "article.getAll"
+        - "admin.article.toggleMenuVisibility"
+      view: "admin.article.list"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'administrace/uzivatele'
+  # ---------------------------------------------------------------------------
+  - url: "/administrace/uzivatele"
+    method: both
+    module: Admin
+    presenter: User
+    action: management
+    description: "Admin user management page -- lists all users with role change and delete controls."
+    requires_auth: true
+    required_role: "admin"
+    references:
+      form: null
+      operations:
+        - "user.getAll"
+        - "admin.user.changeRole"
+        - "admin.user.remove"
+      view: "admin.user.management"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'novinky/seznam'
+  # ---------------------------------------------------------------------------
+  - url: "/novinky/seznam"
+    method: GET
+    module: Admin
+    presenter: News
+    action: list
+    description: "Admin news list -- shows all news items with management options."
+    requires_auth: true
+    required_role: "editor"
+    references:
+      form: null
+      operations:
+        - "news.getAll"
+      view: "admin.news.list"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'terminy'
+  # ---------------------------------------------------------------------------
+  - url: "/terminy"
+    method: GET
+    module: Core
+    presenter: Events
+    action: default
+    description: "Events/schedule page -- static page displaying event dates."
+    requires_auth: false
+    required_role: null
+    references:
+      form: null
+      operations: []
+      view: "core.events.default"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'fotky'
+  # ---------------------------------------------------------------------------
+  - url: "/fotky"
+    method: GET
+    module: Core
+    presenter: Photos
+    action: default
+    description: "Photos page -- static page displaying photo gallery."
+    requires_auth: false
+    required_role: null
+    references:
+      form: null
+      operations: []
+      view: "core.photos.default"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'administrace/obrazky-zahlavi/odstranit/<name>/'
+  # ---------------------------------------------------------------------------
+  - url: "/administrace/obrazky-zahlavi/odstranit/<name>/"
+    method: GET
+    module: Admin
+    presenter: HeaderImages
+    action: remove
+    description: "Remove a header image by filename. Note: this route exists but the actual removal is handled via AJAX signal handleRemove on the default page."
+    requires_auth: true
+    required_role: "admin"
+    references:
+      form: null
+      operations:
+        - "admin.headerImage.remove"
+      view: null
+
+  # ---------------------------------------------------------------------------
+  # Route: 'administrace/zmen-roli/<role>/<username>'
+  # ---------------------------------------------------------------------------
+  - url: "/administrace/zmen-roli/<role>/<username>"
+    method: GET
+    module: Admin
+    presenter: User
+    action: changeRole
+    description: "Change a user's role. Route exists for the AJAX signal handleChangeRole."
+    requires_auth: true
+    required_role: "admin"
+    references:
+      form: null
+      operations:
+        - "admin.user.changeRole"
+      view: null
+
+  # ---------------------------------------------------------------------------
+  # Route: 'administrace/clanky/<action>[/<url>]'
+  # Actions: editor, odstranit (remove)
+  # ---------------------------------------------------------------------------
+  - url: "/administrace/clanky/editor[/<url>]"
+    method: both
+    module: Admin
+    presenter: Article
+    action: editor
+    description: "Article editor form -- create new article or edit existing one by URL slug."
+    requires_auth: true
+    required_role: "editor"
+    references:
+      form: "editorForm"
+      operations:
+        - "article.getByUrl"
+        - "admin.article.save"
+      view: "admin.article.editor"
+
+  - url: "/administrace/clanky/odstranit/<url>"
+    method: GET
+    module: Admin
+    presenter: Article
+    action: remove
+    description: "Delete an article by URL slug and redirect to article list."
+    requires_auth: true
+    required_role: "editor"
+    references:
+      form: null
+      operations:
+        - "admin.article.remove"
+      view: null
+
+  # ---------------------------------------------------------------------------
+  # Route: 'administrace/novinky/<action>/[<id>]'
+  # Actions: editor, odstranit (remove)
+  # ---------------------------------------------------------------------------
+  - url: "/administrace/novinky/editor/[<id>]"
+    method: both
+    module: Admin
+    presenter: News
+    action: editor
+    description: "News editor form -- create new news item or edit existing one by ID."
+    requires_auth: true
+    required_role: "editor"
+    references:
+      form: "newsEditorForm"
+      operations:
+        - "news.getById"
+        - "admin.news.save"
+      view: "admin.news.editor"
+
+  - url: "/administrace/novinky/odstranit/<id>"
+    method: GET
+    module: Admin
+    presenter: News
+    action: remove
+    description: "Delete a news item by ID and redirect to news list."
+    requires_auth: true
+    required_role: "editor"
+    references:
+      form: null
+      operations:
+        - "admin.news.remove"
+      view: null
+
+  # ---------------------------------------------------------------------------
+  # Route: 'profil/[<action>/][<username>]'
+  # Actions: default, editor, zmenit-heslo (changePassword)
+  # ---------------------------------------------------------------------------
+  - url: "/profil/[<username>]"
+    method: GET
+    module: Core
+    presenter: User
+    action: default
+    description: "User profile page. Shows profile for the given username, or redirects logged-in user to their own profile."
+    requires_auth: false
+    required_role: null
+    references:
+      form: null
+      operations:
+        - "user.getByUsername"
+      view: "core.user.default"
+
+  - url: "/profil/editor/[<username>]"
+    method: both
+    module: Core
+    presenter: User
+    action: editor
+    description: "Edit user profile form. Users can only edit their own profile."
+    requires_auth: true
+    required_role: null
+    references:
+      form: "userEditorForm"
+      operations:
+        - "user.getByUsername"
+        - "user.getById"
+        - "user.editProfile"
+      view: "core.user.editor"
+
+  - url: "/profil/zmenit-heslo/<username>"
+    method: both
+    module: Core
+    presenter: User
+    action: changePassword
+    description: "Change password form. Users can only change their own password."
+    requires_auth: true
+    required_role: null
+    references:
+      form: "changePasswordForm"
+      operations:
+        - "user.changePassword.action"
+      view: "core.user.changePassword"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'novinky[/<page>]'  (page is numeric)
+  # ---------------------------------------------------------------------------
+  - url: "/novinky[/<page>]"
+    method: GET
+    module: Core
+    presenter: News
+    action: pagedList
+    description: "Paginated news list with explicit page number in URL (5 items per page)."
+    requires_auth: false
+    required_role: null
+    references:
+      form: null
+      operations:
+        - "news.getCount"
+        - "news.getLimited"
+      view: "core.news.pagedList"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'clanky[/<page>]'  (page is numeric)
+  # ---------------------------------------------------------------------------
+  - url: "/clanky[/<page>]"
+    method: GET
+    module: Core
+    presenter: Article
+    action: pagedList
+    description: "Paginated article list with explicit page number in URL (10 items per page)."
+    requires_auth: false
+    required_role: null
+    references:
+      form: null
+      operations:
+        - "article.getCount"
+        - "article.getLimited"
+      view: "core.article.pagedList"
+
+  # ---------------------------------------------------------------------------
+  # Route: 'novinky/[<url>]'
+  # Note: NewsPresenter has no renderDefault -- this route pattern exists
+  # but the Core:News:default action is not explicitly defined beyond pagedList.
+  # The route may serve as a fallback or for a single-news detail view.
+  # ---------------------------------------------------------------------------
+  - url: "/novinky/<url>"
+    method: GET
+    module: Core
+    presenter: News
+    action: default
+    description: "Single news item detail page by URL slug (route defined but no explicit renderDefault in Core NewsPresenter -- may be handled by template or parent)."
+    requires_auth: false
+    required_role: null
+    references:
+      form: null
+      operations:
+        - "news.getById"
+      view: "core.news.default"
+
+  # ---------------------------------------------------------------------------
+  # Route: '[<url>]'  (catch-all / article by URL slug)
+  # ---------------------------------------------------------------------------
+  - url: "/<url>"
+    method: GET
+    module: Core
+    presenter: Article
+    action: default
+    description: "Catch-all route -- displays a single article by its URL slug. If article not found, shows error page. Non-requestable articles hidden from non-editors."
+    requires_auth: false
+    required_role: null
+    references:
+      form: null
+      operations:
+        - "article.getByUrl"
+      view: "core.article.default"
+
+  # ---------------------------------------------------------------------------
+  # AJAX Signal Routes (handled via Nette signal mechanism, not separate URLs)
+  # These are triggered by ?do=<signal> query parameter on their parent pages.
+  # ---------------------------------------------------------------------------
+
+  - url: "/clanky/seznam?do=visibleInMenu"
+    method: both
+    module: Admin
+    presenter: Article
+    action: "list (signal: visibleInMenu)"
+    description: "AJAX signal to toggle article visibility in menu. Triggered from the admin article list page."
+    requires_auth: true
+    required_role: "editor"
+    references:
+      form: null
+      operations:
+        - "admin.article.toggleMenuVisibility"
+      view: null
+
+  - url: "/administrace/uzivatele?do=changeRole"
+    method: both
+    module: Admin
+    presenter: User
+    action: "management (signal: changeRole)"
+    description: "AJAX signal to change a user's role. Triggered from the admin user management page."
+    requires_auth: true
+    required_role: "admin"
+    references:
+      form: null
+      operations:
+        - "admin.user.changeRole"
+      view: null
+
+  - url: "/administrace/uzivatele?do=remove"
+    method: both
+    module: Admin
+    presenter: User
+    action: "management (signal: remove)"
+    description: "AJAX signal to remove a user. Triggered from the admin user management page."
+    requires_auth: true
+    required_role: "admin"
+    references:
+      form: null
+      operations:
+        - "admin.user.remove"
+      view: null
+
+  - url: "/administrace/obrazky-zahlavi?do=remove"
+    method: both
+    module: Admin
+    presenter: HeaderImages
+    action: "default (signal: remove)"
+    description: "AJAX signal to remove a header image. Triggered from the header images management page."
+    requires_auth: true
+    required_role: "admin"
+    references:
+      form: null
+      operations:
+        - "admin.headerImage.remove"
+      view: null
