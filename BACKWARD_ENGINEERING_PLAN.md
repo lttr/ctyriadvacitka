@@ -28,6 +28,136 @@ tech-agnostic way, so that:
 
 ---
 
+## Phase 0 — Source Acquisition & Inventory
+
+Before writing any documentation, we must have the complete source code locally
+and build a full inventory of what exists. Nothing can be captured from memory or
+API summaries alone — every file must be read directly.
+
+### 0.1 Clone the Repository
+
+```
+git clone https://gitlab.com/krouma/Ctyriadvacitka.git source/
+```
+
+All subsequent work reads from `source/`. The backward-engineering output goes
+into `docs/backward-engineering/` (separate from the source).
+
+### 0.2 Build Complete File Inventory
+
+Produce `docs/backward-engineering/00-file-inventory.yaml` — a manifest of
+**every file** in the repository with metadata:
+
+```
+Structure per file:
+  - path (relative to repo root)
+  - type: php | latte | yaml | sql | js | css | config | image | markdown | other
+  - size (bytes)
+  - category: model | presenter | template | form-factory | config | route |
+              migration | asset | infra | test | documentation | other
+  - purpose (one-line description of what this file does)
+  - documents (which backward-engineering documents will consume this file)
+```
+
+**How to produce it:**
+1. List every file in the repo: `find source/ -type f` (excluding `.git/`)
+2. Categorize each file by extension and directory
+3. Write one-line purpose for each — this forces reading (or at least opening)
+   every single file upfront
+4. Assign each file to one or more output documents
+
+**Verification:** The total file count must match `find | wc -l`. No file can
+have `documents: []` — every file must feed into at least one output document
+(or be explicitly marked `documents: [none — static asset / not relevant]` with
+justification).
+
+### 0.3 Mine Git History
+
+Git history reveals things the current code doesn't: removed features, past
+architectural decisions, rename patterns, and intent behind changes.
+
+Produce `docs/backward-engineering/00-git-history.yaml`:
+
+```
+Structure:
+  summary:
+    - total commits
+    - date range (first commit → last commit)
+    - contributors
+
+  significant_changes:
+    # One entry per commit (or grouped if many are trivial)
+    - commit: <hash>
+      date: <date>
+      author: <author>
+      message: <message>
+      type: feature | bugfix | refactor | config | infra | docs | other
+      summary: <what changed and why it matters for understanding the app>
+      files_changed: [list]
+      notes: <anything relevant — e.g., "this is when the admin module was
+              added", "this removed the old gallery feature">
+
+  deleted_or_replaced:
+    # Things that once existed but were removed — these reveal scope decisions
+    - description: <what was removed>
+      removed_in: <commit hash>
+      reason: <if discernible from commit message or diff>
+      relevance: <does the removal matter for the rewrite? e.g., "gallery
+                  feature was removed — confirm with stakeholder whether it
+                  should come back">
+
+  evolution_notes:
+    # High-level narrative of how the app evolved
+    - <prose describing architectural evolution, major milestones, patterns>
+```
+
+**How to produce it:**
+1. `git log --oneline --all` — get full commit list
+2. `git log --stat` — understand what changed per commit
+3. `git log --diff-filter=D --summary` — find all deleted files
+4. `git log --all --follow <file>` — for key files, trace their full history
+5. For significant commits, `git show <hash>` to read the actual diff
+6. Look at branch history: `git branch -a` — any feature branches that reveal
+   planned/abandoned work?
+7. Look at tags: `git tag` — any version markers?
+
+**Verification:** Every commit must be accounted for (either individually or as
+part of a group). Every deleted file must appear in `deleted_or_replaced`.
+
+### 0.4 Read Every File
+
+This is the most important step and cannot be shortcut. Before Phase 1 begins,
+every non-binary file in the repository must be **read in full** — not skimmed,
+not summarized from file names.
+
+**Process:**
+1. Work through `00-file-inventory.yaml` file by file
+2. For each file, read the entire content
+3. Annotate the inventory entry with anything surprising or notable
+4. Flag any cross-file dependencies discovered (e.g., "this presenter injects
+   this manager", "this template includes this partial")
+
+**Why this matters:** File names and directory structure can be misleading.
+A file named `ContactPresenter.php` might also handle newsletter subscriptions.
+A template might contain inline PHP logic. A CSS file might have behavior-
+affecting rules (hiding elements, print styles). The only way to know is to read
+everything.
+
+**Splitting across context windows:** The full source won't fit in one context
+window. Process files in batches grouped by category:
+1. Config files + SQL + infra (small, foundational)
+2. Models / managers (data layer)
+3. Presenters (control layer)
+4. Form factories (input layer)
+5. Templates (view layer)
+6. Frontend assets (JS, CSS)
+7. Everything else
+
+Each batch produces notes that feed into the relevant output documents in
+Phases 1-4.
+
+---
+
 ## Documents to Produce
 
 Each document lives in `docs/backward-engineering/` as a separate file.
@@ -302,7 +432,13 @@ The documents have dependencies — some reference others. Produce them in this
 order:
 
 ```
-Phase 1 (no dependencies):
+Phase 0 (source acquisition — must complete before anything else):
+  0.1 Clone the repository
+  0.2 Build complete file inventory    → 00-file-inventory.yaml
+  0.3 Mine git history                 → 00-git-history.yaml
+  0.4 Read every file (batched by category, annotate inventory)
+
+Phase 1 (no dependencies, informed by Phase 0 notes):
   1. data-model.yaml        — foundation, referenced by everything
   2. auth.yaml              — referenced by routes and forms
 
@@ -317,24 +453,30 @@ Phase 3 (depends on Phase 2):
 Phase 4 (independent, can be done anytime):
   7. file-operations.yaml   — mostly standalone
   8. config-and-infra.yaml  — mostly standalone
+
+Phase 5 (final validation):
+  9. completeness-matrix.yaml — cross-reference everything
 ```
 
 ---
 
 ## Process per Document
 
-For each document:
+For each document (Phases 1–4):
 
-1. **List source files** — identify every source file that contributes to this
-   document
-2. **Read systematically** — go through each source file, extracting relevant
-   information line by line
-3. **Draft** — write the YAML/prose document
-4. **Cross-reference** — add references to other documents where concepts
+1. **Gather source files** — from `00-file-inventory.yaml`, collect every file
+   assigned to this document (already read in Phase 0)
+2. **Review Phase 0 notes** — check annotations from the full-read pass for
+   anything relevant
+3. **Check git history** — consult `00-git-history.yaml` for deleted features,
+   past changes, or evolution relevant to this document's scope
+4. **Draft** — write the YAML/prose document
+5. **Cross-reference** — add references to other documents where concepts
    overlap
-5. **Verify** — run through the verification checklist specific to that document
-6. **Gap check** — explicitly ask: "What could be missing? What implicit
-   behavior might not be in the source code?"
+6. **Verify** — run through the verification checklist specific to that document
+7. **Gap check** — explicitly ask: "What could be missing? What implicit
+   behavior might not be in the source code? What did git history reveal that
+   the current code doesn't show?"
 
 ---
 
@@ -349,6 +491,9 @@ For each document:
 | Form validation that happens client-side only | Check both form factory PHP and any JS validation |
 | Hardcoded values in code (magic strings, URLs, paths) | Grep for hardcoded strings during business-logic extraction |
 | The `parameters` table (key-value config in DB) | Document every known key and what it controls |
+| Deleted features visible only in git history | Phase 0.3 mines all deleted files and significant changes |
+| Abandoned branches with unreleased work | Check `git branch -a` for feature branches |
+| Files read superficially or skipped | Phase 0.4 enforces full read of every file; inventory tracks coverage |
 
 ---
 
