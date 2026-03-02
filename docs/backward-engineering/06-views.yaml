@@ -1,0 +1,512 @@
+layouts:
+  - id: "base_layout"
+    file: "app/templates/@layout.latte"
+    description: "Root HTML layout for the entire application. Provides DOCTYPE, head with meta tags (charset, viewport, SEO keywords, Plausible analytics), CSS imports (Google Fonts Open Sans, skaut-design.min.css, main.css), flash message rendering, main content area, sponsor logos section, footer navigation with links, and footer copyright. Defines blocks: css, head, header, title, content, scripts."
+    components:
+      - "HTML head with SEO meta tags and Plausible analytics script"
+      - "Flash messages area (snippet 'flashes') with Bulma notification styling"
+      - "Main content section with centered column layout (4/5 desktop, 2/3 widescreen)"
+      - "Page title (h1) rendered from {include title} block"
+      - "Sponsor logos section (Kralovehradecky kraj, Mesto Hradec Kralove, Nadace CEZ)"
+      - "Footer navigation with three columns: Ctyriadvacitka links, Organizace external links, Administrace links"
+      - "Copyright footer"
+      - "SVG clip-path definitions for decorative image masks"
+      - "JavaScript includes (vendor.js, main.js)"
+    template_variables_from_base_presenter:
+      - variable: "webName"
+        description: "Website name from ProjectManager, displayed in <title> tag"
+      - variable: "webDescription"
+        description: "Website description from ProjectManager (available but not directly rendered in layout)"
+      - variable: "isLoggedIn"
+        description: "Boolean whether user is logged in; controls footer nav admin links"
+      - variable: "loggedUser"
+        description: "User identity object; used to show username link in footer when logged in"
+      - variable: "isUserAdmin"
+        description: "Boolean whether user has admin role; controls admin link in footer"
+      - variable: "isUserEditor"
+        description: "Boolean whether user has editor or admin role; controls editor admin link in footer"
+      - variable: "headerPicture"
+        description: "Randomly selected header image filename (used in child layouts)"
+      - variable: "articlesInMenu"
+        description: "Array of url=>title for articles marked as menu items; rendered in footer and navbar"
+      - variable: "flashes"
+        description: "Flash messages array (built-in Nette)"
+      - variable: "basePath"
+        description: "Web base path for asset URLs (built-in Nette)"
+      - variable: "presenter"
+        description: "Reference to the current presenter instance"
+
+  - id: "core_layout"
+    file: "app/CoreModule/templates/@layout.latte"
+    description: "Public-facing layout extending the base layout. Provides the header block with the main navigation bar (Novinky, Terminy, Fotky, dynamic articles-in-menu, Kontakty) and a hero section with a random background header image. Uses Skaut Design navbar with a hamburger menu for mobile."
+    extends: "base_layout"
+    components:
+      - "Navbar with logo (logo24.svg) and hamburger burger toggle for mobile"
+      - "Navigation links: Novinky, Terminy, Fotky, dynamic article menu items, Kontakty"
+      - "Hero section with random background header image from /www/img/top/"
+      - "Hero text overlay: 'Skautsky oddil' subtitle and 'Ctyriadvacitka' title"
+    template_variables:
+      - variable: "basePath"
+        description: "Base path for asset URLs"
+      - variable: "articlesInMenu"
+        description: "Dynamic article links for navbar"
+      - variable: "headerPicture"
+        description: "Random header image filename for hero background"
+
+  - id: "admin_layout"
+    file: "app/AdminModule/templates/@layout.latte"
+    description: "Admin module layout extending the base layout. Provides the admin header block with navigation for Clanky, Novinky, and (for admins only) Web, Obrazky zahlavi, Uzivatele. Includes a 'Zpet' link to go back to the public site. Same hero section as core layout."
+    extends: "base_layout"
+    components:
+      - "Navbar with logo (logo24.svg) and 'Administrace' text"
+      - "Navigation links: Clanky, Novinky (always visible)"
+      - "Admin-only links: Web, Obrazky zahlavi, Uzivatele (conditional on isUserAdmin)"
+      - "Back link: 'Zpet' to :Core:Article:"
+      - "Hero section with random background header image"
+    template_variables:
+      - variable: "basePath"
+        description: "Base path for asset URLs"
+      - variable: "isUserAdmin"
+        description: "Controls visibility of admin-only menu items (Web, Header Images, Users)"
+      - variable: "headerPicture"
+        description: "Random header image filename for hero background"
+    conditional_rendering:
+      - condition: "isUserAdmin is true"
+        shows: "Web, Obrazky zahlavi, and Uzivatele navigation links"
+
+views:
+  # ==================== CORE MODULE ====================
+
+  - id: "core.news.pagedList"
+    file: "app/CoreModule/templates/News/pagedList.latte"
+    layout: "core_layout"
+    route: "/novinky[/<page>]"
+    route_aliases: ["/ (homepage)"]
+    title: "Novinky"
+    presenter: "App\\CoreModule\\Presenters\\NewsPresenter::renderPagedList"
+    data_dependencies:
+      - variable: "articles"
+        description: "Paginated selection of news items from NewsManager->getLimitedNews(), ordered by datetime DESC, 5 per page"
+      - variable: "activePage"
+        description: "Current page number (int), default 1"
+      - variable: "pages"
+        description: "Total number of pages from Paginator"
+      - variable: "isUserAdmin"
+        description: "Boolean for conditional article visibility (from BasePresenter)"
+    ui_components:
+      - "List of news articles, each showing: title (h2), datetime formatted as 'j. n. Y', and full HTML content (unescaped)"
+      - "Horizontal rule between articles"
+      - "Pagination navigation with Previous/Next links (centered)"
+    conditional_rendering:
+      - condition: "$article exists or user is admin"
+        shows: "Each news article entry"
+      - condition: "$activePage != 1"
+        shows: "Previous page link"
+      - condition: "$activePage != $pages"
+        shows: "Next page link"
+    interactive_behaviors:
+      - "Pagination links navigate between pages of news"
+    links_to: ["core.news.pagedList"]
+
+  - id: "core.article.default"
+    file: "app/CoreModule/templates/Article/default.latte"
+    layout: "core_layout"
+    route: "/<url>"
+    title: "Dynamic: article title from $article->title"
+    presenter: "App\\CoreModule\\Presenters\\ArticlePresenter::renderDefault"
+    data_dependencies:
+      - variable: "article"
+        description: "Article row fetched by ArticleManager->getArticleByUrl(url); falls back to 'chyba' (error page) article if not found or not requestable"
+      - variable: "originalUrl"
+        description: "The originally requested URL, set only when the article was not found (used for 'create page' link)"
+      - variable: "isUserEditor"
+        description: "Boolean; shows edit button if user is editor/admin (from BasePresenter)"
+      - variable: "isUserAdmin"
+        description: "Boolean; from BasePresenter"
+    ui_components:
+      - "Edit button (link to :Admin:Article:editor) if user is editor"
+      - "Article content rendered as raw HTML (noescape)"
+      - "Create page button when error page shown and user is editor"
+    conditional_rendering:
+      - condition: "isUserEditor is true"
+        shows: "Edit button linking to article editor"
+      - condition: "isUserEditor is true AND article title is 'Stránka nebyla nalezena'"
+        shows: "'Vytvořit stránku' button linking to article editor with the original URL pre-filled"
+    interactive_behaviors: []
+    links_to: ["admin.article.editor"]
+
+  - id: "core.article.pagedList"
+    file: "app/CoreModule/templates/Article/pagedList.latte"
+    layout: "core_layout"
+    route: "/clanky[/<page>]"
+    title: "Články"
+    presenter: "App\\CoreModule\\Presenters\\ArticlePresenter::renderPagedList"
+    data_dependencies:
+      - variable: "articles"
+        description: "Paginated selection of articles from ArticleManager->getLimitedArticles(), ordered by datetime DESC, 10 per page"
+      - variable: "activePage"
+        description: "Current page number (int), default 1"
+      - variable: "pages"
+        description: "Total number of pages from Paginator"
+      - variable: "isUserAdmin"
+        description: "Boolean for conditional article visibility (from BasePresenter)"
+    ui_components:
+      - "List of article titles as links to their detail pages"
+      - "Pagination navigation with Previous/Next links"
+    conditional_rendering:
+      - condition: "$article->requestable is true OR user is admin"
+        shows: "Each article entry"
+      - condition: "$activePage != 1"
+        shows: "Previous page link"
+      - condition: "$activePage != $pages"
+        shows: "Next page link"
+    interactive_behaviors: []
+    links_to: ["core.article.default", "core.news.pagedList"]
+
+  - id: "core.contact.default"
+    file: "app/CoreModule/templates/Contact/default.latte"
+    layout: "core_layout"
+    route: "/kontakt"
+    title: "Kontakt"
+    presenter: "App\\CoreModule\\Presenters\\ContactPresenter"
+    data_dependencies: []
+    ui_components:
+      - "Contact form (contactForm component)"
+      - "Section 'Vedeni oddilu' with three leader cards (box layout with photo, name, role, nickname, phone, email)"
+      - "Leader 1: Jan Pouchly (Poulik) - hlavni vedouci oddilu, vedouci vlcat"
+      - "Leader 2: Ondrej Pouchly (Edgar) - vedouci skautu"
+      - "Leader 3: Lukas Trumm (Tuc) - zastupce hlavniho vedouciho"
+      - "Section 'Klubovny' with photo of the scout house building"
+      - "Embedded Google Maps iframe showing clubhouse location"
+    conditional_rendering: []
+    interactive_behaviors:
+      - "Email addresses are obfuscated using JavaScript (document.write with concatenated parts)"
+      - "Contact form submission sends email to administrators"
+    links_to: []
+
+  - id: "core.events.default"
+    file: "app/CoreModule/templates/Events/default.latte"
+    layout: "core_layout"
+    route: "/terminy"
+    title: "Termíny akcí"
+    presenter: "App\\CoreModule\\Presenters\\EventsPresenter::renderDefault"
+    data_dependencies: []
+    ui_components:
+      - "Static text: 'Schůzky jsou každé pondělí od 17:00 do 18:30.'"
+      - "Web component <skaut-google-events-table> fetching events from Google Calendar"
+    conditional_rendering: []
+    interactive_behaviors:
+      - "Google Calendar events table web component loaded from CDN (@lttr/skaut-google-events-table)"
+      - "Calendar configured for ctyriadvacitka@gmail.com with categories: vlcata, skauti, roveri"
+    links_to: []
+
+  - id: "core.photos.default"
+    file: "app/CoreModule/templates/Photos/default.latte"
+    layout: "core_layout"
+    route: "/fotky"
+    title: "Fotky"
+    presenter: "App\\CoreModule\\Presenters\\PhotosPresenter::renderDefault"
+    data_dependencies: []
+    ui_components:
+      - "Photo gallery container (div.chrono-albums)"
+      - "PhotoSwipe 4.1.1 lightbox overlay with navigation controls (close, share/download, fullscreen, zoom, arrows)"
+    conditional_rendering: []
+    interactive_behaviors:
+      - "PhotoSwipe 4.1.1 lightbox for image viewing (loaded from CDN)"
+      - "LazySizes 5.1.1 for lazy loading images (loaded from CDN)"
+      - "Custom albums.f0967941.js script for album rendering"
+      - "JavaScript removes .column class from closest parent for full-width gallery"
+    links_to: []
+
+  - id: "core.session.signIn"
+    file: "app/CoreModule/templates/Session/signIn.latte"
+    layout: "core_layout"
+    route: "/prihlasit"
+    title: "Přihlásit"
+    presenter: "App\\CoreModule\\Presenters\\SessionPresenter::renderSignIn"
+    data_dependencies: []
+    ui_components:
+      - "Sign-in form (signInForm component)"
+    conditional_rendering: []
+    interactive_behaviors:
+      - "Redirects to user profile if already logged in (handled in presenter before render)"
+    links_to: ["admin.web.default"]
+
+  - id: "core.session.signUp"
+    file: "app/CoreModule/templates/Session/signUp.latte"
+    layout: "core_layout"
+    route: "/registrovat"
+    title: "Registrovat"
+    presenter: "App\\CoreModule\\Presenters\\SessionPresenter::actionSignUp"
+    data_dependencies: []
+    ui_components:
+      - "Registration form (signUpForm component)"
+    conditional_rendering: []
+    interactive_behaviors:
+      - "Redirects to user profile if already logged in (handled in presenter action before render)"
+    links_to: ["core.session.signIn"]
+
+  - id: "core.user.default"
+    file: "app/CoreModule/templates/User/default.latte"
+    layout: "core_layout"
+    route: "/profil/<username>"
+    title: "Dynamic: username from $user->username"
+    presenter: "App\\CoreModule\\Presenters\\UserPresenter::renderDefault"
+    data_dependencies:
+      - variable: "user"
+        description: "User row fetched by UserManager->getUserByUsername(username); if no username provided, redirects to logged user's profile or to news list"
+      - variable: "isLoggedIn"
+        description: "Boolean from BasePresenter; controls visibility of action buttons"
+      - variable: "loggedUser"
+        description: "Logged user identity; used to check if viewing own profile"
+    ui_components:
+      - "User details: name + surname, nickname, email"
+      - "Action buttons section (only for own profile): Upravit udaje, Zmenit heslo, Odhlasit"
+    conditional_rendering:
+      - condition: "isLoggedIn AND loggedUser->username matches displayed user's username"
+        shows: "Actions section with edit profile, change password, and logout buttons"
+    interactive_behaviors: []
+    links_to: ["core.user.editor", "core.user.changePassword", "core.session.signOut"]
+
+  - id: "core.user.editor"
+    file: "app/CoreModule/templates/User/editor.latte"
+    layout: "core_layout"
+    route: "/profil/editor/<username>"
+    title: "Dynamic: 'Editace: ' + username"
+    presenter: "App\\CoreModule\\Presenters\\UserPresenter::renderEditor"
+    data_dependencies:
+      - variable: "user"
+        description: "User row data; form is pre-filled with user data via setDefaults()"
+    ui_components:
+      - "User editor form (userEditorForm component) pre-filled with current user data"
+    conditional_rendering: []
+    interactive_behaviors: []
+    links_to: ["core.user.default"]
+    access_control: "Requires login; user can only edit their own profile"
+
+  - id: "core.user.changePassword"
+    file: "app/CoreModule/templates/User/changePassword.latte"
+    layout: "core_layout"
+    route: "/profil/zmenit-heslo/<username>"
+    title: "Změna hesla"
+    presenter: "App\\CoreModule\\Presenters\\UserPresenter::renderChangePassword"
+    data_dependencies: []
+    ui_components:
+      - "Change password form (changePasswordForm component)"
+    conditional_rendering: []
+    interactive_behaviors: []
+    links_to: ["core.user.default"]
+    access_control: "Requires login; user can only change their own password"
+
+  # ==================== ADMIN MODULE ====================
+
+  - id: "admin.web.default"
+    file: "app/AdminModule/templates/Web/default.latte"
+    layout: "admin_layout"
+    route: "/administrace"
+    title: "Administrace webu"
+    presenter: "App\\AdminModule\\Presenters\\WebPresenter::renderDefault"
+    data_dependencies: []
+    ui_components:
+      - "Welcome message: 'Vitejte v administraci'"
+      - "Web properties form (webPropertiesForm component) pre-filled with current webName and webDescription"
+    conditional_rendering: []
+    interactive_behaviors:
+      - "AJAX form submission for web properties (form has 'ajax' class); redraws snippet 'webPropertiesForm'"
+    links_to: []
+    access_control: "Requires login and admin role"
+
+  - id: "admin.web.view"
+    file: "app/AdminModule/templates/Web/view.latte"
+    layout: "admin_layout"
+    route: "/administrace/redaktor"
+    title: "Rozcestník"
+    presenter: "App\\AdminModule\\Presenters\\WebPresenter::renderView"
+    data_dependencies: []
+    ui_components:
+      - "Static text: 'Toto je rozcestnik administrace pro redaktory'"
+    conditional_rendering: []
+    interactive_behaviors: []
+    links_to: []
+    access_control: "Requires login and editor role"
+
+  - id: "admin.article.list"
+    file: "app/AdminModule/templates/Article/list.latte"
+    layout: "admin_layout"
+    route: "/clanky/seznam"
+    title: "Seznam článků"
+    presenter: "App\\AdminModule\\Presenters\\ArticlePresenter::renderList"
+    data_dependencies:
+      - variable: "articles"
+        description: "All articles from ArticleManager->getArticles(), ordered by datetime DESC"
+      - variable: "isUserEditor"
+        description: "Boolean from BasePresenter; controls article row visibility"
+      - variable: "isUserAdmin"
+        description: "Boolean from BasePresenter; controls edit/delete/menu-toggle buttons"
+      - variable: "loggedUser"
+        description: "Logged user identity; used to check article authorship for edit/delete permissions"
+    ui_components:
+      - "Add new article button (link to :Admin:Article:editor)"
+      - "Articles table (snippet 'articlesTable') with columns: title+date+url, View button, Edit button, Delete button, Menu visibility toggle"
+    conditional_rendering:
+      - condition: "$article->requestable is true OR user is editor"
+        shows: "Article row in the table"
+      - condition: "isUserAdmin OR loggedUser->username matches article author"
+        shows: "Edit, Delete, and Menu visibility toggle buttons"
+      - condition: "$article->in_menu is true"
+        shows: "Green 'Zobrazeno v menu' button (clicking hides from menu)"
+      - condition: "$article->in_menu is false"
+        shows: "Blue 'Nezobrazeno v menu' button (clicking shows in menu)"
+    interactive_behaviors:
+      - "AJAX menu visibility toggle via handleVisibleInMenu signal; redraws 'flashes' and 'articlesTable' snippets"
+    links_to: ["admin.article.editor", "core.article.default"]
+    access_control: "Requires login and editor role"
+
+  - id: "admin.article.editor"
+    file: "app/AdminModule/templates/Article/editor.latte"
+    layout: "admin_layout"
+    route: "/administrace/clanky/editor[/<url>]"
+    title: "Editor článků"
+    presenter: "App\\AdminModule\\Presenters\\ArticlePresenter::renderEditor"
+    data_dependencies: []
+    ui_components:
+      - "Article editor form (editorForm component) pre-filled with article data when editing existing article"
+      - "Article images upload form (articleImagesForm component)"
+      - "Link text: 'Soubory se objevi v prilohy' with link to /prilohy/"
+    conditional_rendering: []
+    interactive_behaviors:
+      - "CKEditor 4.6.2 WYSIWYG replaces the 'content' textarea"
+      - "Article images form has AJAX class for asynchronous file upload"
+    links_to: ["core.article.default"]
+    access_control: "Requires login and editor role"
+    notes: "When URL parameter is provided, form is pre-filled with existing article data"
+
+  - id: "admin.news.list"
+    file: "app/AdminModule/templates/News/list.latte"
+    layout: "admin_layout"
+    route: "/novinky/seznam"
+    title: "Seznam novinek"
+    presenter: "App\\AdminModule\\Presenters\\NewsPresenter::renderList"
+    data_dependencies:
+      - variable: "news"
+        description: "All news items from NewsManager->getNews(), ordered by datetime DESC"
+      - variable: "isUserAdmin"
+        description: "Boolean from BasePresenter; controls edit/delete buttons"
+      - variable: "loggedUser"
+        description: "Logged user identity; used to check news authorship for edit/delete permissions"
+    ui_components:
+      - "Add new news item button (link to :Admin:News:editor)"
+      - "News table (snippet 'articlesTable') with columns: title+date, Edit button, Delete button"
+    conditional_rendering:
+      - condition: "isUserAdmin OR loggedUser->username matches article author"
+        shows: "Edit and Delete buttons for that news item"
+    interactive_behaviors: []
+    links_to: ["admin.news.editor"]
+    access_control: "Requires login and editor role"
+
+  - id: "admin.news.editor"
+    file: "app/AdminModule/templates/News/editor.latte"
+    layout: "admin_layout"
+    route: "/administrace/novinky/editor[/<id>]"
+    title: "Editor novinek"
+    presenter: "App\\AdminModule\\Presenters\\NewsPresenter::renderEditor"
+    data_dependencies: []
+    ui_components:
+      - "News editor form (newsEditorForm component) pre-filled with news data when editing existing item"
+      - "Article images upload form (articleImagesForm component)"
+      - "Link text: 'Soubory se objevi v prilohy' with link to /prilohy/"
+    conditional_rendering: []
+    interactive_behaviors:
+      - "CKEditor 4.6.2 WYSIWYG replaces the 'content' textarea"
+      - "Article images form has AJAX class for asynchronous file upload"
+    links_to: ["core.news.pagedList"]
+    access_control: "Requires login and editor role"
+    notes: "When ID parameter is provided, form is pre-filled with existing news data"
+
+  - id: "admin.headerImages.default"
+    file: "app/AdminModule/templates/HeaderImages/default.latte"
+    layout: "admin_layout"
+    route: "/administrace/obrazky-zahlavi"
+    title: "Obrázky záhlaví"
+    presenter: "App\\AdminModule\\Presenters\\HeaderImagesPresenter::renderDefault"
+    data_dependencies:
+      - variable: "headerImages"
+        description: "Array of header image filenames from ImageManager->getHeaderImageNames()"
+      - variable: "basePath"
+        description: "Base path for constructing image URLs"
+    ui_components:
+      - "Header images table (snippet 'headerImages') showing image preview, filename, and delete button for each image"
+      - "Section heading 'Pridat nove obrazky'"
+      - "Header images upload form (addHeaderImagesForm component)"
+    conditional_rendering: []
+    interactive_behaviors:
+      - "AJAX delete via handleRemove signal; redraws 'flashes' and 'headerImages' snippets"
+      - "AJAX image upload form (form has 'ajax' class); redraws 'flashes' and 'headerImages' snippets on success"
+    links_to: []
+    access_control: "Requires login and admin role"
+
+  - id: "admin.user.management"
+    file: "app/AdminModule/templates/User/management.latte"
+    layout: "admin_layout"
+    route: "/administrace/uzivatele"
+    title: "Oprávnění uživatelů"
+    presenter: "App\\AdminModule\\Presenters\\UserPresenter::renderManagement"
+    data_dependencies:
+      - variable: "users"
+        description: "All users from UserManager->getUsers()"
+    ui_components:
+      - "Users table (snippet 'userManagementTable') with columns: username (h2), View profile button, Delete button, Role toggle buttons"
+      - "Three role buttons per user: Uzivatel (registered), Redaktor (editor), Administrator (admin)"
+      - "Active role button highlighted in green (is-success), inactive in blue (is-primary)"
+    conditional_rendering:
+      - condition: "User's current role matches a role button"
+        shows: "That button with green (is-success) styling"
+    interactive_behaviors:
+      - "AJAX role change via handleChangeRole signal; redraws 'userManagementTable' and 'flashes' snippets"
+      - "AJAX user removal via handleRemove signal; redraws 'userManagementTable' and 'flashes' snippets"
+      - "Flash message shows role change confirmation with Czech role display name"
+    links_to: ["core.user.default"]
+    access_control: "Requires login and admin role; removal requires 'user:remove' ACL permission"
+
+# Non-rendered actions (no template, action-only)
+actions_without_views:
+  - id: "core.session.signOut"
+    route: "/odhlasit"
+    presenter: "App\\CoreModule\\Presenters\\SessionPresenter::actionSignOut"
+    description: "Logs out the current user. Flash 'Uzivatel uspesne odhlasen.' (success) and redirects to :Core:Article:. If not logged in, flash 'Neni prihlasen zadny uzivatel.' (info) and redirects to :Core:Article:."
+
+  - id: "admin.article.remove"
+    route: "/administrace/clanky/odstranit/<url>"
+    presenter: "App\\AdminModule\\Presenters\\ArticlePresenter::actionRemove"
+    description: "Deletes article by URL. Flash 'Clanek byl uspesne odstranen.' (success), redirect to :Admin:Article:list. Requires editor permissions."
+
+  - id: "admin.news.remove"
+    route: "/administrace/novinky/odstranit/<id>"
+    presenter: "App\\AdminModule\\Presenters\\NewsPresenter::actionRemove"
+    description: "Deletes news item by ID. Flash 'Novinka byla uspesne odstranena.' (success), redirect to :Admin:News:list. Requires editor permissions."
+
+# AJAX signal handlers (no separate template, operate on snippets within existing views)
+signal_handlers:
+  - id: "admin.article.visibleInMenu"
+    presenter: "App\\AdminModule\\Presenters\\ArticlePresenter"
+    signal: "visibleInMenu!"
+    parameters: ["url (string)", "visibility (bool)"]
+    description: "Toggles article visibility in the navigation menu via ArticleManager->setVisibilityInMenu(). AJAX redraws snippets 'flashes' and 'articlesTable'."
+
+  - id: "admin.user.changeRole"
+    presenter: "App\\AdminModule\\Presenters\\UserPresenter"
+    signal: "changeRole!"
+    parameters: ["role (string)", "username (string)"]
+    description: "Changes user role via UserManager->saveUser(). Flash message confirms role change with Czech display name. AJAX redraws snippets 'userManagementTable' and 'flashes'."
+
+  - id: "admin.user.remove"
+    presenter: "App\\AdminModule\\Presenters\\UserPresenter"
+    signal: "remove!"
+    parameters: ["username (string)"]
+    description: "Removes user via UserManager->removeUser(). Checks ACL permission 'user:remove'. Flash 'Uzivatel byl uspesne odstranen.' (success). AJAX redraws snippets 'userManagementTable' and 'flashes'."
+
+  - id: "admin.headerImages.remove"
+    presenter: "App\\AdminModule\\Presenters\\HeaderImagesPresenter"
+    signal: "remove!"
+    parameters: ["name (string)"]
+    description: "Deletes header image file via ImageManager->deleteImage(). Flash 'Obrazek odstranen.' (success). AJAX redraws snippets 'flashes' and 'headerImages'."
