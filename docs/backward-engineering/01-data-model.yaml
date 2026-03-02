@@ -1,0 +1,290 @@
+# =============================================================================
+# Data Model -- backward-engineered from SQL DDL, seed data, and PHP managers
+# Source: sql/lamp.sql, sql/lamp_development.sql, app/model/*, app/CoreModule/model/*
+# =============================================================================
+
+entities:
+
+  # ---------------------------------------------------------------------------
+  # 1. Article
+  # ---------------------------------------------------------------------------
+  - name: Article
+    description: >
+      A content page managed through the CMS. Articles serve as both regular
+      content pages and navigable menu items. They are identified publicly by
+      their URL slug, support HTML content, and can optionally appear in the
+      site navigation menu. Special-purpose articles exist (e.g. the "intro"
+      page and the "not found" error page).
+    table: article
+    fields:
+      - name: article_id
+        type: integer
+        constraints: {required: true, unique: true, auto_increment: true}
+        description: "Primary key, auto-generated surrogate identifier."
+
+      - name: title
+        type: string
+        constraints: {required: false, unique: false, max_length: 255}
+        description: "Display title of the article, shown in headings and menus."
+
+      - name: content
+        type: text
+        constraints: {required: false, unique: false}
+        description: "Full HTML body of the article. Stored as rich-text markup."
+
+      - name: url
+        type: string
+        constraints: {required: false, unique: true, max_length: 255}
+        description: >
+          URL-safe slug used to address the article in the browser
+          (e.g. 'uvod', 'chyba'). Acts as the public identifier and is used
+          for lookups, deletion, and menu-visibility toggling.
+
+      - name: description
+        type: string
+        constraints: {required: false, unique: false, max_length: 255}
+        description: "Short summary / meta-description for SEO or preview purposes."
+
+      - name: requestable
+        type: boolean
+        constraints: {required: false, unique: false}
+        description: >
+          Flag indicating whether the article can be requested (displayed)
+          by public visitors. When false the article is effectively hidden
+          from normal navigation (e.g. the error page has requestable = 0).
+
+      - name: author
+        type: string
+        constraints: {required: false, unique: false, max_length: 255}
+        description: >
+          Username of the author who created or last edited the article.
+          Stored as a plain string (not a foreign key to the User entity).
+
+      - name: datetime
+        type: datetime
+        constraints: {required: false, unique: false}
+        description: >
+          Publication or last-edit timestamp. Parsed from 'd.m.Y' format on
+          save and used for ordering articles (newest first).
+
+      - name: in_menu
+        type: boolean
+        constraints: {required: false, unique: false}
+        description: >
+          Controls whether this article appears as a link in the site's
+          navigation menu. Toggled independently of other visibility flags.
+
+    relationships:
+      - description: >
+          The 'author' field references a User by username, but there is no
+          formal foreign-key constraint in the database. It is an implicit
+          textual reference.
+
+    indexes:
+      - name: PRIMARY
+        columns: [article_id]
+        type: primary
+      - name: url
+        columns: [url]
+        type: unique
+
+    notes: >
+      The 'url' field functions as a slug and is the primary public-facing
+      identifier for lookups (getArticleByUrl), removal (removeArticle), and
+      menu-visibility toggling (setVisibilityInMenu). Articles are always
+      retrieved ordered by datetime descending. Pagination is supported via
+      limit/offset in the manager layer. The 'description' column is defined
+      in SQL but has no corresponding constant in ArticleManager -- it is
+      still stored and retrieved via generic row access.
+
+  # ---------------------------------------------------------------------------
+  # 2. News
+  # ---------------------------------------------------------------------------
+  - name: News
+    description: >
+      A short news/announcement entry in the CMS. News items are simpler than
+      articles -- they have no slug-based routing, no menu-visibility flag,
+      and no requestability concept. They are identified by their numeric ID.
+    table: news
+    fields:
+      - name: news_id
+        type: integer
+        constraints: {required: true, unique: true, auto_increment: true}
+        description: "Primary key, auto-generated surrogate identifier."
+
+      - name: title
+        type: string
+        constraints: {required: false, unique: false, max_length: 255}
+        description: "Headline of the news item."
+
+      - name: content
+        type: text
+        constraints: {required: false, unique: false}
+        description: "Full HTML body of the news entry."
+
+      - name: url
+        type: string
+        constraints: {required: false, unique: false, max_length: 255}
+        description: >
+          URL slug column defined in the SQL schema. Present in the DDL but
+          NOT mapped as a constant in NewsManager and not actively used in
+          application code. Seed data does not populate this column. Likely
+          a vestigial or reserved field.
+
+      - name: description
+        type: string
+        constraints: {required: false, unique: false, max_length: 255}
+        description: "Short summary or teaser text for the news item."
+
+      - name: author
+        type: string
+        constraints: {required: false, unique: false, max_length: 255}
+        description: >
+          Username of the author. Stored as plain text, not a foreign key.
+
+      - name: datetime
+        type: datetime
+        constraints: {required: false, unique: false}
+        description: >
+          Publication timestamp. Parsed from 'd.m.Y' format on save and used
+          for ordering news entries (newest first).
+
+    relationships:
+      - description: >
+          The 'author' field references a User by username, but there is no
+          formal foreign-key constraint. It is an implicit textual reference.
+
+    indexes:
+      - name: PRIMARY
+        columns: [news_id]
+        type: primary
+
+    notes: >
+      News items are always retrieved ordered by datetime descending.
+      Pagination is supported via limit/offset. Lookup and deletion operate
+      by primary key (news_id), unlike articles which use the url slug.
+      The 'url' column exists in the DDL but is unused in application logic.
+
+  # ---------------------------------------------------------------------------
+  # 3. User
+  # ---------------------------------------------------------------------------
+  - name: User
+    description: >
+      A registered user of the system. Users authenticate with a username and
+      password, and are assigned a single role that governs their permissions.
+      User data includes optional personal details (name, surname, nickname)
+      and an email address.
+    table: user
+    fields:
+      - name: user_id
+        type: integer
+        constraints: {required: true, unique: true, auto_increment: true}
+        description: "Primary key, auto-generated surrogate identifier."
+
+      - name: username
+        type: string
+        constraints: {required: true, unique: true, max_length: 255}
+        description: >
+          Login name. Must be unique across all users. Used as the credential
+          for authentication and as the lookup key for deletion and password
+          changes.
+
+      - name: password
+        type: string
+        constraints: {required: true, unique: false, max_length: 255}
+        description: >
+          Bcrypt hash of the user's password. Never stored in plaintext.
+          Hashed using the Nette Passwords utility (bcrypt, cost 10).
+
+      - name: role
+        type: string
+        constraints: {required: true, unique: false, max_length: 255, default: "registered"}
+        description: >
+          Authorization role assigned to this user. Determines what actions
+          the user may perform. Known values: 'registered', 'editor', 'admin'.
+          Additional roles 'scout' and 'leader' are defined in the
+          authorization layer but not present in seed data.
+
+      - name: name
+        type: string
+        constraints: {required: false, unique: false, max_length: 255}
+        description: "User's first (given) name."
+
+      - name: surname
+        type: string
+        constraints: {required: false, unique: false, max_length: 255}
+        description: "User's last (family) name."
+
+      - name: nickname
+        type: string
+        constraints: {required: false, unique: false, max_length: 255}
+        description: "User's informal name or alias (scout name / troop nickname)."
+
+      - name: email
+        type: email
+        constraints: {required: false, unique: true, max_length: 255}
+        description: >
+          User's email address. Unique when provided, but nullable (not every
+          user has an email in seed data).
+
+    relationships:
+      - description: >
+          Users are implicitly referenced by the 'author' field in Article
+          and News entities (by username string), but no formal foreign keys
+          exist.
+
+    indexes:
+      - name: PRIMARY
+        columns: [user_id]
+        type: primary
+      - name: username
+        columns: [username]
+        type: unique
+      - name: user_email_uindex
+        columns: [email]
+        type: unique
+
+    notes: >
+      Users can be created (insert) or updated (by user_id) via saveUser.
+      Deletion is by username. Password changes require verification of the
+      current password before allowing the update. The role field uses the
+      display-name mapping: registered -> 'uzivatel', editor -> 'redaktor',
+      admin -> 'administrator' (Czech localized labels).
+
+  # ---------------------------------------------------------------------------
+  # 4. Parameter
+  # ---------------------------------------------------------------------------
+  - name: Parameter
+    description: >
+      A key-value configuration store for site-wide settings. Used to persist
+      dynamic configuration that the admin can change at runtime, such as the
+      website name and description. There is no auto-increment primary key;
+      the 'key' column acts as the logical identifier.
+    table: parameters
+    fields:
+      - name: key
+        type: string
+        constraints: {required: true, unique: false, max_length: 255}
+        description: >
+          The setting name (e.g. 'webName', 'webDescription'). Acts as the
+          logical primary key, though no PRIMARY KEY or UNIQUE constraint is
+          defined in the DDL. Upsert logic in the application layer treats
+          it as unique.
+
+      - name: value
+        type: string
+        constraints: {required: false, unique: false, max_length: 255}
+        description: "The setting value associated with the key."
+
+    relationships: []
+
+    indexes: []
+
+    notes: >
+      The table has NO primary key or unique index defined at the database
+      level, but the application layer (ProjectManager) implements
+      upsert semantics: it checks whether a key exists before deciding to
+      INSERT or UPDATE, effectively treating 'key' as unique. Known parameter
+      keys from seed data are 'webName' (site title shown in header/navbar)
+      and 'webDescription' (site tagline). These values are loaded on every
+      page render via BasePresenter.beforeRender().

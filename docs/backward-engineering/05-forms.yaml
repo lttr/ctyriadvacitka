@@ -1,0 +1,381 @@
+forms:
+  - id: "sign_in"
+    purpose: "Authenticates a registered user by username and password"
+    factory: "App\\Factories\\SignInFormFactory"
+    renderer: "SkautDesignFormRenderer (Bulma/Skaut Design CSS classes)"
+    fields:
+      - name: username
+        type: text
+        label: "Přihlašovací jméno"
+        required: true
+        validation: ["required"]
+        default: null
+      - name: password
+        type: password
+        label: "Heslo"
+        required: true
+        validation: ["required"]
+        default: null
+    submit_action: "Authenticates user via Nette\\Security\\User->login(); sets session identity"
+    submit_label: "Přihlásit"
+    success_behavior: "Flash 'Přihlášení proběhlo úspěšně.' (success), redirect to :Admin:Web:default"
+    error_behavior: "Flash AuthenticationException message (warning), stays on page"
+    used_on_routes: ["/prihlasit"]
+    used_in_presenter: "App\\CoreModule\\Presenters\\SessionPresenter"
+    component_name: "signInForm"
+
+  - id: "sign_up"
+    purpose: "Registers a new user account with username, password, and email"
+    factory: "App\\Factories\\SignUpFormFactory"
+    renderer: "SkautDesignFormRenderer"
+    fields:
+      - name: username
+        type: text
+        label: "Přihlašovací jméno"
+        required: true
+        validation: ["required"]
+        default: null
+      - name: password
+        type: password
+        label: "Heslo"
+        required: true
+        validation: ["required"]
+        default: null
+      - name: passwordAgain
+        type: password
+        label: "Heslo znovu"
+        required: true
+        validation: ["required", "EQUAL to password field - message: 'Hesla se neschodují!'"]
+        default: null
+      - name: email
+        type: email
+        label: "E-mail"
+        required: true
+        validation: ["required", "email format (Nette addEmail)"]
+        default: null
+    submit_action: "Hashes password, creates user record with role 'registered' via UserManager->saveUser()"
+    submit_label: "Registrovat"
+    success_behavior: "Flash 'Registrace proběhla úspěšně, nyní se přihlašte.' (success), redirect to :Core:Session:signIn"
+    error_behavior: "Flash 'Uživatel s tímto přihlašovacím jménem nebo e-mailem již existuje.' (warning) on UniqueConstraintViolationException"
+    used_on_routes: ["/registrovat"]
+    used_in_presenter: "App\\CoreModule\\Presenters\\SessionPresenter"
+    component_name: "signUpForm"
+
+  - id: "contact"
+    purpose: "Sends a contact email from the visitor to the site administrators"
+    factory: "App\\Factories\\ContactFormFactory"
+    renderer: "SkautDesignFormRenderer"
+    fields:
+      - name: username
+        type: text
+        label: "Vaše jméno"
+        required: true
+        validation: ["required"]
+        default: null
+      - name: email
+        type: email
+        label: "Email"
+        required: true
+        validation: ["required"]
+        default: null
+      - name: message
+        type: textarea
+        label: "Zpráva"
+        required: true
+        validation: ["required", "MIN_LENGTH 10 - message: 'Zpráva musí být minimálně %d znaků dlouhá.'"]
+        default: null
+        html_attributes:
+          placeholder: "Vaše zpráva"
+    submit_action: "Sends email via SendmailMailer to kroupa.matyas@gmail.com and lukas.trumm@gmail.com with subject 'Email z BasicRS'"
+    submit_label: "Odeslat"
+    success_behavior: "Flash 'E-mail byl úspěšně odeslán.' (success), redirect to self"
+    error_behavior: "Flash 'E-mail se nepodařilo odeslat.' (danger) on InvalidStateException"
+    used_on_routes: ["/kontakt"]
+    used_in_presenter: "App\\CoreModule\\Presenters\\ContactPresenter"
+    component_name: "contactForm"
+
+  - id: "user_editor"
+    purpose: "Edits user profile details (name, surname, nickname, username, email)"
+    factory: "App\\Factories\\UserEditorFormFactory"
+    renderer: "SkautDesignFormRenderer"
+    fields:
+      - name: user_id
+        type: hidden
+        label: ~
+        required: false
+        validation: []
+        default: null
+      - name: name
+        type: text
+        label: "Jméno"
+        required: false
+        validation: []
+        default: null
+      - name: surname
+        type: text
+        label: "Příjmení"
+        required: false
+        validation: []
+        default: null
+      - name: nickname
+        type: text
+        label: "Přezdívka"
+        required: false
+        validation: []
+        default: null
+      - name: username
+        type: text
+        label: "Přihlašovací jméno"
+        required: true
+        validation: ["required"]
+        default: null
+      - name: email
+        type: email
+        label: "E-mail"
+        required: true
+        validation: ["required", "email format (Nette addEmail)"]
+        default: null
+      - name: role
+        type: hidden
+        label: ~
+        required: false
+        validation: []
+        default: null
+    submit_action: "Saves user data via UserManager->saveUser(); updates existing user if user_id present, inserts otherwise"
+    submit_label: "Uložit"
+    success_behavior: "Flash 'Uživatel byl úspěšně editován.' (success), redirect to :Core:User: with username"
+    error_behavior: "Flash 'Uživatel s tímto jménem nebo emailem již existuje.' (warning) on UniqueConstraintViolationException"
+    used_on_routes: ["/profil/editor/<username>"]
+    used_in_presenter: "App\\CoreModule\\Presenters\\UserPresenter"
+    component_name: "userEditorForm"
+
+  - id: "change_password"
+    purpose: "Changes the password of the currently logged-in user"
+    factory: "App\\Factories\\ChangePasswordFormFactory"
+    renderer: "SkautDesignFormRenderer"
+    fields:
+      - name: currentPassword
+        type: password
+        label: "Aktuální heslo"
+        required: true
+        validation: ["required"]
+        default: null
+      - name: newPassword
+        type: password
+        label: "Nové heslo"
+        required: true
+        validation: ["required"]
+        default: null
+      - name: newPasswordAgain
+        type: password
+        label: "Nové heslo znovu"
+        required: true
+        validation: ["required", "EQUAL to newPassword field - message: 'Hesla se neschodují!'"]
+        default: null
+    submit_action: "Changes password via UserManager->changePassword(username, currentPassword, newPassword)"
+    submit_label: "Změnit heslo"
+    success_behavior: "Flash 'Heslo bylo úspěšně změněno.' (success), redirect to :Core:User:"
+    error_behavior: "Flash AuthenticationException message (danger) when current password is incorrect"
+    used_on_routes: ["/profil/zmenit-heslo/<username>"]
+    used_in_presenter: "App\\CoreModule\\Presenters\\UserPresenter"
+    component_name: "changePasswordForm"
+
+  - id: "article_editor"
+    purpose: "Creates or edits an article (static page) with title, URL slug, date, visibility flag, and rich-text content"
+    factory: "App\\Factories\\ArticleEditorFormFactory"
+    renderer: "SkautDesignFormRenderer"
+    fields:
+      - name: article_id
+        type: hidden
+        label: ~
+        required: false
+        validation: []
+        default: null
+      - name: title
+        type: text
+        label: "Titulek"
+        required: true
+        validation: ["required"]
+        default: null
+      - name: url
+        type: text
+        label: "URL"
+        required: true
+        validation: ["required"]
+        default: null
+      - name: datetime
+        type: text
+        label: "Datum"
+        required: true
+        validation: ["required"]
+        default: "current date in 'j.n.Y' format (e.g. '2.3.2026')"
+      - name: requestable
+        type: checkbox
+        label: "Zobrazovat v seznamu"
+        required: false
+        validation: []
+        default: true
+      - name: content
+        type: textarea
+        label: "Obsah"
+        required: true
+        validation: ["required"]
+        default: null
+    submit_action: "Sets author to logged user's username, saves article via ArticleManager->saveArticle(); inserts or updates based on article_id"
+    submit_label: "Uložit článek"
+    success_behavior: "Flash 'Článek byl úspěšně uložen.' (success), redirect to :Core:Article: with the article URL"
+    error_behavior: "Standard Nette form error handling"
+    used_on_routes: ["/administrace/clanky/editor", "/administrace/clanky/editor/<url>"]
+    used_in_presenter: "App\\AdminModule\\Presenters\\ArticlePresenter"
+    component_name: "editorForm"
+    notes: "Content textarea is replaced by CKEditor 4.6.2 via JavaScript in the template"
+
+  - id: "news_editor"
+    purpose: "Creates or edits a news item with title, date, and rich-text content"
+    factory: "App\\Factories\\NewsEditorFormFactory"
+    renderer: "SkautDesignFormRenderer"
+    fields:
+      - name: news_id
+        type: hidden
+        label: ~
+        required: false
+        validation: []
+        default: null
+      - name: title
+        type: text
+        label: "Titulek"
+        required: true
+        validation: ["required"]
+        default: null
+      - name: datetime
+        type: text
+        label: "Datum"
+        required: true
+        validation: ["required"]
+        default: "current date in 'j.n.Y' format (e.g. '2.3.2026')"
+      - name: content
+        type: textarea
+        label: "Obsah"
+        required: true
+        validation: ["required"]
+        default: null
+    submit_action: "Sets author to logged user's username, saves news via NewsManager->saveNews(); inserts or updates based on news_id"
+    submit_label: "Uložit článek"
+    success_behavior: "Flash 'Novinka byla úspěšně uložena.' (success), redirect to :Core:News:"
+    error_behavior: "Standard Nette form error handling"
+    used_on_routes: ["/administrace/novinky/editor", "/administrace/novinky/editor/<id>"]
+    used_in_presenter: "App\\AdminModule\\Presenters\\NewsPresenter"
+    component_name: "newsEditorForm"
+    notes: "Content textarea is replaced by CKEditor 4.6.2 via JavaScript in the template"
+
+  - id: "image_upload_base"
+    purpose: "Abstract base form for multi-image upload; extended by ArticleImagesFormFactory and HeaderImagesFormFactory"
+    factory: "App\\Factories\\ImageUploadFormFactory"
+    renderer: "SkautDesignFormRenderer"
+    ajax: true
+    fields:
+      - name: newPictures
+        type: file
+        label: "Přidat nové obrázky (lze více najednou)"
+        required: true
+        validation: ["required - message: 'Musíte vybrat nejméně 1 obrázek!'", "IMAGE format - message: 'Obrázek musí být ve formátu JPEG, PNG nebo GIF.'"]
+        default: null
+        multi_upload: true
+    submit_action: "Calls processForm() method of the concrete subclass"
+    submit_label: "Přidat"
+    success_behavior: "Depends on the concrete subclass (ArticleImages or HeaderImages)"
+    error_behavior: "Standard Nette form validation errors"
+    used_on_routes: []
+    notes: "This is the base class; not used directly. Has CSS class 'ajax' on form element for AJAX submission."
+
+  - id: "article_images"
+    purpose: "Uploads one or more images as article attachments into /www/prilohy/<year>/ directory"
+    factory: "App\\Factories\\ArticleImagesFormFactory"
+    renderer: "SkautDesignFormRenderer"
+    ajax: true
+    extends: "image_upload_base"
+    fields:
+      - name: newPictures
+        type: file
+        label: "Přidat nové obrázky (lze více najednou)"
+        required: true
+        validation: ["required - message: 'Musíte vybrat nejméně 1 obrázek!'", "IMAGE format - message: 'Obrázek musí být ve formátu JPEG, PNG nebo GIF.'"]
+        default: null
+        multi_upload: true
+    submit_action: "Moves uploaded files to /www/prilohy/<current_year>/ preserving original filenames"
+    submit_label: "Přidat"
+    success_behavior: "Files saved to disk; no flash message from this factory (presenters may add their own)"
+    error_behavior: "Standard Nette form validation errors"
+    used_on_routes:
+      - "/administrace/clanky/editor[/<url>]"
+      - "/administrace/novinky/editor[/<id>]"
+    used_in_presenter:
+      - "App\\AdminModule\\Presenters\\ArticlePresenter (component: articleImagesForm)"
+      - "App\\AdminModule\\Presenters\\NewsPresenter (component: articleImagesForm)"
+    component_name: "articleImagesForm"
+
+  - id: "header_images"
+    purpose: "Uploads one or more header/banner images into /www/img/top/ directory"
+    factory: "App\\Factories\\HeaderImagesFormFactory"
+    renderer: "SkautDesignFormRenderer"
+    ajax: true
+    extends: "image_upload_base"
+    fields:
+      - name: newPictures
+        type: file
+        label: "Přidat nové obrázky (lze více najednou)"
+        required: true
+        validation: ["required - message: 'Musíte vybrat nejméně 1 obrázek!'", "IMAGE format - message: 'Obrázek musí být ve formátu JPEG, PNG nebo GIF.'"]
+        default: null
+        multi_upload: true
+    submit_action: "Moves uploaded files to /www/img/top/ preserving original filenames"
+    submit_label: "Přidat"
+    success_behavior: "Flash 'Obrázek přidán.' (success); AJAX redraw of snippets 'flashes' and 'headerImages', or redirect to self"
+    error_behavior: "Standard Nette form validation errors"
+    used_on_routes: ["/administrace/obrazky-zahlavi"]
+    used_in_presenter: "App\\AdminModule\\Presenters\\HeaderImagesPresenter"
+    component_name: "addHeaderImagesForm"
+
+  - id: "web_properties"
+    purpose: "Edits global website properties (name and description) stored via ProjectManager"
+    factory: "App\\Factories\\WebPropertiesFormFactory"
+    renderer: "SkautDesignFormRenderer"
+    ajax: true
+    fields:
+      - name: webName
+        type: text
+        label: "Jméno webu"
+        required: true
+        validation: ["required"]
+        default: "loaded from ProjectManager->getParameter('webName')"
+      - name: webDescription
+        type: text
+        label: "Popis webu"
+        required: true
+        validation: ["required"]
+        default: "loaded from ProjectManager->getParameter('webDescription')"
+    submit_action: "Iterates all form values and saves each via ProjectManager->saveParameter(key, value)"
+    submit_label: "Uložit"
+    submit_css_class: "ajax is-primary"
+    success_behavior: "Flash 'Údaje byly upraveny' (success); AJAX redraw all snippets, or redirect to self"
+    error_behavior: "AJAX redraw of snippets 'flashes' and 'webPropertiesForm'"
+    used_on_routes: ["/administrace"]
+    used_in_presenter: "App\\AdminModule\\Presenters\\WebPresenter"
+    component_name: "webPropertiesForm"
+    notes: "Form has CSS class 'ajax' for AJAX submission. onSuccess callback is defined in the factory itself (not in presenter)."
+
+form_renderer:
+  class: "App\\Renderers\\SkautDesignFormRenderer"
+  extends: "Nette\\Forms\\Rendering\\DefaultFormRenderer"
+  description: "Custom form renderer that applies Bulma/Skaut Design CSS classes to all form controls"
+  wrappers:
+    controls_container: null
+    pair_container: 'div class="field"'
+    control_container: 'div class="control"'
+  css_classes:
+    button: "button is-primary"
+    text_input: "input is-medium"
+    text_label: "label is-primary"
+    textarea: "textarea is-medium"
+    textarea_label: "label is-primary"
+  form_element_class: "column"

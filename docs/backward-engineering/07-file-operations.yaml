@@ -1,0 +1,150 @@
+# =============================================================================
+# 07 - File Operations
+# Backward-engineered from source code of the Ctyriadvacitka CMS
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Directories used for file storage
+# ---------------------------------------------------------------------------
+directories:
+  - path: "www/img/"
+    purpose: "Root image directory; holds static logo files (logo-hk.png, logo-khk.gif, logo-nadace.png, logo24.svg)"
+    served_via: "direct URL (under web root, served by Apache as static files)"
+
+  - path: "www/img/top/"
+    purpose: "Header/hero images displayed in the site banner; managed via admin panel (upload + delete)"
+    served_via: "direct URL (e.g. /img/top/hero1.jpg)"
+    current_contents:
+      - "T19 (104 of 528).jpg"
+      - "T19 (201 of 528).jpg"
+      - "T19 (504 of 528).jpg"
+      - "T19 (516 of 528).jpg"
+      - "T19 (89 of 528).jpg"
+      - "hero1.jpg"
+      - "valdstejn.jpg"
+
+  - path: "www/img/contacts/"
+    purpose: "Contact person portrait photos (static, not admin-managed)"
+    served_via: "direct URL (e.g. /img/contacts/edgar.jpg)"
+    current_contents:
+      - "edgar.jpg"
+      - "poulik.jpg"
+      - "stredisko.jpg"
+      - "tuc.jpg"
+
+  - path: "www/prilohy/"
+    purpose: "Article attachment images, organized in year-based subdirectories (e.g. www/prilohy/2024/)"
+    served_via: "direct URL with directory indexing enabled (.htaccess Options +Indexes)"
+    htaccess_note: "mod_autoindex Options +Indexes is enabled, allowing browsers to list directory contents"
+
+  - path: "www/photos/"
+    purpose: "Photo album images (referenced in structure.json and config.js for chrono-albums gallery); gitignored and excluded from FTP deploy"
+    served_via: "direct URL (static files served by Apache; album JS client fetches from structure.json)"
+    note: "Directory is listed in .gitignore; not present in repository; excluded from FTP deploy in deploy.js"
+
+  - path: "www/css/"
+    purpose: "Stylesheets - main.css (custom) and skaut-design.min.css (copied from @lttr/skaut-design npm package)"
+    served_via: "direct URL"
+
+  - path: "www/js/"
+    purpose: "JavaScript - main.js (custom AJAX/menu init) and vendor.js (built by concatenating jQuery + netteForms + nette.ajax.js)"
+    served_via: "direct URL"
+
+  - path: "temp/"
+    purpose: "Nette framework temporary files (cache, sessions)"
+    served_via: "not served"
+
+  - path: "log/"
+    purpose: "Tracy debugger log files"
+    served_via: "not served"
+
+  - path: "app/"
+    purpose: "Application source code (presenters, models, factories, config)"
+    served_via: "not served (blocked by app/.htaccess: Order Allow,Deny / Deny from all)"
+
+# ---------------------------------------------------------------------------
+# Upload operations
+# ---------------------------------------------------------------------------
+upload_operations:
+  - id: "header_image_upload"
+    description: "Upload one or more header/hero images for the site banner via admin panel"
+    form_factory: "App\\Factories\\HeaderImagesFormFactory (extends ImageUploadFormFactory)"
+    presenter: "App\\AdminModule\\Presenters\\HeaderImagesPresenter"
+    component_name: "addHeaderImagesForm"
+    file_types:
+      - "JPEG"
+      - "PNG"
+      - "GIF"
+    validation_rule: "Form::IMAGE - enforces JPEG/PNG/GIF MIME type"
+    size_limits: "No explicit size limit set in code (PHP defaults apply: upload_max_filesize, post_max_size)"
+    storage_path: "www/img/top/"
+    naming: "Original filename preserved as-is ($image->name); files with the same name are silently overwritten"
+    multi_upload: true
+    required: "At least 1 image required (form validation: 'Musite vybrat nejmene 1 obrazek!')"
+    auth_required: "Login + admin permissions (logInRequired + adminPermissionsRequired in presenter startup)"
+    ajax: true
+
+  - id: "article_image_upload"
+    description: "Upload one or more images as article attachments via admin panel"
+    form_factory: "App\\Factories\\ArticleImagesFormFactory (extends ImageUploadFormFactory)"
+    file_types:
+      - "JPEG"
+      - "PNG"
+      - "GIF"
+    validation_rule: "Form::IMAGE - enforces JPEG/PNG/GIF MIME type"
+    size_limits: "No explicit size limit set in code (PHP defaults apply)"
+    storage_path: "www/prilohy/{current_year}/ (e.g. www/prilohy/2024/)"
+    naming: "Original filename preserved as-is ($image->name); directory is auto-created with 0755 permissions using Nette\\Utils\\FileSystem::createDir()"
+    multi_upload: true
+    required: "At least 1 image required"
+    ajax: true
+
+# ---------------------------------------------------------------------------
+# Base upload form (shared by both upload operations)
+# ---------------------------------------------------------------------------
+base_upload_form:
+  class: "App\\Factories\\ImageUploadFormFactory (extends BaseFormFactory)"
+  field_name: "newPictures"
+  field_type: "addMultiUpload (Nette multi-file upload)"
+  label: "Pridat nove obrazky (lze vice najednou)"
+  renderer: "App\\Renderers\\SkautDesignFormRenderer (set in BaseFormFactory)"
+  css_class: "ajax (form element attribute for nette.ajax.js snippet handling)"
+
+# ---------------------------------------------------------------------------
+# Delete operations
+# ---------------------------------------------------------------------------
+delete_operations:
+  - id: "header_image_delete"
+    description: "Delete a single header/hero image from the filesystem"
+    presenter: "App\\AdminModule\\Presenters\\HeaderImagesPresenter"
+    handler: "handleRemove($name) - signal handler"
+    mechanism: "Constructs full path as {wwwDir}/img/top/{$name} and calls ImageManager::deleteImage() which uses PHP unlink()"
+    auth_required: "Login + admin permissions"
+    ajax: true
+    flash_message: "Obrazek odstranen."
+    note: "No confirmation dialog in backend code; name parameter comes directly from URL (potential path traversal concern if not sanitized in template)"
+
+# ---------------------------------------------------------------------------
+# Image listing / reading
+# ---------------------------------------------------------------------------
+read_operations:
+  - id: "header_image_list"
+    description: "List all header images from www/img/top/ directory"
+    class: "App\\AdminModule\\Model\\ImageManager"
+    method: "getHeaderImageNames()"
+    mechanism: "Uses Nette\\Utils\\Finder::findFiles('*.png', '*.jpg') to scan the directory"
+    file_patterns:
+      - "*.png"
+      - "*.jpg"
+    note: "Only PNG and JPG are listed; GIF files in the directory would NOT appear in the listing (but GIF uploads are accepted by the form)"
+
+# ---------------------------------------------------------------------------
+# How uploaded files are served to users
+# ---------------------------------------------------------------------------
+serving:
+  - "Header images (www/img/top/) are served as static files directly by Apache via their public URL path (e.g. https://domain/img/top/hero1.jpg)"
+  - "Article attachment images (www/prilohy/{year}/) are served as static files directly by Apache; the .htaccess in www/prilohy/ enables directory indexing (Options +Indexes), so browsing to /prilohy/ or /prilohy/2024/ shows a file listing"
+  - "Photo album images (www/photos/) are served as static files; the album JS (albums.f0967941.js) uses structure.json for metadata and config.js for display settings"
+  - "Contact images (www/img/contacts/) and logos (www/img/) are static assets referenced in templates"
+  - "The www/.htaccess front controller routes all non-static requests to index.php, while allowing direct access to files with extensions: pdf, js, ico, gif, jpg, png, css, rar, zip, tar.gz, map"
+  - "No PHP-mediated file serving (no readfile/fpassthru); all uploaded content is directly web-accessible"

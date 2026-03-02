@@ -1,0 +1,799 @@
+# =============================================================================
+# Business Logic Operations
+# Backward-engineered from PHP/Nette source code
+# Every public Manager method = one operation
+# Every presenter action/handler that modifies data = also captured
+# =============================================================================
+
+operations:
+
+  # ---------------------------------------------------------------------------
+  # BaseManager (abstract) -- no public operations of its own
+  # ---------------------------------------------------------------------------
+
+  # ---------------------------------------------------------------------------
+  # ProjectManager  (App\Model\ProjectManager)
+  # Table: parameters
+  # ---------------------------------------------------------------------------
+
+  - id: "project.saveParameter"
+    entity: Parameter
+    type: update
+    inputs:
+      - name: key
+        type: string
+        required: true
+      - name: value
+        type: string
+        required: true
+    behavior:
+      - "Build an associative array with 'key' and 'value'."
+      - "Clone the internal table reference to avoid query contamination."
+      - "Check if the key already exists in DB via isParameterInDB()."
+      - "If key exists, update the row matching the key."
+      - "If key does not exist, insert a new row."
+    side_effects: []
+    authorization: "none (called internally by presenters that enforce their own auth)"
+    error_cases:
+      - "Database write failure."
+
+  - id: "project.getParameter"
+    entity: Parameter
+    type: read
+    inputs:
+      - name: key
+        type: string
+        required: true
+    behavior:
+      - "Clone the internal table reference."
+      - "Fetch a row where 'key' matches the provided key."
+      - "If no row found, return false."
+      - "Otherwise return the 'value' column of the row."
+    side_effects: []
+    authorization: "none"
+    error_cases:
+      - "Key does not exist in DB -- returns false."
+
+  - id: "project.isParameterInDB"
+    entity: Parameter
+    type: read
+    inputs:
+      - name: key
+        type: string
+        required: true
+    behavior:
+      - "Clone the internal table reference."
+      - "Fetch a row where 'key' matches the provided key."
+      - "Return true if a row is found, false otherwise."
+    side_effects: []
+    authorization: "none"
+    error_cases: []
+
+  - id: "project.getWwwDir"
+    entity: Configuration
+    type: read
+    inputs: []
+    behavior:
+      - "Return the wwwDir string (filesystem path to the public web root)."
+    side_effects: []
+    authorization: "none"
+    error_cases: []
+
+  - id: "project.getArticlesInMenu"
+    entity: Article
+    type: read
+    inputs: []
+    behavior:
+      - "Fetch all rows from the 'article' table."
+      - "Iterate over articles; for each article where in_menu is truthy, add url => title to the result array."
+      - "Return the associative array of articles visible in the navigation menu."
+    side_effects: []
+    authorization: "none"
+    error_cases: []
+
+  # ---------------------------------------------------------------------------
+  # Utils  (App\Model\Utils)  -- static utility
+  # ---------------------------------------------------------------------------
+
+  - id: "utils.formatDate"
+    entity: n/a
+    type: other
+    inputs:
+      - name: datetime
+        type: "Nette\\Utils\\DateTime"
+        required: true
+    behavior:
+      - "Convert the DateTime object to a Unix timestamp."
+      - "Format as 'd.m.Y' (Czech date format, e.g. '05.03.2026')."
+      - "Return the formatted string."
+    side_effects: []
+    authorization: "none"
+    error_cases:
+      - "Invalid DateTime input."
+
+  # ---------------------------------------------------------------------------
+  # ArticleManager  (App\CoreModule\Model\ArticleManager)
+  # Table: article
+  # ---------------------------------------------------------------------------
+
+  - id: "article.getAll"
+    entity: Article
+    type: read
+    inputs: []
+    behavior:
+      - "Query the 'article' table ordered by datetime DESC."
+      - "Fetch and return all rows as an array."
+    side_effects: []
+    authorization: "none"
+    error_cases: []
+
+  - id: "article.getLimited"
+    entity: Article
+    type: read
+    inputs:
+      - name: limit
+        type: int
+        required: true
+      - name: offset
+        type: int
+        required: true
+    behavior:
+      - "Query the 'article' table ordered by datetime DESC."
+      - "Apply LIMIT and OFFSET from parameters."
+      - "Fetch and return the resulting rows."
+    side_effects: []
+    authorization: "none"
+    error_cases: []
+
+  - id: "article.getCount"
+    entity: Article
+    type: read
+    inputs: []
+    behavior:
+      - "Return COUNT(*) from the 'article' table."
+    side_effects: []
+    authorization: "none"
+    error_cases: []
+
+  - id: "article.getByUrl"
+    entity: Article
+    type: read
+    inputs:
+      - name: url
+        type: string
+        required: true
+    behavior:
+      - "Query the 'article' table where url matches the parameter."
+      - "Fetch and return a single ActiveRow, or null if not found."
+    side_effects: []
+    authorization: "none"
+    error_cases:
+      - "Article with given URL does not exist -- returns null."
+
+  - id: "article.save"
+    entity: Article
+    type: create
+    inputs:
+      - name: values
+        type: array
+        required: true
+        description: "Associative array with keys: article_id (optional), title, content, url, requestable, author, datetime (string d.m.Y), in_menu."
+    behavior:
+      - "Parse the 'datetime' field from 'd.m.Y' string format into a DateTime object."
+      - "If article_id is empty (falsy), set it to null and INSERT a new row."
+      - "If article_id is present, UPDATE the existing row identified by that primary key."
+    side_effects:
+      - "Date format conversion: 'd.m.Y' string -> DateTime object before DB write."
+    authorization: "none (enforced at presenter level -- editor or admin role required)"
+    error_cases:
+      - "Invalid datetime format causes parse failure."
+      - "Database constraint violation on insert."
+
+  - id: "article.remove"
+    entity: Article
+    type: delete
+    inputs:
+      - name: url
+        type: string
+        required: true
+    behavior:
+      - "Delete the row from the 'article' table where url matches the parameter."
+    side_effects: []
+    authorization: "none (enforced at presenter level -- editor or admin role required)"
+    error_cases:
+      - "Article with given URL does not exist."
+
+  - id: "article.setVisibilityInMenu"
+    entity: Article
+    type: update
+    inputs:
+      - name: url
+        type: string
+        required: true
+      - name: visibility
+        type: bool
+        required: true
+    behavior:
+      - "Update the 'in_menu' column of the article row matching the given URL."
+    side_effects: []
+    authorization: "none (enforced at presenter level)"
+    error_cases:
+      - "Article with given URL does not exist."
+
+  # ---------------------------------------------------------------------------
+  # NewsManager  (App\CoreModule\Model\NewsManager)
+  # Table: news
+  # ---------------------------------------------------------------------------
+
+  - id: "news.getAll"
+    entity: News
+    type: read
+    inputs: []
+    behavior:
+      - "Query the 'news' table ordered by datetime DESC."
+      - "Fetch and return all rows as an array."
+    side_effects: []
+    authorization: "none"
+    error_cases: []
+
+  - id: "news.getLimited"
+    entity: News
+    type: read
+    inputs:
+      - name: limit
+        type: int
+        required: true
+      - name: offset
+        type: int
+        required: true
+    behavior:
+      - "Query the 'news' table ordered by datetime DESC."
+      - "Apply LIMIT and OFFSET."
+      - "Fetch and return the resulting rows."
+    side_effects: []
+    authorization: "none"
+    error_cases: []
+
+  - id: "news.getCount"
+    entity: News
+    type: read
+    inputs: []
+    behavior:
+      - "Return COUNT(*) from the 'news' table."
+    side_effects: []
+    authorization: "none"
+    error_cases: []
+
+  - id: "news.getById"
+    entity: News
+    type: read
+    inputs:
+      - name: id
+        type: int
+        required: true
+    behavior:
+      - "Query the 'news' table by primary key."
+      - "Return a single ActiveRow or null."
+    side_effects: []
+    authorization: "none"
+    error_cases:
+      - "News item with given ID does not exist -- returns null."
+
+  - id: "news.save"
+    entity: News
+    type: create
+    inputs:
+      - name: values
+        type: array
+        required: true
+        description: "Associative array with keys: news_id (optional), title, content, author, datetime (string d.m.Y)."
+    behavior:
+      - "Parse the 'datetime' field from 'd.m.Y' string format into a DateTime object."
+      - "If news_id is empty (falsy), set it to null and INSERT a new row."
+      - "If news_id is present, UPDATE the existing row matching news_id."
+    side_effects:
+      - "Date format conversion: 'd.m.Y' string -> DateTime object before DB write."
+    authorization: "none (enforced at presenter level -- editor or admin role required)"
+    error_cases:
+      - "Invalid datetime format causes parse failure."
+      - "Database constraint violation."
+
+  - id: "news.remove"
+    entity: News
+    type: delete
+    inputs:
+      - name: id
+        type: int
+        required: true
+    behavior:
+      - "Delete the row from the 'news' table by primary key."
+    side_effects: []
+    authorization: "none (enforced at presenter level -- editor or admin role required)"
+    error_cases:
+      - "News item with given ID does not exist."
+
+  # ---------------------------------------------------------------------------
+  # UserManager  (App\CoreModule\Model\UserManager)
+  # Table: user
+  # ---------------------------------------------------------------------------
+
+  - id: "user.getAll"
+    entity: User
+    type: read
+    inputs: []
+    behavior:
+      - "Fetch and return all rows from the 'user' table."
+    side_effects: []
+    authorization: "none (enforced at presenter level -- admin role required)"
+    error_cases: []
+
+  - id: "user.getByUsername"
+    entity: User
+    type: read
+    inputs:
+      - name: username
+        type: string
+        required: true
+    behavior:
+      - "Query the 'user' table where username matches the parameter."
+      - "Return a single ActiveRow or null."
+    side_effects: []
+    authorization: "none"
+    error_cases:
+      - "User with given username does not exist -- returns null."
+
+  - id: "user.getById"
+    entity: User
+    type: read
+    inputs:
+      - name: id
+        type: int
+        required: true
+    behavior:
+      - "Query the 'user' table by primary key."
+      - "Return a single ActiveRow or null."
+    side_effects: []
+    authorization: "none"
+    error_cases:
+      - "User with given ID does not exist -- returns null."
+
+  - id: "user.save"
+    entity: User
+    type: create
+    inputs:
+      - name: values
+        type: array
+        required: true
+        description: "Associative array with keys: user_id (optional), username, password, role, name, surname, nickname, email."
+    behavior:
+      - "If user_id is present in the values array, UPDATE the row with that primary key."
+      - "If user_id is not present, INSERT a new row."
+    side_effects: []
+    authorization: "none (enforced at presenter level)"
+    error_cases:
+      - "UniqueConstraintViolationException if username or email already exists."
+
+  - id: "user.remove"
+    entity: User
+    type: delete
+    inputs:
+      - name: username
+        type: string
+        required: true
+    behavior:
+      - "Delete the row from the 'user' table where username matches the parameter."
+    side_effects: []
+    authorization: "none (enforced at presenter level -- admin with 'user:remove' permission required)"
+    error_cases:
+      - "User with given username does not exist."
+
+  - id: "user.changePassword"
+    entity: User
+    type: update
+    inputs:
+      - name: username
+        type: string
+        required: true
+      - name: currentPassword
+        type: string
+        required: true
+      - name: newPassword
+        type: string
+        required: true
+    behavior:
+      - "Fetch the user row by username."
+      - "Verify the currentPassword against the stored password hash using Passwords::verify()."
+      - "If verification succeeds, hash the newPassword and update the password column."
+      - "If verification fails, throw AuthenticationException with Czech message 'Současné heslo neodpovídá zadanému současnému heslu!'."
+    side_effects:
+      - "Password is hashed with Nette\\Security\\Passwords before storage."
+    authorization: "none (enforced at presenter level -- user must be logged in and can only change their own password)"
+    error_cases:
+      - "Current password does not match -- throws AuthenticationException."
+      - "User does not exist -- null pointer error."
+
+  - id: "user.getRoleDisplayName"
+    entity: User
+    type: other
+    inputs:
+      - name: role
+        type: string
+        required: true
+    behavior:
+      - "Map English role names ('registered', 'editor', 'admin') to Czech display names ('uzivatel', 'redaktor', 'administrator')."
+      - "Perform array_search on English roles array and return corresponding Czech name."
+    side_effects: []
+    authorization: "none"
+    error_cases:
+      - "Unknown role string causes array_search to return false, leading to undefined index."
+
+  # ---------------------------------------------------------------------------
+  # ImageManager  (App\AdminModule\Model\ImageManager)
+  # Filesystem: {wwwDir}/img/top/
+  # ---------------------------------------------------------------------------
+
+  - id: "image.getHeaderImageNames"
+    entity: HeaderImage
+    type: read
+    inputs: []
+    behavior:
+      - "Scan the directory {wwwDir}/img/top/ for files matching *.png and *.jpg."
+      - "Collect filenames (basename only) into an array."
+      - "Return the array of image filenames."
+    side_effects: []
+    authorization: "none (enforced at presenter level -- admin role required)"
+    error_cases:
+      - "Directory does not exist or is not readable."
+
+  - id: "image.delete"
+    entity: HeaderImage
+    type: delete
+    inputs:
+      - name: path
+        type: string
+        required: true
+    behavior:
+      - "Call unlink() on the provided filesystem path."
+      - "Return true on success, false on failure."
+    side_effects:
+      - "Physically deletes the file from disk."
+    authorization: "none (enforced at presenter level -- admin role required)"
+    error_cases:
+      - "File does not exist or cannot be deleted -- returns false or raises PHP warning."
+
+  # ---------------------------------------------------------------------------
+  # Presenter-level operations (actions/handlers that modify data)
+  # ---------------------------------------------------------------------------
+
+  # --- SessionPresenter (Core) ---
+
+  - id: "session.signIn"
+    entity: User
+    type: other
+    inputs:
+      - name: username
+        type: string
+        required: true
+      - name: password
+        type: string
+        required: true
+    behavior:
+      - "Receive form values from signInForm."
+      - "Call Nette User::login(username, password) which delegates to AuthenticatorManager."
+      - "On success, flash 'Prihlaseni probehlo uspesne' and redirect to Admin:Web:default."
+      - "On AuthenticationException, flash the error message."
+    side_effects:
+      - "Nette session is created/updated with user identity."
+    authorization: "none (public action)"
+    error_cases:
+      - "AuthenticationException -- invalid credentials."
+
+  - id: "session.signOut"
+    entity: User
+    type: other
+    inputs: []
+    behavior:
+      - "Check if a user is logged in."
+      - "If not logged in, flash info message and redirect to Core:Article:default."
+      - "If logged in, call User::logout(true) to destroy the session."
+      - "Flash success message and redirect to Core:Article:default."
+    side_effects:
+      - "User session is destroyed."
+    authorization: "none (public action, but only meaningful when logged in)"
+    error_cases: []
+
+  - id: "session.signUp"
+    entity: User
+    type: create
+    inputs:
+      - name: username
+        type: string
+        required: true
+      - name: password
+        type: string
+        required: true
+      - name: email
+        type: string
+        required: true
+    behavior:
+      - "Receive form values from signUpForm."
+      - "Hash the password using Passwords::hash()."
+      - "Build user array with username, hashed password, role='registered', email."
+      - "Call UserManager::saveUser() to insert the user."
+      - "On success, flash message and redirect to signIn page."
+      - "On UniqueConstraintViolationException, flash warning about duplicate username/email."
+    side_effects:
+      - "Password is hashed before storage."
+      - "New user is inserted with role 'registered'."
+    authorization: "none (public action)"
+    error_cases:
+      - "UniqueConstraintViolationException -- duplicate username or email."
+
+  # --- ContactPresenter (Core) ---
+
+  - id: "contact.sendEmail"
+    entity: Email
+    type: other
+    inputs:
+      - name: email
+        type: string
+        required: true
+      - name: message
+        type: string
+        required: true
+    behavior:
+      - "Receive form values from contactForm."
+      - "Create a Nette Mail Message with sender = form email, recipients = hardcoded admin emails."
+      - "Set subject to 'Email z BasicRS' and body to the form message."
+      - "Send via SendmailMailer."
+      - "On success, flash message and redirect."
+      - "On InvalidStateException, flash error."
+    side_effects:
+      - "An email is sent to kroupa.matyas@gmail.com and lukas.trumm@gmail.com."
+    authorization: "none (public form)"
+    error_cases:
+      - "InvalidStateException -- email sending failure."
+
+  # --- UserPresenter (Core) ---
+
+  - id: "user.editProfile"
+    entity: User
+    type: update
+    inputs:
+      - name: values
+        type: array
+        required: true
+        description: "User profile fields from userEditorForm."
+    behavior:
+      - "Receive form values from userEditorForm."
+      - "Call UserManager::saveUser() to update the user record."
+      - "On success, flash message and redirect to the user's profile."
+      - "On UniqueConstraintViolationException, flash warning."
+    side_effects: []
+    authorization: "logged-in user; can only edit own profile"
+    error_cases:
+      - "UniqueConstraintViolationException -- duplicate username or email."
+
+  - id: "user.changePassword.action"
+    entity: User
+    type: update
+    inputs:
+      - name: currentPassword
+        type: string
+        required: true
+      - name: newPassword
+        type: string
+        required: true
+    behavior:
+      - "Receive form values from changePasswordForm."
+      - "Get username from logged-in user identity."
+      - "Call UserManager::changePassword(username, currentPassword, newPassword)."
+      - "On success, flash message and redirect to user profile."
+      - "On AuthenticationException (wrong current password), flash error."
+    side_effects:
+      - "Password hash is updated in the database."
+    authorization: "logged-in user; can only change own password"
+    error_cases:
+      - "AuthenticationException -- current password mismatch."
+
+  # --- Admin ArticlePresenter ---
+
+  - id: "admin.article.remove"
+    entity: Article
+    type: delete
+    inputs:
+      - name: url
+        type: string
+        required: true
+    behavior:
+      - "Verify editor permissions."
+      - "Call ArticleManager::removeArticle(url)."
+      - "Flash success message and redirect to Admin:Article:list."
+    side_effects: []
+    authorization: "editor or admin"
+    error_cases:
+      - "User lacks editor/admin role -- redirect with warning."
+
+  - id: "admin.article.save"
+    entity: Article
+    type: create
+    inputs:
+      - name: values
+        type: array
+        required: true
+        description: "Article fields from editorForm (title, content, url, datetime, requestable, in_menu, article_id)."
+    behavior:
+      - "Receive form values from editorForm."
+      - "Set the author field to the logged-in user's username."
+      - "Call ArticleManager::saveArticle(values) which handles insert/update."
+      - "Flash success message and redirect to the article's public page."
+    side_effects:
+      - "Author is auto-set to current user."
+      - "Datetime string is parsed inside ArticleManager."
+    authorization: "editor or admin"
+    error_cases:
+      - "Invalid date format."
+      - "Database constraint violation."
+
+  - id: "admin.article.toggleMenuVisibility"
+    entity: Article
+    type: update
+    inputs:
+      - name: url
+        type: string
+        required: true
+      - name: visibility
+        type: bool
+        required: true
+    behavior:
+      - "Call ArticleManager::setVisibilityInMenu(url, visibility)."
+      - "Redirect or redraw AJAX snippets (articlesTable, flashes)."
+    side_effects: []
+    authorization: "logged-in (startup enforces login); implicitly editor/admin (only accessible from admin article list)"
+    error_cases: []
+
+  # --- Admin NewsPresenter ---
+
+  - id: "admin.news.remove"
+    entity: News
+    type: delete
+    inputs:
+      - name: id
+        type: int
+        required: true
+    behavior:
+      - "Verify editor permissions."
+      - "Call NewsManager::removeNews(id)."
+      - "Flash success message and redirect to Admin:News:list."
+    side_effects: []
+    authorization: "editor or admin"
+    error_cases:
+      - "User lacks editor/admin role -- redirect with warning."
+
+  - id: "admin.news.save"
+    entity: News
+    type: create
+    inputs:
+      - name: values
+        type: array
+        required: true
+        description: "News fields from newsEditorForm (title, content, datetime, news_id)."
+    behavior:
+      - "Receive form values from newsEditorForm."
+      - "Set the author field to the logged-in user's username."
+      - "Call NewsManager::saveNews(values) which handles insert/update."
+      - "Flash success message and redirect to Core:News:default."
+    side_effects:
+      - "Author is auto-set to current user."
+      - "Datetime string is parsed inside NewsManager."
+    authorization: "editor or admin"
+    error_cases:
+      - "Invalid date format."
+      - "Database constraint violation."
+
+  # --- Admin UserPresenter ---
+
+  - id: "admin.user.changeRole"
+    entity: User
+    type: update
+    inputs:
+      - name: role
+        type: string
+        required: true
+      - name: username
+        type: string
+        required: true
+    behavior:
+      - "Look up the user by username to get their primary key."
+      - "Call UserManager::saveUser() with user_id and the new role."
+      - "Get the Czech display name for the role via getRoleDisplayName()."
+      - "Flash success message with username and Czech role name."
+      - "Redirect or redraw AJAX snippets (userManagementTable, flashes)."
+    side_effects: []
+    authorization: "admin (enforced in startup)"
+    error_cases:
+      - "User not found -- null pointer error."
+      - "Invalid role string."
+
+  - id: "admin.user.remove"
+    entity: User
+    type: delete
+    inputs:
+      - name: username
+        type: string
+        required: true
+    behavior:
+      - "Verify user is logged in."
+      - "Check ACL permission: user must be allowed 'user:remove'."
+      - "If not allowed, flash danger message and redirect."
+      - "Call UserManager::removeUser(username)."
+      - "Flash success message and redirect/redraw AJAX snippets."
+    side_effects: []
+    authorization: "admin with 'user:remove' ACL permission"
+    error_cases:
+      - "User lacks 'user:remove' permission -- flash error, no deletion."
+      - "User does not exist."
+
+  # --- Admin HeaderImagesPresenter ---
+
+  - id: "admin.headerImage.remove"
+    entity: HeaderImage
+    type: delete
+    inputs:
+      - name: name
+        type: string
+        required: true
+    behavior:
+      - "Construct full filesystem path: {wwwDir}/img/top/{name}."
+      - "Call ImageManager::deleteImage(path) which calls unlink()."
+      - "Flash success message."
+      - "Redirect or redraw AJAX snippets (flashes, headerImages)."
+    side_effects:
+      - "File is physically deleted from disk."
+    authorization: "admin (enforced in startup)"
+    error_cases:
+      - "File does not exist or cannot be deleted."
+
+  - id: "admin.headerImage.upload"
+    entity: HeaderImage
+    type: create
+    inputs:
+      - name: image
+        type: file
+        required: true
+        description: "Image file(s) uploaded via addHeaderImagesForm."
+    behavior:
+      - "Receive uploaded file from addHeaderImagesForm."
+      - "The HeaderImagesFormFactory handles saving the file to {wwwDir}/img/top/."
+      - "Flash success message."
+      - "Redirect or redraw AJAX snippets (flashes, headerImages)."
+    side_effects:
+      - "Image file is saved to disk in the header images directory."
+    authorization: "admin (enforced in startup)"
+    error_cases:
+      - "Upload failure."
+      - "Invalid file type."
+
+  # --- Admin WebPresenter ---
+
+  - id: "admin.web.saveProperties"
+    entity: Parameter
+    type: update
+    inputs:
+      - name: webName
+        type: string
+        required: true
+      - name: webDescription
+        type: string
+        required: true
+    behavior:
+      - "Receive form values from webPropertiesForm."
+      - "The WebPropertiesFormFactory calls ProjectManager::saveParameter() for each property."
+      - "Flash success message."
+      - "Redirect or redraw AJAX snippets."
+    side_effects:
+      - "Parameters 'webName' and 'webDescription' are updated or inserted in the parameters table."
+    authorization: "admin"
+    error_cases:
+      - "Database write failure."
+      - "Form validation error triggers onError handler."

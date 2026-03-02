@@ -1,0 +1,257 @@
+# =============================================================================
+# Authentication & Authorization -- backward-engineered from PHP source
+# Source: AuthenticatorManager.php, AuthorizatorManager.php, UserManager.php,
+#         BasePresenter.php, config.neon, CoreModule/config/config.neon
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Authentication
+# -----------------------------------------------------------------------------
+authentication:
+  method: >
+    Username + password form-based login. The user submits credentials
+    (username and password) through a sign-in form. The system looks up the
+    user record by username in the database and verifies the supplied
+    plaintext password against the stored hash.
+
+  password_handling: >
+    Passwords are hashed using bcrypt via the Nette\Security\Passwords
+    utility. Stored hashes use the '$2y$' prefix with a cost factor of 10
+    (default Nette setting). Password verification uses the constant-time
+    Passwords::verify() method. On password change, the current password
+    must be verified before the new password hash is persisted.
+
+  session:
+    expiration: "30 minutes (configured in app/config/config.neon)"
+    mechanism: >
+      Standard server-side session managed by the Nette framework. The
+      session expiration means the user is automatically logged out after
+      30 minutes of inactivity. Session identity stores the user_id, role,
+      and username.
+
+  identity_data:
+    - field: id
+      source: "user.user_id"
+      description: "Numeric user identifier, used as the identity primary key."
+    - field: role
+      source: "user.role"
+      description: "Single role string assigned to the user (e.g. 'admin', 'editor', 'registered')."
+    - field: username
+      source: "user.username"
+      description: "Username stored in the identity data bag for display and reference."
+
+  login_flow:
+    - "User navigates to the sign-in page (Core:Session:signIn)."
+    - "User submits username and password via the SignInForm."
+    - "AuthenticatorManager.authenticate() is invoked with the credentials array."
+    - "The system queries the 'user' table for a row matching the submitted username."
+    - "If no matching user is found, an AuthenticationException is thrown with message 'Uzivatel nenalezen.' (User not found)."
+    - "If a user is found, the submitted password is verified against the stored bcrypt hash using Passwords::verify()."
+    - "If the password does not match, an AuthenticationException is thrown with message 'Spatne heslo!' (Wrong password)."
+    - "On successful verification, a new Identity object is created containing (user_id, role, {username}) and returned."
+    - "The Nette framework stores this Identity in the server-side session."
+    - "The user is now authenticated; BasePresenter.beforeRender() exposes the identity to templates."
+
+  logout_flow:
+    - "The user triggers sign-out (presumably via a link/button routed to the session presenter)."
+    - "The framework clears the session identity."
+    - "Subsequent requests see the user as a guest."
+
+  error_cases:
+    - "User not found: thrown when no database row matches the submitted username. Czech message: 'Uzivatel nenalezen.'"
+    - "Wrong password: thrown when the submitted password does not match the stored bcrypt hash. Czech message: 'Spatne heslo!'"
+    - "Password change - current password mismatch: thrown when attempting to change password but the supplied current password is incorrect. Czech message: 'Soucasne heslo neodpovida zadanemu soucasnemu heslu!'"
+    - "Not logged in: BasePresenter.logInRequired() redirects to sign-in with flash message 'Nejste prihlasen!' when a protected action is accessed without authentication."
+    - "Insufficient role (editor): BasePresenter.editorPermissionsRequired() redirects with flash message 'Na tuto akci musite byt redaktor.' when the user is neither editor nor admin."
+    - "Insufficient role (admin): BasePresenter.adminPermissionsRequired() redirects with flash message 'Na tuto akci musite byt administrator.' when the user is not admin."
+    - "Session expiration: after 30 minutes of inactivity the session expires and the user must re-authenticate."
+
+# -----------------------------------------------------------------------------
+# Roles
+# -----------------------------------------------------------------------------
+roles:
+  - name: guest
+    inherits_from: null
+    description: >
+      Unauthenticated visitor. The base role assigned implicitly to anyone
+      who has not logged in. Can view articles and user profiles (public info).
+
+  - name: registered
+    inherits_from: guest
+    description: >
+      A logged-in user with no special editorial or administrative privileges.
+      Inherits guest permissions (view articles, view users). This is the
+      default role assigned to newly created user accounts.
+
+  - name: editor
+    inherits_from: registered
+    description: >
+      A content editor who can create (add) articles in addition to all
+      registered-user capabilities. The 'editor' role is checked in
+      BasePresenter via editorPermissionsRequired() which grants access
+      if the user's role is 'editor' OR 'admin'. Czech display name:
+      'redaktor'.
+
+  - name: scout
+    inherits_from: registered
+    description: >
+      A scout (member of the scout troop). Inherits registered-user
+      permissions. Does not grant any additional resource permissions by
+      itself, but serves as the base for the 'leader' role in the scout
+      branch of the hierarchy. Not present in seed data but defined in the
+      authorization layer.
+
+  - name: leader
+    inherits_from: scout
+    description: >
+      A scout leader (troop leader). Inherits scout and registered
+      permissions. Has access to the 'parents' resource -- can show parent
+      contact information, edit it, and send mail to parents. Not present
+      in seed data but defined in the authorization layer.
+
+  - name: admin
+    inherits_from: "[editor, leader]"
+    description: >
+      Full administrator. Inherits from BOTH the editor branch and the
+      leader branch (multiple inheritance). Can edit articles and web
+      settings, remove users, manage parents, and perform all actions
+      available to editors and leaders. The admin role is the most
+      privileged role in the system. Czech display name: 'administrator'.
+
+# -----------------------------------------------------------------------------
+# Permissions (ACL rules)
+# -----------------------------------------------------------------------------
+permissions:
+  # --- Guest permissions (inherited by all higher roles) ---
+  - role: guest
+    resource: article
+    actions: [view]
+    notes: "Any visitor (authenticated or not) can view articles."
+
+  - role: guest
+    resource: user
+    actions: [view]
+    notes: "Any visitor can view user profiles / public user information."
+
+  # --- Editor permissions ---
+  - role: editor
+    resource: article
+    actions: [add]
+    notes: >
+      Editors can create new articles. This is in addition to the 'view'
+      permission inherited from guest. Note: editors cannot 'edit' articles
+      (that requires admin).
+
+  # --- Leader permissions ---
+  - role: leader
+    resource: parents
+    actions: [show, edit, sendMail]
+    notes: >
+      Leaders can view parent contact info, edit it, and send email to
+      parents. This resource is specific to the scout/troop management
+      domain.
+
+  # --- Admin permissions ---
+  - role: admin
+    resource: article
+    actions: [edit]
+    notes: >
+      Admins can edit existing articles (update content, toggle menu
+      visibility, delete). Combined with inherited 'view' (from guest)
+      and 'add' (from editor), admins have full article CRUD.
+
+  - role: admin
+    resource: web
+    actions: [edit]
+    notes: >
+      Admins can edit site-wide web settings (website name, description,
+      header images). This corresponds to the 'parameters' table and the
+      image management functionality.
+
+  - role: admin
+    resource: user
+    actions: [remove]
+    notes: >
+      Admins can delete user accounts. Combined with inherited 'view'
+      (from guest), admins can view and remove users.
+
+# -----------------------------------------------------------------------------
+# Resources (all defined resources in the ACL)
+# -----------------------------------------------------------------------------
+resources:
+  - name: article
+    description: "Content articles in the CMS."
+    available_actions: [view, add, edit]
+
+  - name: user
+    description: "User accounts and profiles."
+    available_actions: [view, remove]
+
+  - name: web
+    description: "Site-wide web configuration and settings (name, description, header images)."
+    available_actions: [edit]
+
+  - name: parents
+    description: "Parent/guardian contact information for scout troop members."
+    available_actions: [show, edit, sendMail]
+
+# -----------------------------------------------------------------------------
+# Role Hierarchy (visual representation)
+# -----------------------------------------------------------------------------
+role_hierarchy: |
+  guest
+    +-- registered
+          +-- editor
+          |     (can add articles)
+          |
+          +-- scout
+          |     +-- leader
+          |           (can show/edit/sendMail parents)
+          |
+          +-- admin  [inherits from BOTH editor AND leader]
+                (can edit articles, edit web settings, remove users;
+                 plus all editor and leader permissions)
+
+# -----------------------------------------------------------------------------
+# Presenter-level access control helpers
+# -----------------------------------------------------------------------------
+presenter_guards:
+  - method: logInRequired()
+    checks: "user.isLoggedIn()"
+    on_failure: "Redirect to Core:Session:signIn with flash 'Nejste prihlasen!' (warning)"
+    description: >
+      Generic guard that any presenter action can call to ensure the user
+      is authenticated before proceeding.
+
+  - method: editorPermissionsRequired()
+    checks: "user.isInRole('editor') OR user.isInRole('admin')"
+    on_failure: "Redirect to Core:User: with flash 'Na tuto akci musite byt redaktor.' (warning)"
+    description: >
+      Guard requiring at least editor-level access. Explicitly checks for
+      either 'editor' or 'admin' role (role-based check, not ACL-based).
+
+  - method: adminPermissionsRequired()
+    checks: "user.isInRole('admin')"
+    on_failure: "Redirect to Core:User: with flash 'Na tuto akci musite byt administrator.' (warning)"
+    description: >
+      Guard requiring admin-level access. Only the 'admin' role passes.
+
+# -----------------------------------------------------------------------------
+# Template-level role flags
+# -----------------------------------------------------------------------------
+template_flags:
+  - name: isLoggedIn
+    logic: "user.isLoggedIn()"
+    description: "True when any authenticated user is viewing the page."
+
+  - name: loggedUser
+    logic: "user.getIdentity()"
+    description: "The full Identity object of the logged-in user (id, role, username). Only set when isLoggedIn is true."
+
+  - name: isUserAdmin
+    logic: "user.isInRole('admin')"
+    description: "True only for admin users. Used to show/hide admin-only UI elements."
+
+  - name: isUserEditor
+    logic: "user.isInRole('editor') OR user.isInRole('admin')"
+    description: "True for editors and admins. Used to show/hide content-management UI elements."
