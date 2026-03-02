@@ -1,0 +1,509 @@
+# =============================================================================
+# 08 - Configuration & Infrastructure
+# Backward-engineered from source code of the Ctyriadvacitka CMS
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Environment
+# ---------------------------------------------------------------------------
+environment:
+  php_version: "7.4 (Docker image krouma/php-xdebug:7.4; composer.lock packages require >=7.1)"
+  framework: "Nette 3.0.0 (nette/nette ~3.0.0)"
+  timezone: "Europe/Prague (set in bootstrap.php)"
+  debug_mode:
+    enabled_for_ip: "2a01:5e0:502:80::d4c (IPv6 address hardcoded in bootstrap.php)"
+    debugger_log_dir: "log/"
+  temp_directory: "temp/"
+  web_server: "Apache 2 with mod_rewrite, mod_autoindex, mod_deflate, mod_filter"
+  web_server_config: "config/httpd.conf (VirtualHost *:80, DocumentRoot-like /var/www/html, AllowOverride All, DirectoryIndex index.php)"
+  database:
+    type: "MariaDB"
+    version_docker_compose: "10.4"
+    version_kubernetes: "11.7"
+    host: "db (Docker service name)"
+    name: "lamp"
+    user: "lamp"
+    password: "Lamp_001"
+    root_password: "Lamp001"
+    dsn: "mysql:host=db;dbname=lamp"
+    connection_options:
+      lazy: true
+
+# ---------------------------------------------------------------------------
+# Bootstrap / Application startup (app/bootstrap.php)
+# ---------------------------------------------------------------------------
+bootstrap:
+  autoloader: "vendor/autoload.php (Composer)"
+  robot_loader: "Nette RobotLoader scanning app/ directory"
+  config_files_loaded_in_order:
+    - "app/config/config.neon (main config, includes CoreModule config)"
+    - "app/config/config.local.neon (local/environment-specific DB credentials)"
+  config_includes:
+    - from: "app/config/config.neon"
+      includes: "app/CoreModule/config/config.neon"
+  entry_point: "www/index.php -> requires app/bootstrap.php -> creates DI container -> runs Nette Application"
+
+# ---------------------------------------------------------------------------
+# Nette application configuration (app/config/config.neon)
+# ---------------------------------------------------------------------------
+nette_application:
+  error_presenter: "Error"
+  presenter_mapping: "*: App\\*Module\\Presenters\\*Presenter"
+  session_expiration: "30 minutes"
+  form_messages:
+    REQUIRED: "Povinne pole."
+
+# ---------------------------------------------------------------------------
+# DI Container - Registered services
+# ---------------------------------------------------------------------------
+di_container:
+  services:
+    # --- From app/config/config.neon ---
+    - name: "router"
+      class: "App\\RouterFactory::createRouter"
+      type: "factory method"
+      dependencies: []
+
+    - name: "authenticator"
+      class: "App\\CoreModule\\Model\\AuthenticatorManager"
+      dependencies: ["Nette\\Database\\Context (auto-wired)"]
+
+    - name: "projectManager"
+      class: "App\\Model\\ProjectManager"
+      dependencies: ["%wwwDir%", "Nette\\Database\\Context"]
+      note: "%wwwDir% is a Nette built-in parameter pointing to www/ directory"
+
+    - name: "headerImagesFormFactory"
+      class: "App\\Factories\\HeaderImagesFormFactory"
+      dependencies: []
+      note: "Extends ImageUploadFormFactory -> BaseFormFactory; no constructor dependencies"
+
+    - name: "articleImagesFormFactory"
+      class: "App\\Factories\\ArticleImagesFormFactory"
+      dependencies: []
+      note: "Extends ImageUploadFormFactory -> BaseFormFactory; no constructor dependencies"
+
+    - name: "webPropertiesFormFactory"
+      class: "App\\Factories\\WebPropertiesFormFactory"
+      dependencies: ["App\\Model\\ProjectManager"]
+
+    - name: "signInFormFactory"
+      class: "App\\Factories\\SignInFormFactory"
+      dependencies: []
+
+    - name: "signUpFormFactory"
+      class: "App\\Factories\\SignUpFormFactory"
+      dependencies: []
+
+    - name: "userEditorFormFactory"
+      class: "App\\Factories\\UserEditorFormFactory"
+      dependencies: []
+
+    - name: "changePasswordFormFactory"
+      class: "App\\Factories\\ChangePasswordFormFactory"
+      dependencies: []
+
+    - name: "newsEditorFormFactory"
+      class: "App\\Factories\\NewsEditorFormFactory"
+      dependencies: []
+
+    - name: "articleEditorFormFactory"
+      class: "App\\Factories\\ArticleEditorFormFactory"
+      dependencies: []
+
+    - name: "contactFormFactory"
+      class: "App\\Factories\\ContactFormFactory"
+      dependencies: []
+
+    - name: "imageManager"
+      class: "App\\AdminModule\\Model\\ImageManager"
+      dependencies: ["%wwwDir%", "Nette\\Database\\Context"]
+
+    - name: "authorizatorManager"
+      class: "App\\CoreModule\\Model\\AuthorizatorManager"
+      dependencies: []
+
+    - name: "httpUrl"
+      class: "Nette\\Http\\Url"
+      dependencies: []
+
+    # --- From app/CoreModule/config/config.neon ---
+    - name: "articleManager"
+      class: "App\\CoreModule\\Model\\ArticleManager"
+      dependencies: ["Nette\\Database\\Context (auto-wired via BaseManager)"]
+
+    - name: "userManager"
+      class: "App\\CoreModule\\Model\\UserManager"
+      dependencies: ["Nette\\Database\\Context (auto-wired via BaseManager)"]
+
+    - name: "newsManager"
+      class: "App\\CoreModule\\Model\\NewsManager"
+      dependencies: ["Nette\\Database\\Context (auto-wired via BaseManager)"]
+
+# ---------------------------------------------------------------------------
+# Composer dependencies (composer.json + composer.lock)
+# ---------------------------------------------------------------------------
+composer:
+  project_name: "krouma/ctyriadvacitka"
+  require:
+    "nette/nette": "~3.0.0"
+  locked_packages:
+    - "latte/latte: v2.5.3 (templating engine)"
+    - "nette/application: v3.0.2 (MVC framework)"
+    - "nette/bootstrap: v3.0.1 (configurator/bootstrap)"
+    - "nette/caching: v3.0.1 (caching layer)"
+    - "nette/component-model: v3.0.0 (UI component model)"
+    - "nette/database: v3.0.4 (database layer)"
+    - "nette/di: v3.0.1 (dependency injection container)"
+    - "nette/finder: v2.5.1 (file system finder)"
+    - "nette/forms: v3.0.2 (form builder)"
+    - "nette/http: v3.0.3 (HTTP request/response)"
+    - "nette/mail: v3.1.0 (email sending)"
+    - "nette/neon: v3.0.0 (NEON config parser)"
+    - "nette/nette: v3.0.0 (meta-package)"
+    - "nette/php-generator: v3.3.1 (PHP code generation)"
+    - "nette/robot-loader: v3.2.0 (auto-class loading)"
+    - "nette/routing: v3.0.0 (URL routing)"
+    - "nette/safe-stream: v2.4.0 (atomic file operations)"
+    - "nette/schema: v1.0.1 (data validation)"
+    - "nette/security: v3.0.2 (authentication/authorization)"
+    - "nette/tokenizer: v3.1.0 (string tokenizer)"
+    - "nette/utils: v3.0.2 (utility functions)"
+    - "tracy/tracy: v2.7.1 (debugger/error handler)"
+
+# ---------------------------------------------------------------------------
+# Frontend / npm dependencies (package.json + package-lock.json)
+# ---------------------------------------------------------------------------
+frontend:
+  project_name: "ctyriadvacitka"
+  project_version: "0.6.3"
+  description: "Own CMS based on Nette"
+  repository: "https://github.com/krouma/Ctyriadvacitka.git"
+
+  js_dependencies:
+    - "@lttr/skaut-design: ^0.1.3 (Scout organization CSS design system)"
+    - "jquery: 3 (DOM manipulation and AJAX)"
+    - "nette-forms: 2 (client-side Nette form validation)"
+    - "nette.ajax.js: 2 (AJAX snippet handler for Nette)"
+
+  js_dev_dependencies:
+    - "browser-sync: ^2.24.7 (live-reload dev server proxy)"
+    - "concat: 1 (file concatenation utility)"
+    - "dploy: ^1.2.0 (FTP deployment tool)"
+    - "ftp-deploy: ^2.4.3 (FTP deployment library used by deploy.js)"
+    - "npm-run-all: ^4.1.3 (run npm scripts in parallel/series)"
+    - "onchange: 3.2 (file watcher)"
+    - "shx: 0.2 (cross-platform shell commands)"
+
+  css_dependencies:
+    - "skaut-design.min.css (copied from @lttr/skaut-design node_module)"
+    - "main.css (custom site styles)"
+
+  build_process:
+    overview: "npm scripts using concat and shx; no webpack/bundler"
+    scripts:
+      build_js:
+        description: "Concatenates jQuery + netteForms.min.js + nette.ajax.js into www/js/vendor.js"
+        command: "run-s -l concat:jquery concat:netteForms concat:netteAjax"
+        steps:
+          - "concat -o www/js/vendor.js node_modules/jquery/dist/jquery.min.js"
+          - "concat -o www/js/vendor.js www/js/vendor.js node_modules/nette-forms/src/assets/netteForms.min.js"
+          - "concat -o www/js/vendor.js www/js/vendor.js node_modules/nette.ajax.js/nette.ajax.js"
+      build_css:
+        description: "Copies skaut-design.min.css from node_modules to www/css/"
+        command: "shx cp node_modules/@lttr/skaut-design/css/skaut-design.min.css www/css/skaut-design.min.css"
+      build:
+        description: "Runs build:css and build:js in parallel"
+        command: "run-p -l build:css build:js"
+      serve:
+        description: "BrowserSync proxying localhost:8000 on port 4000 with live-reload"
+        command: "browser-sync start -p 'localhost:8000' -f www/css/* app/**/* js/* img/* --port 4000 --no-notify"
+      deploy:
+        description: "FTP deployment via deploy.js"
+        command: "node deploy"
+
+  additional_frontend_files:
+    - "www/albums.f0967941.js (pre-built photo album gallery JS, likely from chrono-albums)"
+    - "www/style.6303c041.css (pre-built companion CSS for photo albums)"
+    - "www/config.js (photo album configuration: resolutions, JPEG/WebP quality, justified layout)"
+    - "www/structure.json (photo album metadata: album dates, photo filenames, dimensions)"
+
+# ---------------------------------------------------------------------------
+# Deployment - Docker (docker-compose.yml + Dockerfile)
+# ---------------------------------------------------------------------------
+deployment:
+  docker:
+    compose_version: "3"
+    services:
+      - name: "app"
+        image: "krouma/php-xdebug:7.4"
+        ports: ["8000:80"]
+        links: ["db:db"]
+        volumes:
+          - "config/httpd.conf -> /etc/apache2/conf-available/httpd.conf"
+          - "app/ -> /var/www/html/app/"
+          - "www/ -> /var/www/html/www/"
+          - "vendor/ -> /var/www/html/vendor/"
+          - ".htaccess -> /var/www/html/.htaccess"
+        note: "All volume mounts use :z SELinux flag for shared label"
+
+      - name: "db"
+        image: "mariadb:10.4"
+        ports: ["3306:3306"]
+        environment:
+          MYSQL_ROOT_PASSWORD: "Lamp001"
+          MYSQL_DATABASE: "lamp"
+        volumes:
+          - "sql/ -> /docker-entrypoint-initdb.d/ (SQL init scripts run on first container start)"
+
+      - name: "adminer"
+        image: "adminer"
+        ports: ["8080:8080"]
+        links: ["db:db"]
+        environment:
+          ADMINER_DESIGN: "lucas-sandery"
+
+    dockerfile:
+      base_image: "docker.io/krouma/php-xdebug:7.4"
+      copies:
+        - "config/httpd.conf -> /etc/apache2/conf-available/httpd.conf"
+        - "app/ -> /var/www/html/app/"
+        - "www/ -> /var/www/html/www/"
+        - ".htaccess -> /var/www/html/.htaccess"
+        - "composer.json -> /var/www/html/composer.json"
+        - "composer.lock -> /var/www/html/composer.lock"
+        - "trap.sh -> /trap.sh"
+      runs: "composer install (installs PHP dependencies inside the image)"
+      exposed_ports: [80]
+      entrypoint: "/trap.sh"
+      trap_sh_purpose: "Traps SIGWINCH signal (prevents terminal resize crashes) and runs apache2-foreground"
+
+  # ---------------------------------------------------------------------------
+  # Deployment - Kubernetes (k8s/ directory)
+  # ---------------------------------------------------------------------------
+  kubernetes:
+    namespace: "pa200hw2"
+
+    - manifest: "k8s/deploy.yaml"
+      type: "List containing two Deployments"
+      items:
+        - kind: "Deployment"
+          name: "app"
+          summary: "PHP/Apache application container"
+          image: "docker.io/krouma/pa200hw2:winch"
+          replicas: 1
+          strategy: "RollingUpdate (maxSurge 25%, maxUnavailable 25%)"
+          image_pull_policy: "Always"
+          volume_mounts:
+            - mount_path: "/var/www/html/app/config"
+              source: "Kubernetes Secret 'config-local' (contains config.local.neon with DB credentials)"
+          restart_policy: "Always"
+
+        - kind: "Deployment"
+          name: "db"
+          summary: "MariaDB database container"
+          image: "docker.io/mariadb:11.7"
+          image_pull_policy: "IfNotPresent"
+          environment:
+            MARIADB_ROOT_PASSWORD: "from Secret 'db-config'"
+            MARIADB_DATABASE: "from Secret 'db-config'"
+          volume_mounts:
+            - mount_path: "/var/lib/mysql/"
+              source: "PVC 'db-data'"
+          restart_policy: "Always"
+
+    - manifest: "k8s/service.yaml"
+      type: "List containing two Services"
+      items:
+        - kind: "Service"
+          name: "app"
+          summary: "ClusterIP service exposing the PHP app on port 80/TCP"
+          selector: "app: app"
+          ports: [{name: "http", port: 80, targetPort: 80, protocol: "TCP"}]
+          ip_families: ["IPv6"]
+          ip_family_policy: "SingleStack"
+          type: "ClusterIP"
+
+        - kind: "Service"
+          name: "db"
+          summary: "ClusterIP service exposing MariaDB on port 3306/TCP"
+          selector: "app: db"
+          ports: [{port: 3306, targetPort: 3306, protocol: "TCP"}]
+          ip_families: ["IPv6"]
+          ip_family_policy: "SingleStack"
+          type: "ClusterIP"
+
+    - manifest: "k8s/ingress.yaml"
+      type: "Ingress"
+      name: "app"
+      summary: "Public ingress routing external HTTPS traffic to the app service"
+      host: "pa200hw2.hailstone.cz"
+      path: "/"
+      path_type: "Prefix"
+      backend_service: "app (port: http)"
+      ingress_class: "public"
+      tls:
+        enabled: true
+        secret_name: "app-tls"
+        annotation: "cert-manager.io/cluster-issuer: letsencrypt-prod"
+      note: "Uses cert-manager with Let's Encrypt production issuer for automatic TLS certificates"
+
+    - manifest: "k8s/pvc.yaml"
+      type: "PersistentVolumeClaim"
+      name: "db-data"
+      summary: "10Gi persistent volume for MariaDB data directory"
+      access_modes: ["ReadWriteMany"]
+      storage: "10Gi"
+      storage_class: "cornish"
+      volume_mode: "Filesystem"
+
+    secrets_referenced:
+      - name: "config-local"
+        purpose: "Contains app/config/config.local.neon (database DSN, credentials)"
+        mounted_at: "/var/www/html/app/config"
+      - name: "db-config"
+        purpose: "Contains MARIADB_ROOT_PASSWORD and MARIADB_DATABASE environment variables"
+      - name: "app-tls"
+        purpose: "TLS certificate for pa200hw2.hailstone.cz (managed by cert-manager)"
+
+  # ---------------------------------------------------------------------------
+  # Deployment - FTP (deploy.js)
+  # ---------------------------------------------------------------------------
+  ftp:
+    tool: "ftp-deploy npm package"
+    config_file: "deploy.js"
+    host: "ctyriadvacitka.skauting.cz"
+    port: 21
+    user: "ctyriadvacitka"
+    protocol: "FTP (not SFTP)"
+    passive_mode: true
+    local_root: "project root (__dirname)"
+    remote_root: "/www/"
+    delete_remote: false
+    include: ["*", "**/*", ".*"]
+    exclude:
+      - ".htaccess (root .htaccess not deployed; server may have its own)"
+      - "app/config/config.local.neon (local DB credentials not deployed)"
+      - "temp/ (Nette temp/cache files)"
+      - "www/photos/** (large photo albums)"
+      - "www/prilohy/** (user-uploaded article attachments)"
+      - "node_modules/** (npm packages)"
+      - ".git/** (version control)"
+    invocation: "npm run deploy (runs 'node deploy')"
+
+# ---------------------------------------------------------------------------
+# .htaccess rules
+# ---------------------------------------------------------------------------
+htaccess_rules:
+  - file: ".htaccess (project root)"
+    rules:
+      - "RewriteEngine On"
+      - "RewriteRule ^$ www/ [L] -- Root URL redirected internally to www/"
+      - "RewriteCond %{REQUEST_FILENAME} !-f -- If not an existing file..."
+      - "RewriteCond %{REQUEST_FILENAME} !-d -- ...and not an existing directory..."
+      - "RewriteCond %{REQUEST_URI} !^www/ -- ...and not already targeting www/..."
+      - "RewriteRule ^(.*)$ www/$1 -- ...rewrite all requests to www/ prefix"
+    purpose: "Routes all requests from document root into www/ subdirectory (Nette convention)"
+
+  - file: "app/.htaccess"
+    rules:
+      - "Order Allow,Deny"
+      - "Deny from all"
+    purpose: "Blocks ALL direct HTTP access to the app/ directory (protects source code, config files, templates)"
+
+  - file: "www/.htaccess"
+    rules:
+      - "Options -Indexes -- Disables directory listing in www/"
+      - "RewriteEngine On"
+      - "RewriteRule /\\.|^\\.(?!well-known/) - [F] -- Blocks access to dotfiles (except .well-known/ for ACME/Let's Encrypt)"
+      - "RewriteCond %{REQUEST_FILENAME} !-f -- If not an existing file..."
+      - "RewriteCond %{REQUEST_FILENAME} !-d -- ...and not an existing directory..."
+      - "RewriteRule !\\.(pdf|js|ico|gif|jpg|png|css|rar|zip|tar\\.gz|map)$ index.php [L] -- Rewrite to front controller except static file extensions"
+      - "AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json application/xml image/svg+xml -- Enable gzip compression for text-based MIME types"
+    purpose: "Nette front controller: serves static files directly, routes everything else through index.php; enables gzip; blocks dotfiles"
+
+  - file: "www/prilohy/.htaccess"
+    rules:
+      - "Options +Indexes (inside IfModule mod_autoindex.c)"
+    purpose: "Enables directory listing for the attachments directory, allowing browsers to browse uploaded files"
+
+# ---------------------------------------------------------------------------
+# IIS web.config files (for Windows/IIS hosting)
+# ---------------------------------------------------------------------------
+web_config_rules:
+  - file: "www/web.config"
+    purpose: "IIS equivalent of www/.htaccess front controller"
+    rules:
+      - "URL rewrite: requests not matching static extensions (pdf|js|ico|gif|jpg|png|css|rar|zip|tar.gz) and not existing files/dirs are rewritten to index.php"
+      - "Default document: index.php"
+
+  - file: "app/web.config"
+    purpose: "IIS equivalent of app/.htaccess - blocks all access to app/ directory"
+    rules:
+      - "Custom 403 Forbidden response for all requests (Deny Rule matching *)"
+
+# ---------------------------------------------------------------------------
+# Apache virtual host (config/httpd.conf)
+# ---------------------------------------------------------------------------
+apache_vhost:
+  file: "config/httpd.conf"
+  listen: "*:80"
+  document_root: "/var/www/html"
+  directory_config:
+    options: "Indexes FollowSymLinks"
+    allow_override: "All"
+    access: "Require all granted"
+  directory_index: "index.php"
+  logs:
+    error: "${APACHE_LOG_DIR}/error.log"
+    access: "${APACHE_LOG_DIR}/access.log combined"
+
+# ---------------------------------------------------------------------------
+# Entry point (www/index.php)
+# ---------------------------------------------------------------------------
+entry_point:
+  file: "www/index.php"
+  flow:
+    - "Optionally require .maintenance.php (commented out by default)"
+    - "Require app/bootstrap.php which returns the DI container"
+    - "Get Nette\\Application\\Application from container and call run()"
+  maintenance_mode:
+    file: "www/.maintenance.php"
+    http_status: "503 Service Unavailable"
+    retry_after: "300 seconds (5 minutes)"
+    activation: "Uncomment require line in www/index.php"
+
+# ---------------------------------------------------------------------------
+# robots.txt
+# ---------------------------------------------------------------------------
+robots_txt:
+  file: "www/robots.txt"
+  content: "(empty file - no crawling restrictions)"
+
+# ---------------------------------------------------------------------------
+# Parameters table (database key-value store)
+# ---------------------------------------------------------------------------
+parameters_table:
+  description: "Database table 'parameters' used as a key-value store for site-wide configuration"
+  managed_by: "App\\Model\\ProjectManager"
+  table_name: "parameters"
+  columns:
+    - "key (string, primary/unique key)"
+    - "value (string/mixed, the parameter value)"
+  operations:
+    - "getParameter($key) - fetch a single value by key"
+    - "saveParameter($key, $value) - insert or update a parameter (upsert logic)"
+    - "isParameterInDB($key) - check existence"
+  known_keys:
+    - key: "webName"
+      purpose: "Site name, displayed in templates via $webName template variable"
+      managed_via: "Admin > WebPresenter > webPropertiesForm"
+    - key: "webDescription"
+      purpose: "Site description/tagline, displayed in templates via $webDescription template variable"
+      managed_via: "Admin > WebPresenter > webPropertiesForm"
+  admin_form:
+    factory: "App\\Factories\\WebPropertiesFormFactory"
+    fields:
+      - "webName (text, required, label 'Jmeno webu')"
+      - "webDescription (text, required, label 'Popis webu')"
+    save_mechanism: "Iterates over all form values and calls ProjectManager::saveParameter() for each key-value pair"

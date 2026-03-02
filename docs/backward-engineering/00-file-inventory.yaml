@@ -1,0 +1,790 @@
+total_file_count: 96
+
+files:
+  # ============================================================
+  # ROOT-LEVEL FILES
+  # ============================================================
+
+  - path: .gitignore
+    type: config
+    category: infra
+    purpose: "Excludes local config, vendor, node_modules, temp, log, IDE, and user-uploaded content directories from Git"
+    documents: [config-and-infra]
+
+  - path: .htaccess
+    type: config
+    category: route
+    purpose: "Apache rewrite rules to redirect all requests into the www/ subdirectory as the document root"
+    documents: [routes, config-and-infra]
+
+  - path: Dockerfile
+    type: config
+    category: infra
+    purpose: "Builds a Docker image based on php-xdebug:7.4, copies app/www/config, runs composer install, and uses trap.sh as entrypoint"
+    documents: [config-and-infra]
+
+  - path: LICENCE.md
+    type: markdown
+    category: documentation
+    purpose: "MIT license issued to Matyas Kroupa (2017) for the project"
+    documents: [none --- license metadata only]
+
+  - path: README.md
+    type: markdown
+    category: documentation
+    purpose: "Project overview describing a Nette-based CMS with three content types (Page, Article, News), setup, Docker usage, and FTP deploy instructions"
+    documents: [config-and-infra]
+
+  - path: composer.json
+    type: config
+    category: infra
+    purpose: "Declares PHP dependency on nette/nette ~3.0.0 under the package name krouma/ctyriadvacitka"
+    documents: [config-and-infra]
+
+  - path: composer.lock
+    type: config
+    category: infra
+    purpose: "Locks exact versions of all PHP dependencies (latte, nette components, tracy, etc.) for reproducible installs"
+    documents: [config-and-infra]
+
+  - path: deploy.js
+    type: js
+    category: infra
+    purpose: "FTP deployment script using ftp-deploy to upload project files to ctyriadvacitka.skauting.cz, excluding local config, temp, photos, and node_modules"
+    documents: [config-and-infra]
+
+  - path: docker-compose.yml
+    type: yaml
+    category: infra
+    purpose: "Defines three services: app (PHP/Apache on port 8000), db (MariaDB 10.4 with lamp database on port 3306), and adminer (on port 8080)"
+    documents: [config-and-infra, data-model]
+
+  - path: package.json
+    type: config
+    category: infra
+    purpose: "NPM config for version 0.6.3 with runtime deps (skaut-design, jquery, nette-forms, nette.ajax.js) and build/serve/deploy scripts"
+    documents: [config-and-infra]
+
+  - path: package-lock.json
+    type: config
+    category: infra
+    purpose: "Locks exact versions of all NPM dependencies for reproducible frontend builds"
+    documents: [config-and-infra]
+
+  - path: trap.sh
+    type: other
+    category: infra
+    purpose: "Docker entrypoint shell script that traps SIGWINCH and runs apache2-foreground"
+    documents: [config-and-infra]
+
+  # ============================================================
+  # CONFIG DIRECTORY
+  # ============================================================
+
+  - path: config/config.local.neon
+    type: config
+    category: config
+    purpose: "Template for local database connection config (MySQL host=db, dbname=lamp, user=lamp) to be copied to app/config"
+    documents: [config-and-infra, data-model]
+
+  - path: config/httpd.conf
+    type: config
+    category: infra
+    purpose: "Apache VirtualHost configuration enabling AllowOverride All, directory indexes, and setting index.php as default document"
+    documents: [config-and-infra]
+
+  # ============================================================
+  # KUBERNETES MANIFESTS
+  # ============================================================
+
+  - path: k8s/deploy.yaml
+    type: yaml
+    category: infra
+    purpose: "Kubernetes Deployment manifests for app (PHP container with config secret mount) and db (MariaDB 11.7 with PVC) in namespace pa200hw2"
+    documents: [config-and-infra]
+
+  - path: k8s/ingress.yaml
+    type: yaml
+    category: infra
+    purpose: "Kubernetes Ingress routing traffic from pa200hw2.hailstone.cz to the app Service with Let's Encrypt TLS"
+    documents: [config-and-infra, routes]
+
+  - path: k8s/pvc.yaml
+    type: yaml
+    category: infra
+    purpose: "Kubernetes PersistentVolumeClaim requesting 10Gi ReadWriteMany storage for the MariaDB database data"
+    documents: [config-and-infra]
+
+  - path: k8s/service.yaml
+    type: yaml
+    category: infra
+    purpose: "Kubernetes Service definitions exposing app on port 80 and db on port 3306 as ClusterIP services over IPv6"
+    documents: [config-and-infra]
+
+  # ============================================================
+  # SQL SCHEMA & SEED DATA
+  # ============================================================
+
+  - path: sql/lamp.sql
+    type: sql
+    category: infra
+    purpose: "Database schema creating tables article (id, title, content, url, requestable, author, datetime, in_menu), news, parameters (key-value), and user (id, username, password, role, name, surname, nickname, email) plus a lamp DB user"
+    documents: [data-model, auth]
+
+  - path: sql/lamp_development.sql
+    type: sql
+    category: infra
+    purpose: "Seed data inserting sample articles (Uvod, error page), news items, web parameters (webName, webDescription), and three test users (admin mates, editor redaktor, registered uzivatel)"
+    documents: [data-model, auth]
+
+  # ============================================================
+  # APP - BOOTSTRAP & MAIN CONFIG
+  # ============================================================
+
+  - path: app/.htaccess
+    type: config
+    category: infra
+    purpose: "Apache directive denying all direct web access to the app/ directory for security"
+    documents: [config-and-infra]
+
+  - path: app/bootstrap.php
+    type: php
+    category: infra
+    purpose: "Application bootstrap: sets debug mode by IP, enables Tracy debugger, sets timezone to Europe/Prague, registers RobotLoader autoloader, loads config.neon and config.local.neon, and returns the DI container"
+    documents: [config-and-infra]
+
+  - path: app/config/config.neon
+    type: yaml
+    category: config
+    purpose: "Main Nette DI config: defines presenter mapping (*Module\\Presenters), 30-min session, registers all services (router, authenticator, managers, form factories, ImageManager, AuthorizatorManager), includes CoreModule config, and sets Czech form messages"
+    documents: [config-and-infra, auth, routes, forms]
+
+  - path: app/web.config
+    type: config
+    category: infra
+    purpose: "IIS rewrite rule denying all HTTP access to the app/ directory (returns 403 Forbidden)"
+    documents: [config-and-infra]
+
+  # ============================================================
+  # APP - CORE MODULE CONFIG
+  # ============================================================
+
+  - path: app/CoreModule/config/config.neon
+    type: yaml
+    category: config
+    purpose: "CoreModule DI config registering ArticleManager, UserManager, and NewsManager as services"
+    documents: [config-and-infra]
+
+  # ============================================================
+  # APP - BASE MODEL LAYER
+  # ============================================================
+
+  - path: app/model/BaseManager.php
+    type: php
+    category: model
+    purpose: "Abstract base class for all model managers, holding a Nette\\Database\\Context instance injected via constructor"
+    documents: [data-model]
+
+  - path: app/model/ProjectManager.php
+    type: php
+    category: model
+    purpose: "Manages site-wide parameters (key-value table) with save/get/isParameterInDB methods, stores wwwDir path, and provides getArticlesInMenu() to fetch articles flagged for navbar display"
+    documents: [data-model, business-logic]
+
+  - path: app/model/Utils.php
+    type: php
+    category: model
+    purpose: "Static utility class with a single formatDate() method converting DateTime to d.m.Y string format"
+    documents: [business-logic]
+
+  # ============================================================
+  # APP - CORE MODULE MODELS
+  # ============================================================
+
+  - path: app/CoreModule/model/ArticleManager.php
+    type: php
+    category: model
+    purpose: "CRUD operations for the article table: getArticles, getLimitedArticles (paginated), getArticleByUrl, saveArticle (insert or update with date parsing), removeArticle, and setVisibilityInMenu"
+    documents: [data-model, business-logic]
+
+  - path: app/CoreModule/model/AuthenticatorManager.php
+    type: php
+    category: model
+    purpose: "Implements Nette IAuthenticator: authenticates users by verifying username/password against the user table and returns an Identity with user_id, role, and username"
+    documents: [auth, data-model]
+
+  - path: app/CoreModule/model/AuthorizatorManager.php
+    type: php
+    category: model
+    purpose: "Defines ACL authorization: roles (guest, registered, editor, scout, leader, admin), resources (article, user, web, parents), and permissions (guest views, editor adds articles, leader manages parents, admin edits web and removes users)"
+    documents: [auth]
+
+  - path: app/CoreModule/model/NewsManager.php
+    type: php
+    category: model
+    purpose: "CRUD operations for the news table: getNews, getLimitedNews (paginated), getNewsById, saveNews (insert or update with date parsing), and removeNews"
+    documents: [data-model, business-logic]
+
+  - path: app/CoreModule/model/UserManager.php
+    type: php
+    category: model
+    purpose: "User management: getUsers, getUserByUsername, getUserById, saveUser (insert/update), removeUser, changePassword (verifies current then hashes new), and getRoleDisplayName (English to Czech translation)"
+    documents: [data-model, auth, business-logic]
+
+  # ============================================================
+  # APP - ADMIN MODULE MODEL
+  # ============================================================
+
+  - path: app/AdminModule/model/ImageManager.php
+    type: php
+    category: model
+    purpose: "Manages header images: getHeaderImageNames() scans www/img/top/ for PNG/JPG files using Nette Finder, and deleteImage() removes a file by path"
+    documents: [file-operations, business-logic]
+
+  # ============================================================
+  # APP - BASE PRESENTERS
+  # ============================================================
+
+  - path: app/presenters/BasePresenter.php
+    type: php
+    category: presenter
+    purpose: "Abstract base presenter injecting all managers (User, Article, News, Image, Project, Auth); sets up authenticator/authorizator in startup(), populates template globals (login state, roles, webName, random header image, menu articles) in beforeRender(), and provides logInRequired/editorPermissionsRequired/adminPermissionsRequired guards plus AJAX redirect helper"
+    documents: [auth, views, business-logic]
+
+  - path: app/presenters/Error4xxPresenter.php
+    type: php
+    category: presenter
+    purpose: "Handles 4xx HTTP errors by loading the corresponding error template (e.g., 404.latte) or a generic 4xx.latte fallback"
+    documents: [views]
+
+  - path: app/presenters/ErrorPresenter.php
+    type: php
+    category: presenter
+    purpose: "Top-level error presenter: forwards BadRequestException to Error4xx, logs other exceptions via Tracy, and renders 500.phtml for server errors"
+    documents: [views, config-and-infra]
+
+  # ============================================================
+  # APP - CORE MODULE PRESENTERS
+  # ============================================================
+
+  - path: app/CoreModule/presenters/ArticlePresenter.php
+    type: php
+    category: presenter
+    purpose: "Public article display: renderDefault loads an article by URL (falls back to 'chyba' error article if not found or not requestable), renderPagedList shows paginated article list (10 per page)"
+    documents: [views, business-logic]
+
+  - path: app/CoreModule/presenters/ContactPresenter.php
+    type: php
+    category: presenter
+    purpose: "Handles the contact page: creates a contact form and on success sends an email via SendmailMailer to two hardcoded admin addresses"
+    documents: [forms, views, business-logic]
+
+  - path: app/CoreModule/presenters/EventsPresenter.php
+    type: php
+    category: presenter
+    purpose: "Minimal presenter for the events page with an empty renderDefault() method; actual content is a Google Calendar web component in the template"
+    documents: [views]
+
+  - path: app/CoreModule/presenters/NewsPresenter.php
+    type: php
+    category: presenter
+    purpose: "Public news display with renderPagedList showing paginated news items (5 per page) using Nette Paginator"
+    documents: [views, business-logic]
+
+  - path: app/CoreModule/presenters/PhotosPresenter.php
+    type: php
+    category: presenter
+    purpose: "Minimal presenter for the photos page with an empty renderDefault(); photo gallery is rendered client-side via JS in the template"
+    documents: [views]
+
+  - path: app/CoreModule/presenters/SessionPresenter.php
+    type: php
+    category: presenter
+    purpose: "Handles sign-in (authenticates via Nette User), sign-out (logout and redirect), and sign-up (hashes password, saves new user with role 'registered', handles duplicate username/email)"
+    documents: [auth, forms, views]
+
+  - path: app/CoreModule/presenters/UserPresenter.php
+    type: php
+    category: presenter
+    purpose: "User profile: renderDefault displays user info by username, renderEditor allows self-editing with ownership check, renderChangePassword validates identity, with form components for editing and password change"
+    documents: [auth, forms, views, business-logic]
+
+  # ============================================================
+  # APP - ADMIN MODULE PRESENTERS
+  # ============================================================
+
+  - path: app/AdminModule/presenters/ArticlePresenter.php
+    type: php
+    category: presenter
+    purpose: "Admin article management: requires login+editor role, provides article listing, editor form (create/edit with CKEditor), removal by URL, and AJAX toggle for in_menu visibility"
+    documents: [auth, forms, views, business-logic]
+
+  - path: app/AdminModule/presenters/HeaderImagesPresenter.php
+    type: php
+    category: presenter
+    purpose: "Admin header image management: requires login+admin role, lists current header images, handles removal by filename, and provides upload form"
+    documents: [auth, forms, views, file-operations]
+
+  - path: app/AdminModule/presenters/NewsPresenter.php
+    type: php
+    category: presenter
+    purpose: "Admin news management: requires login+editor role, provides news listing, editor form (create/edit with CKEditor), and removal by ID"
+    documents: [auth, forms, views, business-logic]
+
+  - path: app/AdminModule/presenters/UserPresenter.php
+    type: php
+    category: presenter
+    purpose: "Admin user management: requires login+admin role, lists all users, handles role changes (registered/editor/admin) via AJAX, and user removal with ACL permission check"
+    documents: [auth, views, business-logic]
+
+  - path: app/AdminModule/presenters/WebPresenter.php
+    type: php
+    category: presenter
+    purpose: "Admin web settings: renderDefault (admin-only) shows web properties form for webName/webDescription, renderView is an editor-level dashboard page"
+    documents: [auth, forms, views, config-and-infra]
+
+  # ============================================================
+  # APP - FORM FACTORIES
+  # ============================================================
+
+  - path: app/factories/BaseFormFactory.php
+    type: php
+    category: form-factory
+    purpose: "Abstract base form factory that creates a Nette Form with SkautDesignFormRenderer applied"
+    documents: [forms]
+
+  - path: app/factories/ArticleEditorFormFactory.php
+    type: php
+    category: form-factory
+    purpose: "Creates the article editor form with fields: hidden article_id, title, url, datetime (default today), requestable checkbox, content textarea, and submit button"
+    documents: [forms, data-model]
+
+  - path: app/factories/ArticleImagesFormFactory.php
+    type: php
+    category: form-factory
+    purpose: "Extends ImageUploadFormFactory to save uploaded images to www/prilohy/{year}/ directory, creating the directory if needed"
+    documents: [forms, file-operations]
+
+  - path: app/factories/ChangePasswordFormFactory.php
+    type: php
+    category: form-factory
+    purpose: "Creates a password change form with current password, new password, and confirm new password fields with equality validation"
+    documents: [forms, auth]
+
+  - path: app/factories/ContactFormFactory.php
+    type: php
+    category: form-factory
+    purpose: "Creates a contact form with name, email, message (min 10 chars) fields and submit button"
+    documents: [forms]
+
+  - path: app/factories/HeaderImagesFormFactory.php
+    type: php
+    category: form-factory
+    purpose: "Extends ImageUploadFormFactory to save uploaded header images directly to www/img/top/ directory"
+    documents: [forms, file-operations]
+
+  - path: app/factories/ImageUploadFormFactory.php
+    type: php
+    category: form-factory
+    purpose: "Base image upload form factory with multi-upload field accepting JPEG/PNG/GIF, AJAX-enabled, with abstract processForm hook"
+    documents: [forms, file-operations]
+
+  - path: app/factories/NewsEditorFormFactory.php
+    type: php
+    category: form-factory
+    purpose: "Creates the news editor form with fields: hidden news_id, title, datetime (default today), content textarea, and submit button"
+    documents: [forms, data-model]
+
+  - path: app/factories/SignInFormFactory.php
+    type: php
+    category: form-factory
+    purpose: "Creates the sign-in form with username and password fields and a submit button"
+    documents: [forms, auth]
+
+  - path: app/factories/SignUpFormFactory.php
+    type: php
+    category: form-factory
+    purpose: "Creates the registration form with username, password, confirm password (with equality rule), email, and submit button"
+    documents: [forms, auth]
+
+  - path: app/factories/UserEditorFormFactory.php
+    type: php
+    category: form-factory
+    purpose: "Creates the user profile editor form with hidden user_id, name, surname, nickname, username (required), email (required), hidden role, and submit button"
+    documents: [forms, data-model]
+
+  - path: app/factories/WebPropertiesFormFactory.php
+    type: php
+    category: form-factory
+    purpose: "Creates an AJAX-enabled form for editing site-wide webName and webDescription, saving each value via ProjectManager.saveParameter on success"
+    documents: [forms, config-and-infra]
+
+  # ============================================================
+  # APP - RENDERER
+  # ============================================================
+
+  - path: app/renderers/SkautDesignFormRenderer.php
+    type: php
+    category: other
+    purpose: "Custom Nette form renderer that applies Skaut Design (Bulma-based) CSS classes: field wrappers, input/textarea classes (is-medium), button classes (is-primary), and column layout"
+    documents: [forms, views]
+
+  # ============================================================
+  # APP - ROUTER
+  # ============================================================
+
+  - path: app/router/RouterFactory.php
+    type: php
+    category: route
+    purpose: "Defines all application routes: homepage maps to Core:News:pagedList, Czech-language URLs for admin, articles, news, contact, auth, events, photos, user profiles, with filter tables for editor/remove actions and a catch-all article route"
+    documents: [routes]
+
+  # ============================================================
+  # APP - ROOT TEMPLATES
+  # ============================================================
+
+  - path: app/templates/@layout.latte
+    type: latte
+    category: template
+    purpose: "Root HTML layout: meta tags, Plausible analytics, Open Sans font, skaut-design + main CSS, header/content/footer structure with flash messages, sponsor logos (KHK, HK, Nadace CEZ), footer navigation (articles, news, admin links), SVG clip paths, and vendor.js + main.js scripts"
+    documents: [views]
+
+  # ============================================================
+  # APP - CORE MODULE TEMPLATES
+  # ============================================================
+
+  - path: app/CoreModule/templates/@layout.latte
+    type: latte
+    category: template
+    purpose: "CoreModule layout extending root layout: overrides header block with public navigation (Novinky, Terminy, Fotky, dynamic menu articles, Kontakty), logo, burger menu, and hero section with random background image"
+    documents: [views]
+
+  - path: app/CoreModule/templates/Article/default.latte
+    type: latte
+    category: template
+    purpose: "Displays a single article with title, raw HTML content, edit button for editors, and a 'create page' link when showing the 404 error article"
+    documents: [views]
+
+  - path: app/CoreModule/templates/Article/pagedList.latte
+    type: latte
+    category: template
+    purpose: "Paginated list of articles showing titles as links, with visibility filtering (requestable or admin), and previous/next pagination controls"
+    documents: [views]
+
+  - path: app/CoreModule/templates/Contact/default.latte
+    type: latte
+    category: template
+    purpose: "Contact page with contact form, scout troop leader cards (Poulik, Edgar, Tuc with photos, phone, obfuscated emails), clubhouse photo, and embedded Google Maps iframe"
+    documents: [views, forms]
+
+  - path: app/CoreModule/templates/Events/default.latte
+    type: latte
+    category: template
+    purpose: "Events page displaying meeting times ('every Monday 17:00-18:30') and embedding the skaut-google-events-table web component connected to ctyriadvacitka@gmail.com Google Calendar"
+    documents: [views]
+
+  - path: app/CoreModule/templates/News/pagedList.latte
+    type: latte
+    category: template
+    purpose: "Paginated news listing showing each news item with title, formatted date, raw HTML content, horizontal rules, and previous/next page navigation"
+    documents: [views]
+
+  - path: app/CoreModule/templates/Photos/default.latte
+    type: latte
+    category: template
+    purpose: "Photo gallery page using PhotoSwipe lightbox library with lazysizes for lazy loading, rendered by the albums.f0967941.js bundle into a .chrono-albums container"
+    documents: [views]
+
+  - path: app/CoreModule/templates/Session/signIn.latte
+    type: latte
+    category: template
+    purpose: "Sign-in page template rendering the signInForm component"
+    documents: [views, auth]
+
+  - path: app/CoreModule/templates/Session/signUp.latte
+    type: latte
+    category: template
+    purpose: "Registration page template rendering the signUpForm component"
+    documents: [views, auth]
+
+  - path: app/CoreModule/templates/User/changePassword.latte
+    type: latte
+    category: template
+    purpose: "Password change page template rendering the changePasswordForm component"
+    documents: [views, auth]
+
+  - path: app/CoreModule/templates/User/default.latte
+    type: latte
+    category: template
+    purpose: "User profile page showing name, surname, nickname, email, with action links (edit, change password, sign out) visible only to the profile owner"
+    documents: [views, auth]
+
+  - path: app/CoreModule/templates/User/editor.latte
+    type: latte
+    category: template
+    purpose: "User profile editor page rendering the userEditorForm component with the username in the title"
+    documents: [views, forms]
+
+  # ============================================================
+  # APP - ADMIN MODULE TEMPLATES
+  # ============================================================
+
+  - path: app/AdminModule/templates/@layout.latte
+    type: latte
+    category: template
+    purpose: "Admin layout extending root layout: overrides header with admin navigation (Clanky, Novinky, Web, Header Images, Users -- admin-only items conditionally shown), logo with 'Administrace' label, and hero section"
+    documents: [views, auth]
+
+  - path: app/AdminModule/templates/Article/editor.latte
+    type: latte
+    category: template
+    purpose: "Admin article editor page rendering editorForm and articleImagesForm with CKEditor 4.6.2 replacing the content textarea, plus a link to /prilohy/ for uploaded files"
+    documents: [views, forms]
+
+  - path: app/AdminModule/templates/Article/list.latte
+    type: latte
+    category: template
+    purpose: "Admin article list with AJAX snippet showing each article's title/date/url, view/edit/remove buttons, and an AJAX toggle for menu visibility (admin or author only)"
+    documents: [views, auth]
+
+  - path: app/AdminModule/templates/HeaderImages/default.latte
+    type: latte
+    category: template
+    purpose: "Admin header images page displaying a table of current header images with previews and AJAX remove buttons, plus an upload form for adding new images"
+    documents: [views, forms, file-operations]
+
+  - path: app/AdminModule/templates/News/editor.latte
+    type: latte
+    category: template
+    purpose: "Admin news editor page rendering newsEditorForm and articleImagesForm with CKEditor 4.6.2 for content, plus a link to /prilohy/ for uploads"
+    documents: [views, forms]
+
+  - path: app/AdminModule/templates/News/list.latte
+    type: latte
+    category: template
+    purpose: "Admin news list showing each news item's title and date with edit/remove buttons (visible to admin or author)"
+    documents: [views, auth]
+
+  - path: app/AdminModule/templates/User/management.latte
+    type: latte
+    category: template
+    purpose: "Admin user management page with AJAX snippet listing users in a table with view/remove buttons and role-change buttons (Uzivatel/Redaktor/Administrator) highlighted by current role"
+    documents: [views, auth]
+
+  - path: app/AdminModule/templates/Web/default.latte
+    type: latte
+    category: template
+    purpose: "Admin web properties page rendering the webPropertiesForm inside an AJAX snippet for editing site name and description"
+    documents: [views, forms, config-and-infra]
+
+  - path: app/AdminModule/templates/Web/view.latte
+    type: latte
+    category: template
+    purpose: "Simple editor-level admin dashboard page displaying a welcome message ('Rozcestnik administrace pro redaktory')"
+    documents: [views]
+
+  # ============================================================
+  # WWW - ENTRY POINT & SERVER CONFIG
+  # ============================================================
+
+  - path: www/index.php
+    type: php
+    category: infra
+    purpose: "Web entry point: loads bootstrap.php to obtain the DI container and runs the Nette Application"
+    documents: [config-and-infra]
+
+  - path: www/.htaccess
+    type: config
+    category: route
+    purpose: "Apache config disabling directory listing, enabling URL rewriting to index.php (front controller pattern), hiding dotfiles, and enabling gzip compression"
+    documents: [routes, config-and-infra]
+
+  - path: www/.maintenance.php
+    type: php
+    category: infra
+    purpose: "Maintenance mode page returning HTTP 503 with a styled 'site temporarily down' message and Retry-After header"
+    documents: [config-and-infra]
+
+  - path: www/web.config
+    type: config
+    category: infra
+    purpose: "IIS rewrite rules routing all non-static-file requests to index.php and setting index.php as default document"
+    documents: [routes, config-and-infra]
+
+  - path: www/robots.txt
+    type: other
+    category: infra
+    purpose: "Empty robots.txt file (no crawling directives)"
+    documents: [none --- empty file]
+
+  # ============================================================
+  # WWW - JAVASCRIPT
+  # ============================================================
+
+  - path: www/js/main.js
+    type: js
+    category: asset
+    purpose: "Initializes Nette AJAX, auto-hides flash notifications after 5 seconds, and handles responsive navbar burger menu toggle"
+    documents: [views]
+
+  - path: www/config.js
+    type: js
+    category: config
+    purpose: "Configuration for chrono-albums photo gallery tool: defines image resolutions (placeholder 30px to large 1920px), JPEG/WebP quality options, and justified layout settings (1180px width, 320px row height)"
+    documents: [config-and-infra, views]
+
+  - path: www/albums.f0967941.js
+    type: js
+    category: asset
+    purpose: "Bundled (Parcel) JS for the photo gallery: includes justified-layout algorithm, domdiff virtual DOM diffing, hyperHTML templating, and chrono-albums rendering logic with PhotoSwipe integration"
+    documents: [views]
+
+  # ============================================================
+  # WWW - CSS
+  # ============================================================
+
+  - path: www/css/main.css
+    type: css
+    category: asset
+    purpose: "Custom styles: responsive article images, hero background-image cover with dark overlay heading, and clip-path heading effect at wider viewports"
+    documents: [views]
+
+  - path: www/css/skaut-design.min.css
+    type: css
+    category: asset
+    purpose: "Minified Skaut Design CSS framework (Bulma-based) providing the visual design system for the entire application"
+    documents: [views]
+
+  - path: www/style.6303c041.css
+    type: css
+    category: asset
+    purpose: "Minified CSS for the chrono-albums photo gallery component: flexbox album layout, absolute-positioned photo tiles with hover shadow effects"
+    documents: [views]
+
+  # ============================================================
+  # WWW - DATA
+  # ============================================================
+
+  - path: www/structure.json
+    type: other
+    category: asset
+    purpose: "JSON data file describing a photo album ('2019-07 Tabor') with 50 photos including filenames, file sizes, dimensions, and aspect ratios for the gallery component"
+    documents: [views]
+
+  # ============================================================
+  # WWW - ATTACHMENTS DIRECTORY
+  # ============================================================
+
+  - path: www/prilohy/.htaccess
+    type: config
+    category: infra
+    purpose: "Apache config enabling directory listing (Options +Indexes) for the user-uploaded attachments directory"
+    documents: [file-operations, config-and-infra]
+
+  # ============================================================
+  # WWW - IMAGES: FAVICON & LOGOS
+  # ============================================================
+
+  - path: www/favicon.ico
+    type: image
+    category: asset
+    purpose: "16x16 32-bit favicon icon file for the website"
+    documents: [views]
+
+  - path: www/img/logo24.svg
+    type: image
+    category: asset
+    purpose: "SVG logo of the 24th scout troop used in the navbar"
+    documents: [views]
+
+  - path: www/img/logo-hk.png
+    type: image
+    category: asset
+    purpose: "PNG logo of the city of Hradec Kralove (180x96) displayed in the sponsors footer section"
+    documents: [views]
+
+  - path: www/img/logo-khk.gif
+    type: image
+    category: asset
+    purpose: "GIF logo of the Kralovehradecky region (193x92) displayed in the sponsors footer section"
+    documents: [views]
+
+  - path: www/img/logo-nadace.png
+    type: image
+    category: asset
+    purpose: "PNG logo of CEZ Foundation (180x100) displayed in the sponsors footer section"
+    documents: [views]
+
+  # ============================================================
+  # WWW - IMAGES: CONTACT PHOTOS
+  # ============================================================
+
+  - path: www/img/contacts/edgar.jpg
+    type: image
+    category: asset
+    purpose: "180x180 JPEG portrait photo of scout leader Ondrej Pouchly (Edgar) used on the contact page"
+    documents: [views]
+
+  - path: www/img/contacts/poulik.jpg
+    type: image
+    category: asset
+    purpose: "180x180 JPEG portrait photo of head scout leader Jan Pouchly (Poulik) used on the contact page"
+    documents: [views]
+
+  - path: www/img/contacts/stredisko.jpg
+    type: image
+    category: asset
+    purpose: "320x240 JPEG photo of the scout clubhouse building displayed on the contact page"
+    documents: [views]
+
+  - path: www/img/contacts/tuc.jpg
+    type: image
+    category: asset
+    purpose: "400x400 JPEG portrait photo of deputy leader Lukas Trumm (Tuc) used on the contact page"
+    documents: [views]
+
+  # ============================================================
+  # WWW - IMAGES: HEADER/HERO IMAGES
+  # ============================================================
+
+  - path: "www/img/top/T19 (89 of 528).jpg"
+    type: image
+    category: asset
+    purpose: "1800x618 JPEG hero/header photo from the T19 photo series, randomly displayed in the site hero section"
+    documents: [views]
+
+  - path: "www/img/top/T19 (104 of 528).jpg"
+    type: image
+    category: asset
+    purpose: "1718x689 JPEG hero/header photo from the T19 photo series, randomly displayed in the site hero section"
+    documents: [views]
+
+  - path: "www/img/top/T19 (201 of 528).jpg"
+    type: image
+    category: asset
+    purpose: "1800x595 JPEG hero/header photo from the T19 photo series, randomly displayed in the site hero section"
+    documents: [views]
+
+  - path: "www/img/top/T19 (504 of 528).jpg"
+    type: image
+    category: asset
+    purpose: "1800x561 JPEG hero/header photo from the T19 photo series, randomly displayed in the site hero section"
+    documents: [views]
+
+  - path: "www/img/top/T19 (516 of 528).jpg"
+    type: image
+    category: asset
+    purpose: "1800x457 JPEG hero/header photo from the T19 photo series, randomly displayed in the site hero section"
+    documents: [views]
+
+  - path: www/img/top/hero1.jpg
+    type: image
+    category: asset
+    purpose: "1920x454 JPEG hero/header photo, randomly displayed in the site hero section"
+    documents: [views]
+
+  - path: www/img/top/valdstejn.jpg
+    type: image
+    category: asset
+    purpose: "1800x529 JPEG hero/header photo (Valdstejn), randomly displayed in the site hero section"
+    documents: [views]
