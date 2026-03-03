@@ -1,3 +1,4 @@
 source/
 logs/
 .backward-engineering-state
+.aiwork/
