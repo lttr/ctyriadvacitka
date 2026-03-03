@@ -1,0 +1,699 @@
+# =============================================================================
+# Git History -- backward-engineered from the Ctyriadvacitka source repository
+# Source: https://gitlab.com/krouma/Ctyriadvacitka.git
+# =============================================================================
+
+summary:
+  total_commits: 410
+  date_range:
+    first_commit: "2016-12-08"
+    last_commit: "2025-06-08"
+  contributors:
+    - name: "Matyáš Kroupa"
+      aliases: ["krouma"]
+      role: "Primary developer; created the project, built the core CMS, managed infrastructure"
+    - name: "Lukas Trumm"
+      role: "Co-developer; UI/UX improvements, skaut-design migration, photo gallery, events, analytics, deployment"
+  branches:
+    - name: "master"
+      description: "Main development branch; all released work merged here"
+    - name: "ckeditor"
+      description: "Feature branch for image uploading via CKEditor; partly merged (server-side code merged, client-side reverted)"
+    - name: "file-browser"
+      description: "Feature branch for CKEditor file browser/uploader integration; not merged into master"
+    - name: "img-form"
+      description: "Feature branch for image upload form; appears empty (no unique commits vs master)"
+    - name: "uppy"
+      description: "Feature branch experimenting with Uppy file upload library; not merged into master"
+  tags:
+    - tag: "v0.0.1"
+      date: "2016-12-08"
+      description: "First release; basic HTML/CSS layout"
+    - tag: "v0.0.2"
+      date: "2016-12-10"
+      description: "HTML/CSS improvements merged"
+    - tag: "v0.0.3"
+      date: "2016-12-24"
+      description: "HTML/CSS branch merge; early PHP work"
+    - tag: "v0.1.0"
+      date: "2017-01-11"
+      description: "Authentication added (login, PHPDoc, Authenticator)"
+    - tag: "v0.1.1"
+      date: "2017-01-18"
+      description: "Exception handling, registration"
+    - tag: "v0.1.2"
+      date: "2017-01-18"
+      description: "Switched from TinyMCE to CKEditor"
+    - tag: "v0.2.0"
+      date: "2017-01-20"
+      description: "User permission restrictions (edit only self)"
+    - tag: "v0.2.1"
+      date: "2017-01-20"
+      description: "Non-admin users restricted from deleting articles/users"
+    - tag: "v0.3.0"
+      date: "2017-01-24"
+      description: "PHP branch merged; core CMS functionality complete"
+    - tag: "v0.3.1"
+      date: "2017-01-24"
+      description: "Bug fix: saving news"
+    - tag: "v0.3.2"
+      date: "2017-01-24"
+      description: "Article creation from 404 page"
+    - tag: "v0.3.3"
+      date: "2017-01-25"
+      description: "Admin navigation links"
+    - tag: "v0.4.0"
+      date: "2017-01-28"
+      description: "Bootstrap CSS imported for UI components"
+    - tag: "v0.5.0"
+      date: "2017-02-01"
+      description: "Pagination for news; redirect on invalid page"
+    - tag: "v0.6.0"
+      date: "2017-02-18"
+      description: "Major refactoring: version bumped to 0.6.0"
+    - tag: "v0.6.1"
+      date: "2017-02-19"
+      description: "Bug fix release"
+    - tag: "v0.6.2"
+      date: "2017-02-19"
+      description: "Bug fix release"
+    - tag: "v0.6.3"
+      date: "2017-02-19"
+      description: "Final tagged version; last tag before long-term iterative development"
+
+# -----------------------------------------------------------------------------
+# Significant changes grouped by era
+# -----------------------------------------------------------------------------
+significant_changes:
+
+  # === Era 1: Project inception (Dec 2016 - Feb 2017) ===
+
+  - commit: "dd5ba50"
+    date: "2016-12-08"
+    author: "krouma"
+    message: "Initial commit"
+    type: feature
+    summary: "Project created with initial Nette framework skeleton including base presenters, models, templates, and configuration."
+    files_changed: ["(initial project structure)"]
+    notes: "The foundation: Nette MVC, article/news CMS with user management."
+
+  - commit: "4b7da42"
+    date: "2017-01-11"
+    author: "krouma"
+    message: "Added logging in"
+    type: feature
+    summary: "Authentication system implemented with login form and Authenticator."
+    files_changed: ["SessionPresenter, AuthenticatorManager, SignInForm"]
+    notes: "Marks the beginning of the auth system."
+
+  - commit: "4542544"
+    date: "2017-01-18"
+    author: "krouma"
+    message: "Added registering new users"
+    type: feature
+    summary: "User registration with password hashing and duplicate detection."
+    files_changed: ["SessionPresenter, SignUpForm"]
+    notes: ""
+
+  - commit: "86523fe"
+    date: "2017-01-18"
+    author: "krouma"
+    message: "Switched from TinyMCE to CKEditor"
+    type: refactor
+    summary: "Rich-text editor changed from TinyMCE to CKEditor for article/news content editing."
+    files_changed: ["templates"]
+    notes: "CKEditor 4 has been the WYSIWYG editor since this point."
+
+  - commit: "99df49b"
+    date: "2017-01-21"
+    author: "krouma"
+    message: "Created ResourceManager as parent of ArticleManager and NewsManager"
+    type: refactor
+    summary: "Introduced a shared base class (later renamed EntityManager, later removed) for article and news managers."
+    files_changed: ["ResourceManager.php, ArticleManager, NewsManager"]
+    notes: "This intermediate abstraction was later removed in favor of BaseManager."
+
+  - commit: "f2ccf0e"
+    date: "2017-01-28"
+    author: "krouma"
+    message: "Imported Bootstrap to Forms"
+    type: feature
+    summary: "Bootstrap 3 CSS framework integrated for form styling."
+    files_changed: ["templates, CSS"]
+    notes: "Bootstrap 3 was later fully replaced by Skaut Design."
+
+  - commit: "1e7140c"
+    date: "2017-02-01"
+    author: "krouma"
+    message: "Paging news was added"
+    type: feature
+    summary: "Pagination system implemented for news list using Nette Paginator."
+    files_changed: ["NewsPresenter, templates"]
+    notes: ""
+
+  # === Era 2: Feature expansion and polish (Feb 2017 - Sep 2017) ===
+
+  - commit: "473fca6"
+    date: "2017-02-19"
+    author: "krouma"
+    message: "Bumped to 0.6.3"
+    type: other
+    summary: "Final tagged version with major internal refactoring complete."
+    files_changed: ["package.json"]
+    notes: "Last version tag. All subsequent development is untagged."
+
+  - commit: "cc64691"
+    date: "2017-03-02"
+    author: "krouma"
+    message: "Add table of parameters into DB"
+    type: feature
+    summary: "Added the key-value parameters table to store site-wide settings (webName, webDescription) in the database."
+    files_changed: ["SQL, ProjectManager-related files"]
+    notes: "This is the origin of the Parameter entity."
+
+  - commit: "929d1f9"
+    date: "2017-03-03"
+    author: "krouma"
+    message: "Add creation admin to installation"
+    type: feature
+    summary: "Installation module added for first-time setup (creating admin account, setting web properties, uploading header images)."
+    files_changed: ["InstallModule/*"]
+    notes: "This module was later removed entirely (see 689c092)."
+
+  - commit: "b27d776"
+    date: "2017-03-10"
+    author: "krouma"
+    message: "Add new UI for administration"
+    type: feature
+    summary: "Admin module UI redesigned with separate admin layout and navigation."
+    files_changed: ["AdminModule templates"]
+    notes: ""
+
+  - commit: "cff0752"
+    date: "2017-03-10"
+    author: "krouma"
+    message: "Add backend to changing roles (permissions)"
+    type: feature
+    summary: "Admin can now change user roles via the user management page."
+    files_changed: ["Admin UserPresenter"]
+    notes: ""
+
+  - commit: "ad7246f"
+    date: "2017-03-17"
+    author: "krouma"
+    message: "Add new roles and resources to ACL"
+    type: feature
+    summary: "Extended ACL with scout, leader roles and parents resource. Added view/edit/sendMail permissions for leaders."
+    files_changed: ["AuthorizatorManager.php"]
+    notes: "Scout/leader roles were defined but the parents feature was later reverted."
+
+  - commit: "1b4a902"
+    date: "2017-03-17"
+    author: "krouma"
+    message: "Ajaxify user management"
+    type: feature
+    summary: "User management page made AJAX-capable with snippet redrawing for role changes and user removal."
+    files_changed: ["Admin UserPresenter, templates"]
+    notes: ""
+
+  - commit: "e1ba4aa"
+    date: "2017-03-20"
+    author: "krouma"
+    message: "Add possibility to upload header pictures"
+    type: feature
+    summary: "Header image upload functionality added with ImageManager and admin UI."
+    files_changed: ["ImageManager, HeaderImagesPresenter, templates"]
+    notes: ""
+
+  - commit: "c777e3f"
+    date: "2017-04-02"
+    author: "krouma"
+    message: "Add possibility to set article/news to show in menu (1/2) - admin part"
+    type: feature
+    summary: "Articles can now be toggled to appear in the site navigation menu."
+    files_changed: ["Admin ArticlePresenter, templates, ArticleManager"]
+    notes: ""
+
+  - commit: "887a306"
+    date: "2017-04-15"
+    author: "krouma"
+    message: "Add Ajax to header images presenter"
+    type: feature
+    summary: "Header image management made AJAX-capable."
+    files_changed: ["HeaderImagesPresenter, templates"]
+    notes: ""
+
+  # === Era 3: Infrastructure modernization (2017-2018) ===
+
+  - commit: "7d6008e"
+    date: "2017-06-10"
+    author: "krouma"
+    message: "Add model for parents"
+    type: feature
+    summary: "ParentsManager added for managing parent/guardian contact info."
+    files_changed: ["ParentsManager.php"]
+    notes: "This feature was immediately reverted in the next series of commits."
+
+  - commit: "1b96c09"
+    date: "2017-06-12"
+    author: "krouma"
+    message: "Revert 'Add DB table for parent`s emails'"
+    type: refactor
+    summary: "Parents/mailing feature completely reverted (5 revert commits in sequence)."
+    files_changed: ["ParentsManager removed, SQL reverted"]
+    notes: "The parents feature was abandoned. The ACL roles (scout, leader) and parents resource definitions remain in AuthorizatorManager but have no backing implementation."
+
+  - commit: "1034a9a"
+    date: "2017-10-27"
+    author: "krouma"
+    message: "vagrant: drop vagrant support"
+    type: infra
+    summary: "Vagrant provisioning removed in favor of Docker."
+    files_changed: ["Vagrantfile removed"]
+    notes: "The project migrated from Vagrant to Docker for local development."
+
+  - commit: "5bc6e44"
+    date: "2017-10-27"
+    author: "krouma"
+    message: "npm: Install frontend dependencies using npm"
+    type: refactor
+    summary: "Switched from Bower to npm for frontend dependency management. Added concat/uglify pipeline for vendor.js."
+    files_changed: ["bower.json removed, package.json updated"]
+    notes: ""
+
+  - commit: "8ad41f9"
+    date: "2017-10-27"
+    author: "krouma"
+    message: "docker add docker-compose.yml"
+    type: infra
+    summary: "Docker Compose setup introduced with app, db, and adminer services."
+    files_changed: ["docker-compose.yml, httpd.conf"]
+    notes: "Beginning of Docker-based development environment."
+
+  - commit: "0046e0e"
+    date: "2018-01-25"
+    author: "krouma"
+    message: "app: Use PHP 7.2"
+    type: infra
+    summary: "PHP version upgraded to 7.2."
+    files_changed: ["Docker config"]
+    notes: ""
+
+  - commit: "ad8b02c"
+    date: "2018-01-25"
+    author: "krouma"
+    message: "app: Update Nette"
+    type: infra
+    summary: "Nette framework updated."
+    files_changed: ["composer.json, composer.lock"]
+    notes: ""
+
+  - commit: "1e27b10"
+    date: "2018-01-26"
+    author: "krouma"
+    message: "app: create ChangePasswordFormFactory"
+    type: refactor
+    summary: "Password change form extracted into its own factory class."
+    files_changed: ["ChangePasswordFormFactory.php"]
+    notes: "Part of a series extracting form factories for all forms."
+
+  - commit: "689c092"
+    date: "2018-04-12"
+    author: "krouma"
+    message: "Remove InstallModule"
+    type: refactor
+    summary: "Installation wizard module completely removed. Setup now done via SQL seed data and manual config."
+    files_changed: ["InstallModule/ deleted entirely"]
+    notes: "The install module had become unnecessary once Docker automated initial setup."
+
+  - commit: "1c5d12d"
+    date: "2018-04-12"
+    author: "krouma"
+    message: "Remove EntityManager and DatabaseHelper"
+    type: refactor
+    summary: "Removed the EntityManager abstraction layer (former ResourceManager). Models now extend BaseManager directly."
+    files_changed: ["EntityManager.php, DatabaseHelper.php, Table.php, TableColumn.php, TableRow.php removed"]
+    notes: "Major simplification of the model layer."
+
+  # === Era 4: Nette 3 migration and Skaut Design (2018-2019) ===
+
+  - commit: "b05e10e"
+    date: "2018-04-12"
+    author: "krouma"
+    message: "Update to Nette 3.0"
+    type: infra
+    summary: "Major framework upgrade from Nette 2.x to Nette 3.0."
+    files_changed: ["composer.json, all PHP files adapted"]
+    notes: "Required updating many API calls and class references."
+
+  - commit: "6e71cb9"
+    date: "2018-04-12"
+    author: "krouma"
+    message: "Declare strict types in all php files"
+    type: refactor
+    summary: "Added declare(strict_types=1) to all PHP files."
+    files_changed: ["All PHP files"]
+    notes: ""
+
+  - commit: "1fa5f09"
+    date: "2019-10-13"
+    author: "krouma"
+    message: "Update PHP to 7.4"
+    type: infra
+    summary: "PHP version upgraded to 7.4."
+    files_changed: ["Docker config"]
+    notes: "Final PHP version used by the project."
+
+  - commit: "8540084"
+    date: "2019-08-28"
+    author: "Lukas Trumm"
+    message: "Replace bootstrap and sass with @lttr/skaut-design css"
+    type: refactor
+    summary: "Complete CSS framework migration from Bootstrap 3 + Sass to Skaut Design (Bulma-based). Removed all Sass files."
+    files_changed: ["SCSS files removed, skaut-design.min.css added, all templates updated"]
+    notes: "This was a major visual overhaul. Skaut Design is a Bulma-based CSS framework for Czech scout organizations."
+
+  - commit: "7c3e0e4"
+    date: "2019-09-11"
+    author: "krouma"
+    message: "Add SkautDesignFormRenderer"
+    type: feature
+    summary: "Custom form renderer created to apply Skaut Design CSS classes to Nette forms."
+    files_changed: ["SkautDesignFormRenderer.php"]
+    notes: "Replaces the Bootstrap 3 form renderer."
+
+  - commit: "0d71d33"
+    date: "2019-09-05"
+    author: "Lukas Trumm"
+    message: "Add events page"
+    type: feature
+    summary: "Events page added with Google Calendar integration via skaut-google-events-table web component."
+    files_changed: ["EventsPresenter.php, Events/default.latte, RouterFactory"]
+    notes: ""
+
+  - commit: "cf74aa1"
+    date: "2019-09-23"
+    author: "Lukas Trumm"
+    message: "Add contacts and map"
+    type: feature
+    summary: "Contact page redesigned with leader cards, photos, phone numbers, obfuscated emails, and embedded Google Maps."
+    files_changed: ["Contact/default.latte, contact images"]
+    notes: ""
+
+  - commit: "b148e99"
+    date: "2019-09-23"
+    author: "Lukas Trumm"
+    message: "Preparation for photos page"
+    type: feature
+    summary: "Photos presenter and template created with PhotoSwipe lightbox integration."
+    files_changed: ["PhotosPresenter.php, Photos/default.latte"]
+    notes: ""
+
+  - commit: "1fcb7a7"
+    date: "2019-09-27"
+    author: "Lukas Trumm"
+    message: "Add first photo album - manually hacked in"
+    type: feature
+    summary: "Photo gallery functionality added using chrono-albums JS library with justified layout and lazy loading."
+    files_changed: ["albums.f0967941.js, style.6303c041.css, config.js, structure.json"]
+    notes: "The photo album data (structure.json) and JS bundle were added as pre-built files."
+
+  - commit: "993a4dc"
+    date: "2019-12-14"
+    author: "Lukas Trumm"
+    message: "Add calendar as a web component"
+    type: refactor
+    summary: "Events page switched from custom JS calendar to the skaut-google-events-table web component."
+    files_changed: ["Events/default.latte, calendar.js removed"]
+    notes: ""
+
+  - commit: "bef13ba"
+    date: "2019-09-30"
+    author: "krouma"
+    message: "Update CKEditor to version 5"
+    type: feature
+    summary: "Attempted upgrade to CKEditor 5."
+    files_changed: ["templates, JS"]
+    notes: "This was later reverted (e9c5018) -- CKEditor 5 did not work well, so the project stayed on CKEditor 4."
+
+  - commit: "e9c5018"
+    date: "2019-10-13"
+    author: "krouma"
+    message: "Revert 'Update CKEditor to version 5'"
+    type: refactor
+    summary: "CKEditor 5 upgrade reverted; project remains on CKEditor 4.6.2."
+    files_changed: ["templates"]
+    notes: "CKEditor 5 upgrade was abandoned."
+
+  # === Era 5: Image upload forms (2019-2020) ===
+
+  - commit: "20a18ff"
+    date: "2020-01-13"
+    author: "krouma"
+    message: "Add form for uploading images"
+    type: feature
+    summary: "ImageUploadFormFactory created as a base for multi-file image uploads. ArticleImagesFormFactory and HeaderImagesFormFactory extended it."
+    files_changed: ["ImageUploadFormFactory.php, ArticleImagesFormFactory.php, HeaderImagesFormFactory.php"]
+    notes: "This replaced earlier direct upload approaches and the abandoned Uppy integration."
+
+  - commit: "bafb435"
+    date: "2020-02-14"
+    author: "krouma"
+    message: "Allow indexing content of www/prilohy/"
+    type: feature
+    summary: "Enabled Apache directory listing for the attachments directory."
+    files_changed: ["www/prilohy/.htaccess"]
+    notes: ""
+
+  # === Era 6: Maintenance and content updates (2020-2025) ===
+
+  - commit: "6c93793"
+    date: "2020-02-15"
+    author: "Lukas Trumm"
+    message: "Fix small layout problems"
+    type: bugfix
+    summary: "Minor CSS/layout fixes."
+    files_changed: ["CSS, templates"]
+    notes: ""
+
+  - commit: "625c8e3"
+    date: "2022-01-15"
+    author: "Lukas Trumm"
+    message: "Update text on contact page"
+    type: other
+    summary: "Contact page text content updated."
+    files_changed: ["Contact/default.latte"]
+    notes: ""
+
+  - commit: "db35a34"
+    date: "2022-05-05"
+    author: "krouma"
+    message: "Fix news pagination"
+    type: bugfix
+    summary: "Pagination bug fixed in news listing."
+    files_changed: ["NewsPresenter"]
+    notes: "Required a follow-up fix (8fc7732)."
+
+  - commit: "970e57d"
+    date: "2022-11-20"
+    author: "Lukas Trumm"
+    message: "Add new deployment method using ftp-deploy package"
+    type: infra
+    summary: "FTP deployment added via deploy.js using the ftp-deploy npm package."
+    files_changed: ["deploy.js, package.json"]
+    notes: "Third deployment method alongside Docker and Kubernetes."
+
+  - commit: "eff0f0e"
+    date: "2023-01-14"
+    author: "Lukas Trumm"
+    message: "Add analytics script"
+    type: feature
+    summary: "Plausible analytics tracking script added to the base layout."
+    files_changed: ["@layout.latte"]
+    notes: ""
+
+  - commit: "d4c3a46"
+    date: "2025-06-08"
+    author: "krouma"
+    message: "Add Dockerfile"
+    type: infra
+    summary: "Standalone Dockerfile created for building a production-ready Docker image."
+    files_changed: ["Dockerfile, trap.sh"]
+    notes: ""
+
+  - commit: "63cdc50"
+    date: "2025-06-08"
+    author: "krouma"
+    message: "Add k8s files"
+    type: infra
+    summary: "Kubernetes manifests added for deployment (Deployment, Service, Ingress, PVC)."
+    files_changed: ["k8s/deploy.yaml, k8s/service.yaml, k8s/ingress.yaml, k8s/pvc.yaml"]
+    notes: "Most recent commit. Targets pa200hw2.hailstone.cz hostname."
+
+# -----------------------------------------------------------------------------
+# Deleted or replaced features
+# -----------------------------------------------------------------------------
+deleted_or_replaced:
+
+  - description: "InstallModule -- first-time setup wizard for creating admin account, setting web properties, and uploading header images"
+    removed_in: "689c092"
+    reason: "Docker-based setup made the installation wizard unnecessary; initial data is now handled by SQL seed scripts."
+    relevance: "Not needed in a rewrite. Setup can be handled by database seeds or a simpler first-run script."
+
+  - description: "EntityManager and DatabaseHelper -- abstraction layer over Nette Database (Table, TableColumn, TableRow classes)"
+    removed_in: "1c5d12d"
+    reason: "Over-engineered abstraction; Nette Database API was sufficient. Models now extend BaseManager directly."
+    relevance: "Confirms the rewrite should use direct ORM/database calls rather than a custom abstraction."
+
+  - description: "ResourceManager -- shared parent class for ArticleManager and NewsManager"
+    removed_in: "c806fda (renamed), then 1c5d12d (removed)"
+    reason: "The generic ResourceManager was renamed to EntityManager, then removed entirely as the abstraction provided no real benefit."
+    relevance: "Article and News managers are sufficiently different to not need a shared base beyond BaseManager."
+
+  - description: "ParentsManager -- management of parent/guardian contact information and mailing lists"
+    removed_in: "11b0d37 through 1b96c09 (5 revert commits)"
+    reason: "Feature was started (DB table, model, renaming to MailingManager) but completely reverted. No commit message explains why."
+    relevance: "The ACL definitions for scout/leader roles and parents resource still exist in AuthorizatorManager. Confirm with stakeholder whether parent management should be part of the rewrite."
+
+  - description: "Vagrant development environment (Vagrantfile, provision.sh, setup.sh)"
+    removed_in: "1034a9a, 75712f1, cf44c24"
+    reason: "Docker replaced Vagrant as the local development environment."
+    relevance: "Not needed in rewrite; use Docker or equivalent."
+
+  - description: "Bower frontend package manager (bower.json)"
+    removed_in: "5bc6e44"
+    reason: "Bower deprecated; npm used instead for frontend dependencies."
+    relevance: "Rewrite should use npm/yarn/pnpm."
+
+  - description: "Bootstrap 3 CSS framework and Sass build pipeline (scss/ directory, style.css, Bootstrap JS/fonts)"
+    removed_in: "8540084, 41c33be, 9a5f995"
+    reason: "Replaced by Skaut Design (Bulma-based) CSS framework matching the Czech Scout Organization's design system."
+    relevance: "Rewrite should use Skaut Design or its successor."
+
+  - description: "TinyMCE rich-text editor"
+    removed_in: "86523fe"
+    reason: "Replaced by CKEditor 4."
+    relevance: "Rewrite should include a WYSIWYG editor; CKEditor or equivalent."
+
+  - description: "CKEditor 5 (attempted upgrade)"
+    removed_in: "e9c5018 (reverted)"
+    reason: "CKEditor 5 integration did not work satisfactorily; reverted to CKEditor 4."
+    relevance: "Consider whether to use CKEditor 5 (now more mature) or an alternative in the rewrite."
+
+  - description: "Uppy file upload library"
+    removed_in: "Not merged (stayed on uppy branch)"
+    reason: "Experimental integration on a feature branch; never reached master."
+    relevance: "The final solution uses Nette's native multi-upload form. Rewrite may consider a modern upload library."
+
+  - description: "Custom calendar.js for events display"
+    removed_in: "993a4dc"
+    reason: "Replaced by the skaut-google-events-table web component."
+    relevance: "Events page uses a web component; rewrite should integrate similarly with Google Calendar."
+
+  - description: "Old logo images (www/images/ directory with PDF and PNG logo variants)"
+    removed_in: "09505b4"
+    reason: "Replaced by logo24.svg and moved to www/img/ directory structure."
+    relevance: "Use SVG logo in rewrite."
+
+  - description: "Individual error templates (403.latte, 404.latte, 405.latte, 410.latte, etc.)"
+    removed_in: "71f506c"
+    reason: "Replaced by a single error page approach using the 'chyba' (error) article in the CMS."
+    relevance: "Error handling is done via a special article with url='chyba'. Rewrite should have a configurable error page."
+
+  - description: "Packed Adminer (adminer/index.php, adminer.css)"
+    removed_in: "9fb65f0, 36e9157"
+    reason: "Replaced by the adminer Docker container in docker-compose.yml."
+    relevance: "Database administration handled via Docker service; not part of the application."
+
+  - description: "Contributte live-form-validation JS"
+    removed_in: "Implicitly replaced during Skaut Design migration"
+    reason: "Bootstrap 3 form validator was replaced; standard Nette Forms JS validation used instead."
+    relevance: "Use standard form validation in rewrite."
+
+  - description: "project.json (web name config file)"
+    removed_in: "af1cd42"
+    reason: "Web name moved from a JSON file to the database parameters table."
+    relevance: "Confirms that site settings should be stored in the database."
+
+  - description: "User list template (CoreModule/templates/User/list.latte)"
+    removed_in: "eb806e1"
+    reason: "User listing moved to admin module (Admin UserPresenter management page)."
+    relevance: "User management is admin-only in the current design."
+
+  - description: "Shared editor/list templates (@editor.latte, @list.latte, @pagedList.latte)"
+    removed_in: "3e45b71"
+    reason: "Generic shared templates replaced by specific templates per entity."
+    relevance: "Each entity has its own templates in the current codebase."
+
+  - description: "News default template (CoreModule/templates/News/default.latte)"
+    removed_in: "4510854"
+    reason: "News display consolidated to pagedList; the single-news default view was removed."
+    relevance: "News items are only viewed in list form; there is no single-news detail page."
+
+# -----------------------------------------------------------------------------
+# Evolution notes
+# -----------------------------------------------------------------------------
+evolution_notes:
+  - >
+    The Čtyřiadvacítka CMS was created in December 2016 by Matyáš Kroupa
+    (krouma) as a website for the 24th Scout Troop in Hradec Králové. It
+    started as a basic Nette 2.x application with article and news management,
+    developed across parallel html/css and php branches that were periodically
+    merged.
+
+  - >
+    The early development (Dec 2016 - Feb 2017) was intense, with 18 version
+    tags released in just over two months (v0.0.1 through v0.6.3). This period
+    established all core features: authentication, user management, article
+    CRUD, news CRUD, admin module, ACL-based authorization, and Bootstrap 3
+    styling. After v0.6.3, no more tags were created.
+
+  - >
+    In 2017, several infrastructure decisions were made: Vagrant was dropped
+    in favor of Docker, Bower was replaced by npm, and the InstallModule
+    wizard was removed. A parents/mailing-list feature was attempted and
+    immediately reverted (the 5 revert commits suggest it was a false start).
+
+  - >
+    In 2018, a major modernization occurred: upgrade to Nette 3.0, PHP 7.2+,
+    strict types added to all PHP files, and the intermediate EntityManager
+    abstraction layer was removed in favor of direct BaseManager inheritance.
+    Form factories were extracted into individual classes.
+
+  - >
+    In 2019, Lukas Trumm joined as a significant contributor, driving the
+    visual overhaul: Bootstrap 3 + Sass was completely replaced by Skaut Design
+    (a Bulma-based CSS framework from the Czech Scout organization). New pages
+    were added: events (Google Calendar), photos (chrono-albums gallery), and
+    a redesigned contact page. The SkautDesignFormRenderer was created.
+    An attempted CKEditor 5 upgrade was reverted.
+
+  - >
+    In 2019-2020, file upload capabilities were finalized with the
+    ImageUploadFormFactory hierarchy (base + ArticleImages + HeaderImages).
+    The Uppy experiment on a feature branch was abandoned in favor of Nette's
+    native multi-upload forms. Article attachment uploads were stored in
+    year-based subdirectories under www/prilohy/.
+
+  - >
+    From 2020 onward, the project entered maintenance mode with only
+    occasional changes: contact page text updates, pagination bug fixes,
+    analytics (Plausible) integration, and FTP deployment support.
+
+  - >
+    In 2025 (most recent commits), Kubernetes manifests were added targeting
+    the pa200hw2.hailstone.cz hostname, along with a standalone Dockerfile
+    for production builds. This represents the most recent infrastructure
+    evolution -- from Docker Compose (development) to Kubernetes (production).
+
+  - >
+    The project has three unmerged feature branches (ckeditor, file-browser,
+    uppy) representing abandoned experiments with file/image upload integrations.
+    The img-form branch appears to have no unique commits. All of these can be
+    safely ignored in a rewrite.
+
+  - >
+    Two contributors account for all 410 commits: Matyáš Kroupa (primary
+    developer, infrastructure, core CMS) and Lukas Trumm (UI/UX, Skaut Design,
+    photo gallery, events, analytics, FTP deployment). The 'krouma' author
+    name in early commits is the same person as 'Matyáš Kroupa'.
