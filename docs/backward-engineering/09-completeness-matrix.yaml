@@ -1,0 +1,1165 @@
+# =============================================================================
+# Completeness Matrix -- Cross-reference validation of all backward-engineering
+# documents. Validates that nothing was missed.
+#
+# References:
+#   00 = 00-file-inventory.yaml
+#   GH = 00-git-history.yaml
+#   01 = 01-data-model.yaml
+#   02 = 02-auth.yaml
+#   03 = 03-business-logic.yaml
+#   04 = 04-routes.yaml
+#   05 = 05-forms.yaml
+#   06 = 06-views.yaml
+#   07 = 07-file-operations.yaml
+#   08 = 08-config-and-infra.yaml
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. File Coverage
+# Every source file from 00-file-inventory.yaml mapped to capturing document(s)
+# -----------------------------------------------------------------------------
+file_coverage:
+
+  # --- Root-level files ---
+  - path: ".gitignore"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: ".htaccess"
+    inventory_documents: [routes, config-and-infra]
+    captured_in: ["04", "08"]
+    status: covered
+
+  - path: "Dockerfile"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "LICENCE.md"
+    inventory_documents: ["none --- license metadata only"]
+    captured_in: []
+    status: "covered (explicitly excluded -- license only)"
+
+  - path: "README.md"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "composer.json"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "composer.lock"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "deploy.js"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "docker-compose.yml"
+    inventory_documents: [config-and-infra, data-model]
+    captured_in: ["08", "01"]
+    status: covered
+
+  - path: "package.json"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "package-lock.json"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "trap.sh"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  # --- Config directory ---
+  - path: "config/config.local.neon"
+    inventory_documents: [config-and-infra, data-model]
+    captured_in: ["08", "01"]
+    status: covered
+
+  - path: "config/httpd.conf"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  # --- Kubernetes ---
+  - path: "k8s/deploy.yaml"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "k8s/ingress.yaml"
+    inventory_documents: [config-and-infra, routes]
+    captured_in: ["08", "04"]
+    status: covered
+
+  - path: "k8s/pvc.yaml"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "k8s/service.yaml"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  # --- SQL ---
+  - path: "sql/lamp.sql"
+    inventory_documents: [data-model, auth]
+    captured_in: ["01", "02"]
+    status: covered
+
+  - path: "sql/lamp_development.sql"
+    inventory_documents: [data-model, auth]
+    captured_in: ["01", "02"]
+    status: covered
+
+  # --- App bootstrap & config ---
+  - path: "app/.htaccess"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "app/bootstrap.php"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "app/config/config.neon"
+    inventory_documents: [config-and-infra, auth, routes, forms]
+    captured_in: ["08", "02", "04", "05"]
+    status: covered
+
+  - path: "app/web.config"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "app/CoreModule/config/config.neon"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  # --- Models ---
+  - path: "app/model/BaseManager.php"
+    inventory_documents: [data-model]
+    captured_in: ["01", "03"]
+    status: covered
+
+  - path: "app/model/ProjectManager.php"
+    inventory_documents: [data-model, business-logic]
+    captured_in: ["01", "03"]
+    status: covered
+
+  - path: "app/model/Utils.php"
+    inventory_documents: [business-logic]
+    captured_in: ["03"]
+    status: covered
+
+  - path: "app/CoreModule/model/ArticleManager.php"
+    inventory_documents: [data-model, business-logic]
+    captured_in: ["01", "03"]
+    status: covered
+
+  - path: "app/CoreModule/model/AuthenticatorManager.php"
+    inventory_documents: [auth, data-model]
+    captured_in: ["02", "01"]
+    status: covered
+
+  - path: "app/CoreModule/model/AuthorizatorManager.php"
+    inventory_documents: [auth]
+    captured_in: ["02"]
+    status: covered
+
+  - path: "app/CoreModule/model/NewsManager.php"
+    inventory_documents: [data-model, business-logic]
+    captured_in: ["01", "03"]
+    status: covered
+
+  - path: "app/CoreModule/model/UserManager.php"
+    inventory_documents: [data-model, auth, business-logic]
+    captured_in: ["01", "02", "03"]
+    status: covered
+
+  - path: "app/AdminModule/model/ImageManager.php"
+    inventory_documents: [file-operations, business-logic]
+    captured_in: ["07", "03"]
+    status: covered
+
+  # --- Presenters ---
+  - path: "app/presenters/BasePresenter.php"
+    inventory_documents: [auth, views, business-logic]
+    captured_in: ["02", "06", "03"]
+    status: covered
+
+  - path: "app/presenters/Error4xxPresenter.php"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "app/presenters/ErrorPresenter.php"
+    inventory_documents: [views, config-and-infra]
+    captured_in: ["06", "08"]
+    status: covered
+
+  - path: "app/CoreModule/presenters/ArticlePresenter.php"
+    inventory_documents: [views, business-logic]
+    captured_in: ["06", "03", "04"]
+    status: covered
+
+  - path: "app/CoreModule/presenters/ContactPresenter.php"
+    inventory_documents: [forms, views, business-logic]
+    captured_in: ["05", "06", "03", "04"]
+    status: covered
+
+  - path: "app/CoreModule/presenters/EventsPresenter.php"
+    inventory_documents: [views]
+    captured_in: ["06", "04"]
+    status: covered
+
+  - path: "app/CoreModule/presenters/NewsPresenter.php"
+    inventory_documents: [views, business-logic]
+    captured_in: ["06", "03", "04"]
+    status: covered
+
+  - path: "app/CoreModule/presenters/PhotosPresenter.php"
+    inventory_documents: [views]
+    captured_in: ["06", "04"]
+    status: covered
+
+  - path: "app/CoreModule/presenters/SessionPresenter.php"
+    inventory_documents: [auth, forms, views]
+    captured_in: ["02", "05", "06", "03", "04"]
+    status: covered
+
+  - path: "app/CoreModule/presenters/UserPresenter.php"
+    inventory_documents: [auth, forms, views, business-logic]
+    captured_in: ["02", "05", "06", "03", "04"]
+    status: covered
+
+  - path: "app/AdminModule/presenters/ArticlePresenter.php"
+    inventory_documents: [auth, forms, views, business-logic]
+    captured_in: ["02", "05", "06", "03", "04"]
+    status: covered
+
+  - path: "app/AdminModule/presenters/HeaderImagesPresenter.php"
+    inventory_documents: [auth, forms, views, file-operations]
+    captured_in: ["02", "05", "06", "07", "04"]
+    status: covered
+
+  - path: "app/AdminModule/presenters/NewsPresenter.php"
+    inventory_documents: [auth, forms, views, business-logic]
+    captured_in: ["02", "05", "06", "03", "04"]
+    status: covered
+
+  - path: "app/AdminModule/presenters/UserPresenter.php"
+    inventory_documents: [auth, views, business-logic]
+    captured_in: ["02", "06", "03", "04"]
+    status: covered
+
+  - path: "app/AdminModule/presenters/WebPresenter.php"
+    inventory_documents: [auth, forms, views, config-and-infra]
+    captured_in: ["02", "05", "06", "08", "04"]
+    status: covered
+
+  # --- Form factories ---
+  - path: "app/factories/BaseFormFactory.php"
+    inventory_documents: [forms]
+    captured_in: ["05"]
+    status: covered
+
+  - path: "app/factories/ArticleEditorFormFactory.php"
+    inventory_documents: [forms, data-model]
+    captured_in: ["05", "01"]
+    status: covered
+
+  - path: "app/factories/ArticleImagesFormFactory.php"
+    inventory_documents: [forms, file-operations]
+    captured_in: ["05", "07"]
+    status: covered
+
+  - path: "app/factories/ChangePasswordFormFactory.php"
+    inventory_documents: [forms, auth]
+    captured_in: ["05", "02"]
+    status: covered
+
+  - path: "app/factories/ContactFormFactory.php"
+    inventory_documents: [forms]
+    captured_in: ["05"]
+    status: covered
+
+  - path: "app/factories/HeaderImagesFormFactory.php"
+    inventory_documents: [forms, file-operations]
+    captured_in: ["05", "07"]
+    status: covered
+
+  - path: "app/factories/ImageUploadFormFactory.php"
+    inventory_documents: [forms, file-operations]
+    captured_in: ["05", "07"]
+    status: covered
+
+  - path: "app/factories/NewsEditorFormFactory.php"
+    inventory_documents: [forms, data-model]
+    captured_in: ["05", "01"]
+    status: covered
+
+  - path: "app/factories/SignInFormFactory.php"
+    inventory_documents: [forms, auth]
+    captured_in: ["05", "02"]
+    status: covered
+
+  - path: "app/factories/SignUpFormFactory.php"
+    inventory_documents: [forms, auth]
+    captured_in: ["05", "02"]
+    status: covered
+
+  - path: "app/factories/UserEditorFormFactory.php"
+    inventory_documents: [forms, data-model]
+    captured_in: ["05", "01"]
+    status: covered
+
+  - path: "app/factories/WebPropertiesFormFactory.php"
+    inventory_documents: [forms, config-and-infra]
+    captured_in: ["05", "08"]
+    status: covered
+
+  # --- Renderer ---
+  - path: "app/renderers/SkautDesignFormRenderer.php"
+    inventory_documents: [forms, views]
+    captured_in: ["05", "06"]
+    status: covered
+
+  # --- Router ---
+  - path: "app/router/RouterFactory.php"
+    inventory_documents: [routes]
+    captured_in: ["04"]
+    status: covered
+
+  # --- Templates ---
+  - path: "app/templates/@layout.latte"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "app/CoreModule/templates/@layout.latte"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "app/CoreModule/templates/Article/default.latte"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "app/CoreModule/templates/Article/pagedList.latte"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "app/CoreModule/templates/Contact/default.latte"
+    inventory_documents: [views, forms]
+    captured_in: ["06", "05"]
+    status: covered
+
+  - path: "app/CoreModule/templates/Events/default.latte"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "app/CoreModule/templates/News/pagedList.latte"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "app/CoreModule/templates/Photos/default.latte"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "app/CoreModule/templates/Session/signIn.latte"
+    inventory_documents: [views, auth]
+    captured_in: ["06", "02"]
+    status: covered
+
+  - path: "app/CoreModule/templates/Session/signUp.latte"
+    inventory_documents: [views, auth]
+    captured_in: ["06", "02"]
+    status: covered
+
+  - path: "app/CoreModule/templates/User/changePassword.latte"
+    inventory_documents: [views, auth]
+    captured_in: ["06", "02"]
+    status: covered
+
+  - path: "app/CoreModule/templates/User/default.latte"
+    inventory_documents: [views, auth]
+    captured_in: ["06", "02"]
+    status: covered
+
+  - path: "app/CoreModule/templates/User/editor.latte"
+    inventory_documents: [views, forms]
+    captured_in: ["06", "05"]
+    status: covered
+
+  - path: "app/AdminModule/templates/@layout.latte"
+    inventory_documents: [views, auth]
+    captured_in: ["06", "02"]
+    status: covered
+
+  - path: "app/AdminModule/templates/Article/editor.latte"
+    inventory_documents: [views, forms]
+    captured_in: ["06", "05"]
+    status: covered
+
+  - path: "app/AdminModule/templates/Article/list.latte"
+    inventory_documents: [views, auth]
+    captured_in: ["06", "02"]
+    status: covered
+
+  - path: "app/AdminModule/templates/HeaderImages/default.latte"
+    inventory_documents: [views, forms, file-operations]
+    captured_in: ["06", "05", "07"]
+    status: covered
+
+  - path: "app/AdminModule/templates/News/editor.latte"
+    inventory_documents: [views, forms]
+    captured_in: ["06", "05"]
+    status: covered
+
+  - path: "app/AdminModule/templates/News/list.latte"
+    inventory_documents: [views, auth]
+    captured_in: ["06", "02"]
+    status: covered
+
+  - path: "app/AdminModule/templates/User/management.latte"
+    inventory_documents: [views, auth]
+    captured_in: ["06", "02"]
+    status: covered
+
+  - path: "app/AdminModule/templates/Web/default.latte"
+    inventory_documents: [views, forms, config-and-infra]
+    captured_in: ["06", "05", "08"]
+    status: covered
+
+  - path: "app/AdminModule/templates/Web/view.latte"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  # --- WWW entry point and server config ---
+  - path: "www/index.php"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "www/.htaccess"
+    inventory_documents: [routes, config-and-infra]
+    captured_in: ["04", "08"]
+    status: covered
+
+  - path: "www/.maintenance.php"
+    inventory_documents: [config-and-infra]
+    captured_in: ["08"]
+    status: covered
+
+  - path: "www/web.config"
+    inventory_documents: [routes, config-and-infra]
+    captured_in: ["04", "08"]
+    status: covered
+
+  - path: "www/robots.txt"
+    inventory_documents: ["none --- empty file"]
+    captured_in: ["08"]
+    status: "covered (mentioned in 08)"
+
+  # --- JavaScript ---
+  - path: "www/js/main.js"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "www/config.js"
+    inventory_documents: [config-and-infra, views]
+    captured_in: ["08", "06"]
+    status: covered
+
+  - path: "www/albums.f0967941.js"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  # --- CSS ---
+  - path: "www/css/main.css"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "www/css/skaut-design.min.css"
+    inventory_documents: [views]
+    captured_in: ["06", "08"]
+    status: covered
+
+  - path: "www/style.6303c041.css"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  # --- Data ---
+  - path: "www/structure.json"
+    inventory_documents: [views]
+    captured_in: ["06", "08"]
+    status: covered
+
+  # --- Attachments ---
+  - path: "www/prilohy/.htaccess"
+    inventory_documents: [file-operations, config-and-infra]
+    captured_in: ["07", "08"]
+    status: covered
+
+  # --- Images (static assets) ---
+  - path: "www/favicon.ico"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "www/img/logo24.svg"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "www/img/logo-hk.png"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "www/img/logo-khk.gif"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "www/img/logo-nadace.png"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "www/img/contacts/edgar.jpg"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "www/img/contacts/poulik.jpg"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "www/img/contacts/stredisko.jpg"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  - path: "www/img/contacts/tuc.jpg"
+    inventory_documents: [views]
+    captured_in: ["06"]
+    status: covered
+
+  # --- Header images (7 files) ---
+  - path: "www/img/top/T19 (89 of 528).jpg"
+    inventory_documents: [views]
+    captured_in: ["06", "07"]
+    status: covered
+
+  - path: "www/img/top/T19 (104 of 528).jpg"
+    inventory_documents: [views]
+    captured_in: ["06", "07"]
+    status: covered
+
+  - path: "www/img/top/T19 (201 of 528).jpg"
+    inventory_documents: [views]
+    captured_in: ["06", "07"]
+    status: covered
+
+  - path: "www/img/top/T19 (504 of 528).jpg"
+    inventory_documents: [views]
+    captured_in: ["06", "07"]
+    status: covered
+
+  - path: "www/img/top/T19 (516 of 528).jpg"
+    inventory_documents: [views]
+    captured_in: ["06", "07"]
+    status: covered
+
+  - path: "www/img/top/hero1.jpg"
+    inventory_documents: [views]
+    captured_in: ["06", "07"]
+    status: covered
+
+  - path: "www/img/top/valdstejn.jpg"
+    inventory_documents: [views]
+    captured_in: ["06", "07"]
+    status: covered
+
+  file_coverage_summary:
+    total_files: 114
+    covered: 114
+    gaps: 0
+    notes: "All 114 files from the inventory are captured in at least one document."
+
+# -----------------------------------------------------------------------------
+# 2. Route Connections
+# Every route mapped to form + view + operation
+# -----------------------------------------------------------------------------
+route_connections:
+
+  - route: "/"
+    form: null
+    view: "core.news.pagedList"
+    operations: ["news.getCount", "news.getLimited"]
+    status: complete
+
+  - route: "/administrace"
+    form: "webPropertiesForm (web_properties)"
+    view: "admin.web.default"
+    operations: ["project.getParameter", "admin.web.saveProperties"]
+    status: complete
+
+  - route: "/administrace/redaktor"
+    form: null
+    view: "admin.web.view"
+    operations: []
+    status: "complete (static page, no operations needed)"
+
+  - route: "/administrace/obrazky-zahlavi"
+    form: "addHeaderImagesForm (header_images)"
+    view: "admin.headerImages.default"
+    operations: ["image.getHeaderImageNames", "admin.headerImage.upload"]
+    status: complete
+
+  - route: "/kontakt"
+    form: "contactForm (contact)"
+    view: "core.contact.default"
+    operations: ["contact.sendEmail"]
+    status: complete
+
+  - route: "/prihlasit"
+    form: "signInForm (sign_in)"
+    view: "core.session.signIn"
+    operations: ["session.signIn"]
+    status: complete
+
+  - route: "/odhlasit"
+    form: null
+    view: null
+    operations: ["session.signOut"]
+    status: "complete (action-only, no view)"
+
+  - route: "/registrovat"
+    form: "signUpForm (sign_up)"
+    view: "core.session.signUp"
+    operations: ["session.signUp"]
+    status: complete
+
+  - route: "/clanky"
+    form: null
+    view: "core.article.pagedList"
+    operations: ["article.getCount", "article.getLimited"]
+    status: complete
+
+  - route: "/clanky/seznam"
+    form: null
+    view: "admin.article.list"
+    operations: ["article.getAll", "admin.article.toggleMenuVisibility"]
+    status: complete
+
+  - route: "/administrace/uzivatele"
+    form: null
+    view: "admin.user.management"
+    operations: ["user.getAll", "admin.user.changeRole", "admin.user.remove"]
+    status: complete
+
+  - route: "/novinky/seznam"
+    form: null
+    view: "admin.news.list"
+    operations: ["news.getAll"]
+    status: complete
+
+  - route: "/terminy"
+    form: null
+    view: "core.events.default"
+    operations: []
+    status: "complete (static content + external web component)"
+
+  - route: "/fotky"
+    form: null
+    view: "core.photos.default"
+    operations: []
+    status: "complete (static content + client-side JS gallery)"
+
+  - route: "/administrace/obrazky-zahlavi/odstranit/<name>/"
+    form: null
+    view: null
+    operations: ["admin.headerImage.remove"]
+    status: "complete (action-only route)"
+
+  - route: "/administrace/zmen-roli/<role>/<username>"
+    form: null
+    view: null
+    operations: ["admin.user.changeRole"]
+    status: "complete (signal route)"
+
+  - route: "/administrace/clanky/editor[/<url>]"
+    form: "editorForm (article_editor) + articleImagesForm (article_images)"
+    view: "admin.article.editor"
+    operations: ["article.getByUrl", "admin.article.save"]
+    status: complete
+
+  - route: "/administrace/clanky/odstranit/<url>"
+    form: null
+    view: null
+    operations: ["admin.article.remove"]
+    status: "complete (action-only route)"
+
+  - route: "/administrace/novinky/editor/[<id>]"
+    form: "newsEditorForm (news_editor) + articleImagesForm (article_images)"
+    view: "admin.news.editor"
+    operations: ["news.getById", "admin.news.save"]
+    status: complete
+
+  - route: "/administrace/novinky/odstranit/<id>"
+    form: null
+    view: null
+    operations: ["admin.news.remove"]
+    status: "complete (action-only route)"
+
+  - route: "/profil/[<username>]"
+    form: null
+    view: "core.user.default"
+    operations: ["user.getByUsername"]
+    status: complete
+
+  - route: "/profil/editor/[<username>]"
+    form: "userEditorForm (user_editor)"
+    view: "core.user.editor"
+    operations: ["user.getByUsername", "user.getById", "user.editProfile"]
+    status: complete
+
+  - route: "/profil/zmenit-heslo/<username>"
+    form: "changePasswordForm (change_password)"
+    view: "core.user.changePassword"
+    operations: ["user.changePassword.action"]
+    status: complete
+
+  - route: "/novinky[/<page>]"
+    form: null
+    view: "core.news.pagedList"
+    operations: ["news.getCount", "news.getLimited"]
+    status: complete
+
+  - route: "/clanky[/<page>]"
+    form: null
+    view: "core.article.pagedList"
+    operations: ["article.getCount", "article.getLimited"]
+    status: complete
+
+  - route: "/novinky/<url>"
+    form: null
+    view: "core.news.default"
+    operations: ["news.getById"]
+    status: "note -- route exists in RouterFactory but Core NewsPresenter has no renderDefault; this route may be non-functional or handled by a parent/fallback"
+
+  - route: "/<url>"
+    form: null
+    view: "core.article.default"
+    operations: ["article.getByUrl"]
+    status: complete
+
+  # --- AJAX signal routes ---
+  - route: "/clanky/seznam?do=visibleInMenu"
+    form: null
+    view: null
+    operations: ["admin.article.toggleMenuVisibility"]
+    status: complete
+
+  - route: "/administrace/uzivatele?do=changeRole"
+    form: null
+    view: null
+    operations: ["admin.user.changeRole"]
+    status: complete
+
+  - route: "/administrace/uzivatele?do=remove"
+    form: null
+    view: null
+    operations: ["admin.user.remove"]
+    status: complete
+
+  - route: "/administrace/obrazky-zahlavi?do=remove"
+    form: null
+    view: null
+    operations: ["admin.headerImage.remove"]
+    status: complete
+
+  route_connections_summary:
+    total_routes: 31
+    complete: 30
+    notes: 1
+    gaps: 0
+    note: "The /novinky/<url> route may be non-functional (no renderDefault in Core NewsPresenter). All other routes are fully connected."
+
+# -----------------------------------------------------------------------------
+# 3. Entity Field Coverage
+# Every entity field mapped to which forms write it, which views display it
+# -----------------------------------------------------------------------------
+entity_field_coverage:
+
+  # --- Article ---
+  - entity: Article
+    field: article_id
+    written_by_forms: ["article_editor (hidden field)"]
+    displayed_in_views: []
+    status: "covered (internal identifier, not displayed to users)"
+
+  - entity: Article
+    field: title
+    written_by_forms: ["article_editor"]
+    displayed_in_views: ["core.article.default (h1)", "core.article.pagedList (link text)", "admin.article.list (table cell)", "admin.news.list (referenced for news)"]
+    status: covered
+
+  - entity: Article
+    field: content
+    written_by_forms: ["article_editor (textarea with CKEditor)"]
+    displayed_in_views: ["core.article.default (raw HTML)"]
+    status: covered
+
+  - entity: Article
+    field: url
+    written_by_forms: ["article_editor"]
+    displayed_in_views: ["admin.article.list (table cell)", "core.article.pagedList (link href)"]
+    status: covered
+
+  - entity: Article
+    field: description
+    written_by_forms: []
+    displayed_in_views: []
+    status: "note -- field exists in SQL DDL but has no corresponding form field or explicit display; vestigial column"
+
+  - entity: Article
+    field: requestable
+    written_by_forms: ["article_editor (checkbox)"]
+    displayed_in_views: ["core.article.pagedList (conditional filter)", "admin.article.list (conditional filter)"]
+    status: covered
+
+  - entity: Article
+    field: author
+    written_by_forms: ["auto-set from logged-in user in admin.article.save"]
+    displayed_in_views: ["admin.article.list (used for authorship check)", "admin.news.list (used for authorship check)"]
+    status: covered
+
+  - entity: Article
+    field: datetime
+    written_by_forms: ["article_editor (text field, d.m.Y format)"]
+    displayed_in_views: ["admin.article.list (formatted date)"]
+    status: covered
+
+  - entity: Article
+    field: in_menu
+    written_by_forms: ["admin.article.toggleMenuVisibility (AJAX signal)"]
+    displayed_in_views: ["admin.article.list (toggle button)", "core_layout (navbar menu items)", "base_layout (footer menu items)"]
+    status: covered
+
+  # --- News ---
+  - entity: News
+    field: news_id
+    written_by_forms: ["news_editor (hidden field)"]
+    displayed_in_views: []
+    status: "covered (internal identifier)"
+
+  - entity: News
+    field: title
+    written_by_forms: ["news_editor"]
+    displayed_in_views: ["core.news.pagedList (h2)", "admin.news.list (table cell)"]
+    status: covered
+
+  - entity: News
+    field: content
+    written_by_forms: ["news_editor (textarea with CKEditor)"]
+    displayed_in_views: ["core.news.pagedList (raw HTML)"]
+    status: covered
+
+  - entity: News
+    field: url
+    written_by_forms: []
+    displayed_in_views: []
+    status: "note -- field exists in SQL DDL but not mapped in NewsManager, not used in forms or views; vestigial column"
+
+  - entity: News
+    field: description
+    written_by_forms: []
+    displayed_in_views: []
+    status: "note -- field exists in SQL DDL but has no corresponding form field or display; vestigial column"
+
+  - entity: News
+    field: author
+    written_by_forms: ["auto-set from logged-in user in admin.news.save"]
+    displayed_in_views: ["admin.news.list (used for authorship check)"]
+    status: covered
+
+  - entity: News
+    field: datetime
+    written_by_forms: ["news_editor (text field, d.m.Y format)"]
+    displayed_in_views: ["core.news.pagedList (formatted date)", "admin.news.list (formatted date)"]
+    status: covered
+
+  # --- User ---
+  - entity: User
+    field: user_id
+    written_by_forms: ["user_editor (hidden field)"]
+    displayed_in_views: []
+    status: "covered (internal identifier)"
+
+  - entity: User
+    field: username
+    written_by_forms: ["sign_up", "user_editor"]
+    displayed_in_views: ["core.user.default (title)", "admin.user.management (h2)"]
+    status: covered
+
+  - entity: User
+    field: password
+    written_by_forms: ["sign_up (initial)", "change_password (update)"]
+    displayed_in_views: []
+    status: "covered (never displayed, written via registration and password change)"
+
+  - entity: User
+    field: role
+    written_by_forms: ["auto-set to 'registered' in session.signUp", "admin.user.changeRole (AJAX signal)", "user_editor (hidden field)"]
+    displayed_in_views: ["admin.user.management (role toggle buttons)"]
+    status: covered
+
+  - entity: User
+    field: name
+    written_by_forms: ["user_editor"]
+    displayed_in_views: ["core.user.default"]
+    status: covered
+
+  - entity: User
+    field: surname
+    written_by_forms: ["user_editor"]
+    displayed_in_views: ["core.user.default"]
+    status: covered
+
+  - entity: User
+    field: nickname
+    written_by_forms: ["user_editor"]
+    displayed_in_views: ["core.user.default"]
+    status: covered
+
+  - entity: User
+    field: email
+    written_by_forms: ["sign_up", "user_editor"]
+    displayed_in_views: ["core.user.default"]
+    status: covered
+
+  # --- Parameter ---
+  - entity: Parameter
+    field: key
+    written_by_forms: ["web_properties (form field names become keys)"]
+    displayed_in_views: []
+    status: "covered (key is implicit in form field names)"
+
+  - entity: Parameter
+    field: value
+    written_by_forms: ["web_properties (webName, webDescription)"]
+    displayed_in_views: ["base_layout (webName in title)", "admin.web.default (form defaults)"]
+    status: covered
+
+  entity_field_coverage_summary:
+    total_fields: 26
+    fully_covered: 21
+    vestigial_unused: 3
+    internal_only: 2
+    gaps: 0
+    vestigial_fields:
+      - "Article.description -- exists in DDL, no form or view"
+      - "News.url -- exists in DDL, not mapped in manager"
+      - "News.description -- exists in DDL, no form or view"
+    notes: "Three vestigial database columns exist that are never written or displayed. These are likely leftover from early development and can be omitted in a rewrite."
+
+# -----------------------------------------------------------------------------
+# 4. Permission Enforcement
+# Every permission mapped to the routes that enforce it
+# -----------------------------------------------------------------------------
+permission_enforcement:
+
+  - role: guest
+    resource: article
+    action: view
+    enforced_at:
+      - "/<url> -- public article view, no auth required"
+      - "/clanky[/<page>] -- public article list, no auth required"
+    status: "covered (implicitly; these routes are public)"
+
+  - role: guest
+    resource: user
+    action: view
+    enforced_at:
+      - "/profil/[<username>] -- public user profile, no auth required"
+    status: "covered (implicitly; route is public)"
+
+  - role: editor
+    resource: article
+    action: add
+    enforced_at:
+      - "/administrace/clanky/editor[/<url>] -- editorPermissionsRequired in startup"
+      - "/clanky/seznam -- editorPermissionsRequired in startup"
+    status: covered
+
+  - role: leader
+    resource: parents
+    action: show
+    enforced_at: []
+    status: "note -- permission defined in ACL but no route enforces it; the parents feature was reverted (see git history)"
+
+  - role: leader
+    resource: parents
+    action: edit
+    enforced_at: []
+    status: "note -- permission defined in ACL but no route enforces it; parents feature reverted"
+
+  - role: leader
+    resource: parents
+    action: sendMail
+    enforced_at: []
+    status: "note -- permission defined in ACL but no route enforces it; parents feature reverted"
+
+  - role: admin
+    resource: article
+    action: edit
+    enforced_at:
+      - "/administrace/clanky/editor[/<url>] -- admin can edit any article"
+      - "/clanky/seznam -- admin sees all articles including non-requestable"
+      - "/administrace/clanky/odstranit/<url> -- editorPermissionsRequired (admin inherits)"
+    status: covered
+
+  - role: admin
+    resource: web
+    action: edit
+    enforced_at:
+      - "/administrace -- adminPermissionsRequired in startup"
+      - "/administrace/obrazky-zahlavi -- adminPermissionsRequired in startup"
+    status: covered
+
+  - role: admin
+    resource: user
+    action: remove
+    enforced_at:
+      - "/administrace/uzivatele -- adminPermissionsRequired in startup; handleRemove checks ACL isAllowed('user', 'remove')"
+    status: covered
+
+  permission_enforcement_summary:
+    total_permissions: 9
+    enforced: 6
+    not_enforced_by_design: 3
+    gaps: 0
+    notes: "Three permissions (leader: parents.show, parents.edit, parents.sendMail) are defined in the ACL but have no backing routes or implementation. This is because the parents feature was developed and then completely reverted (see 00-git-history.yaml). The ACL definitions were left behind as dead code."
+
+# -----------------------------------------------------------------------------
+# 5. Git History Gaps
+# Items from 00-git-history.yaml not addressed in other documents
+# -----------------------------------------------------------------------------
+git_history_gaps:
+
+  - item: "Parents/mailing feature (developed and reverted)"
+    addressed: true
+    in_documents: ["02 (ACL definitions remain)", "GH (deleted_or_replaced)"]
+    notes: "The ACL roles (scout, leader) and parents resource are documented in 02-auth.yaml. The history of the feature is captured in 00-git-history.yaml. No gap."
+
+  - item: "InstallModule (removed)"
+    addressed: true
+    in_documents: ["GH (deleted_or_replaced)"]
+    notes: "The installation module is documented in git history as removed. It has no impact on the current application. No gap."
+
+  - item: "EntityManager/DatabaseHelper abstraction (removed)"
+    addressed: true
+    in_documents: ["GH (deleted_or_replaced)"]
+    notes: "The removed abstraction layer is documented in git history. Current model architecture (BaseManager) is documented in 01 and 03. No gap."
+
+  - item: "CKEditor 5 attempted upgrade (reverted)"
+    addressed: true
+    in_documents: ["GH (deleted_or_replaced)"]
+    notes: "Documented in git history. Current CKEditor 4 usage is documented in 05-forms.yaml and 06-views.yaml. No gap."
+
+  - item: "Uppy file upload experiment (unmerged branch)"
+    addressed: true
+    in_documents: ["GH (branches, deleted_or_replaced)"]
+    notes: "Documented in git history as an abandoned branch. Current upload solution documented in 05 and 07. No gap."
+
+  - item: "Feature branches (ckeditor, file-browser, img-form, uppy)"
+    addressed: true
+    in_documents: ["GH (branches)"]
+    notes: "All unmerged branches documented in git history. None contain code that reached production. No gap."
+
+  - item: "Bootstrap 3 to Skaut Design migration"
+    addressed: true
+    in_documents: ["GH (deleted_or_replaced)", "08 (frontend dependencies)", "05 (SkautDesignFormRenderer)"]
+    notes: "CSS framework migration fully documented. No gap."
+
+  - item: "Vagrant to Docker migration"
+    addressed: true
+    in_documents: ["GH (deleted_or_replaced)", "08 (deployment)"]
+    notes: "Infrastructure migration fully documented. No gap."
+
+  - item: "TinyMCE to CKEditor migration"
+    addressed: true
+    in_documents: ["GH (deleted_or_replaced)", "06 (CKEditor in templates)"]
+    notes: "Editor migration documented. No gap."
+
+  - item: "News default route (/novinky/<url>) potentially non-functional"
+    addressed: true
+    in_documents: ["04 (routes)"]
+    notes: "Route is documented with a note that Core NewsPresenter has no renderDefault. This is a known non-functional route, not a documentation gap."
+
+  git_history_gaps_summary:
+    total_items_checked: 10
+    addressed: 10
+    unaddressed: 0
+    notes: "All significant items from git history (deleted features, abandoned branches, migrations) are accounted for in the documentation."
+
+# =============================================================================
+# Overall Completeness Summary
+# =============================================================================
+overall_summary:
+  file_coverage: "114/114 files covered (100%)"
+  route_connections: "31/31 routes connected (100%); 1 note about potentially non-functional news detail route"
+  entity_field_coverage: "26/26 fields documented; 3 vestigial columns identified (Article.description, News.url, News.description)"
+  permission_enforcement: "6/9 permissions enforced in routes; 3 unimplemented permissions (parents resource) identified as dead code from reverted feature"
+  git_history_gaps: "10/10 items addressed (100%)"
+
+  action_items:
+    - priority: low
+      description: "Consider removing vestigial database columns (Article.description, News.url, News.description) in the rewrite since they are never used by application code."
+      affects: "01-data-model.yaml"
+
+    - priority: low
+      description: "Consider removing the scout, leader roles and parents resource from the ACL in the rewrite unless the parents feature will be re-implemented."
+      affects: "02-auth.yaml"
+
+    - priority: low
+      description: "Investigate the /novinky/<url> route -- it is defined in RouterFactory but has no corresponding renderDefault in Core NewsPresenter. Either remove it or implement a single-news detail view."
+      affects: "04-routes.yaml"
+
+    - priority: info
+      description: "The photo gallery (chrono-albums) data is loaded from a static structure.json file. There is no admin interface for managing photo albums -- photos must be manually added to the server and structure.json updated."
+      affects: "06-views.yaml, 07-file-operations.yaml"
+
+    - priority: info
+      description: "Contact page email addresses (kroupa.matyas@gmail.com, lukas.trumm@gmail.com) and leader information (names, phones) are hardcoded in the template. Consider making these configurable in a rewrite."
+      affects: "06-views.yaml, 03-business-logic.yaml"
