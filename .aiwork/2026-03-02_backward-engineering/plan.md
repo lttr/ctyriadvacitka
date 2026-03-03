@@ -1,3 +1,7 @@
+---
+status: active
+---
+
 # Backward Engineering Plan — Čtyřiadvacítka
 
 ## Goal
