@@ -3,12 +3,12 @@ set -euo pipefail
 
 # ==============================================================================
 # Backward Engineering Runner
-# Executes the full backward-engineering process from BACKWARD_ENGINEERING_PLAN.md
+# Executes the full backward-engineering process from .aiwork/2026-03-02_backward-engineering/plan.md
 # Each step runs as a separate Claude Code session (fresh context window).
 # ==============================================================================
 
 WORKDIR="$(cd "$(dirname "$0")" && pwd)"
-DOCS_DIR="$WORKDIR/docs/backward-engineering"
+DOCS_DIR="$WORKDIR/.aiwork/2026-03-02_backward-engineering"
 SOURCE_DIR="$WORKDIR/source"
 LOG_DIR="$WORKDIR/logs"
 STATE_FILE="$WORKDIR/.backward-engineering-state"
@@ -93,7 +93,7 @@ step_0_2_inventory() {
   run_claude "$step" "$(cat <<'PROMPT'
 You are executing Phase 0.2 of a backward-engineering process.
 
-Read the plan file at BACKWARD_ENGINEERING_PLAN.md — specifically the
+Read the plan file at .aiwork/2026-03-02_backward-engineering/plan.md — specifically the
 "0.2 Build Complete File Inventory" section.
 
 The source code has been cloned into source/.
@@ -104,7 +104,7 @@ Your task:
 3. Categorize each file by type and category as specified in the plan
 4. Assign each file to one or more output documents (data-model, business-logic,
    auth, routes, forms, views, file-operations, config-and-infra)
-5. Write the result to docs/backward-engineering/00-file-inventory.yaml
+5. Write the result to .aiwork/2026-03-02_backward-engineering/00-file-inventory.yaml
 
 Follow the exact YAML structure from the plan. Do NOT guess purposes from
 filenames — open every file. The verification rule: every file must map to at
@@ -124,7 +124,7 @@ step_0_3_git_history() {
   run_claude "$step" "$(cat <<'PROMPT'
 You are executing Phase 0.3 of a backward-engineering process.
 
-Read the plan file at BACKWARD_ENGINEERING_PLAN.md — specifically the
+Read the plan file at .aiwork/2026-03-02_backward-engineering/plan.md — specifically the
 "0.3 Mine Git History" section.
 
 The source code is in source/. Run all git commands inside that directory.
@@ -136,7 +136,7 @@ Your task:
 4. git branch -a — check for feature branches
 5. git tag — check for version tags
 6. For significant commits, git show <hash> to read actual diffs
-7. Write the result to docs/backward-engineering/00-git-history.yaml
+7. Write the result to .aiwork/2026-03-02_backward-engineering/00-git-history.yaml
 
 Follow the exact YAML structure from the plan. Every commit must be accounted
 for. Every deleted file must appear in deleted_or_replaced. Include an
@@ -157,8 +157,8 @@ step_0_4_read_batch() {
   run_claude "$step" "$(cat <<PROMPT
 You are executing Phase 0.4 (batch $batch_num of 7) of a backward-engineering process.
 
-Read the plan file at BACKWARD_ENGINEERING_PLAN.md — specifically the
-"0.4 Read Every File" section. Also read docs/backward-engineering/00-file-inventory.yaml
+Read the plan file at .aiwork/2026-03-02_backward-engineering/plan.md — specifically the
+"0.4 Read Every File" section. Also read .aiwork/2026-03-02_backward-engineering/00-file-inventory.yaml
 to understand all files.
 
 Batch $batch_num: $batch_desc
@@ -172,7 +172,7 @@ For each file:
 3. Note cross-file dependencies (what injects what, what includes what)
 4. Note any hardcoded values, magic strings, implicit behaviors
 
-Write your findings to: docs/backward-engineering/00-batch-${batch_num}-notes.yaml
+Write your findings to: .aiwork/2026-03-02_backward-engineering/00-batch-${batch_num}-notes.yaml
 
 Structure per file:
   - path: <file path>
@@ -198,21 +198,21 @@ step_phase_1() {
 You are executing Phase 1 of a backward-engineering process.
 
 Read these files to understand the full context:
-1. BACKWARD_ENGINEERING_PLAN.md — the master plan
-2. docs/backward-engineering/00-file-inventory.yaml — all files
-3. docs/backward-engineering/00-git-history.yaml — git history
-4. All batch notes: docs/backward-engineering/00-batch-*-notes.yaml
+1. .aiwork/2026-03-02_backward-engineering/plan.md — the master plan
+2. .aiwork/2026-03-02_backward-engineering/00-file-inventory.yaml — all files
+3. .aiwork/2026-03-02_backward-engineering/00-git-history.yaml — git history
+4. All batch notes: .aiwork/2026-03-02_backward-engineering/00-batch-*-notes.yaml
 
 Now produce TWO documents following the exact structures in the plan:
 
-1. docs/backward-engineering/01-data-model.yaml
+1. .aiwork/2026-03-02_backward-engineering/01-data-model.yaml
    - Read source/sql/lamp.sql and all *Manager.php model files from source/
    - Capture every entity, field, type, constraint, relationship
    - Use tech-agnostic types (string, not VARCHAR)
    - Verify: every column in every CREATE TABLE appears; every column constant
      in every Manager maps to a documented field
 
-2. docs/backward-engineering/02-auth.yaml
+2. .aiwork/2026-03-02_backward-engineering/02-auth.yaml
    - Read AuthenticatorManager.php, AuthorizatorManager.php, BasePresenter.php,
      and config files from source/
    - Capture authentication flow, role hierarchy, full permission matrix
@@ -236,14 +236,14 @@ step_phase_2() {
 You are executing Phase 2 of a backward-engineering process.
 
 Read these files first:
-1. BACKWARD_ENGINEERING_PLAN.md — the master plan
-2. docs/backward-engineering/01-data-model.yaml — entity definitions (Phase 1)
-3. docs/backward-engineering/02-auth.yaml — auth/permissions (Phase 1)
-4. All batch notes: docs/backward-engineering/00-batch-*-notes.yaml
+1. .aiwork/2026-03-02_backward-engineering/plan.md — the master plan
+2. .aiwork/2026-03-02_backward-engineering/01-data-model.yaml — entity definitions (Phase 1)
+3. .aiwork/2026-03-02_backward-engineering/02-auth.yaml — auth/permissions (Phase 1)
+4. All batch notes: .aiwork/2026-03-02_backward-engineering/00-batch-*-notes.yaml
 
 Now produce TWO documents following the exact structures in the plan:
 
-1. docs/backward-engineering/03-business-logic.yaml
+1. .aiwork/2026-03-02_backward-engineering/03-business-logic.yaml
    - Read ALL Manager model files and ALL presenter action methods from source/
    - Capture every operation: inputs, behavior, side effects, auth required,
      error cases
@@ -251,7 +251,7 @@ Now produce TWO documents following the exact structures in the plan:
    - Verify: every public method in every Manager is documented; every presenter
      action that modifies data is captured
 
-2. docs/backward-engineering/04-routes.yaml
+2. .aiwork/2026-03-02_backward-engineering/04-routes.yaml
    - Read RouterFactory.php and all presenter action/render methods from source/
    - Capture every URL pattern, what it does, auth requirements
    - Reference permissions from 02-auth.yaml
@@ -274,15 +274,15 @@ step_phase_3() {
 You are executing Phase 3 of a backward-engineering process.
 
 Read these files first:
-1. BACKWARD_ENGINEERING_PLAN.md — the master plan
-2. docs/backward-engineering/01-data-model.yaml
-3. docs/backward-engineering/03-business-logic.yaml
-4. docs/backward-engineering/04-routes.yaml
-5. All batch notes: docs/backward-engineering/00-batch-*-notes.yaml
+1. .aiwork/2026-03-02_backward-engineering/plan.md — the master plan
+2. .aiwork/2026-03-02_backward-engineering/01-data-model.yaml
+3. .aiwork/2026-03-02_backward-engineering/03-business-logic.yaml
+4. .aiwork/2026-03-02_backward-engineering/04-routes.yaml
+5. All batch notes: .aiwork/2026-03-02_backward-engineering/00-batch-*-notes.yaml
 
 Now produce TWO documents following the exact structures in the plan:
 
-1. docs/backward-engineering/05-forms.yaml
+1. .aiwork/2026-03-02_backward-engineering/05-forms.yaml
    - Read ALL form factory files in source/app/factories/
    - Capture every form: fields, types, labels, validation, submit behavior,
      success/error handling
@@ -291,7 +291,7 @@ Now produce TWO documents following the exact structures in the plan:
    - Verify: every form factory produces exactly one documented form; every
      field appears
 
-2. docs/backward-engineering/06-views.yaml
+2. .aiwork/2026-03-02_backward-engineering/06-views.yaml
    - Read ALL .latte template files and all presenter render methods from source/
    - Capture every page: layout, data dependencies, UI components, conditionals,
      AJAX behaviors, navigation links
@@ -315,13 +315,13 @@ step_phase_4() {
 You are executing Phase 4 of a backward-engineering process.
 
 Read these files first:
-1. BACKWARD_ENGINEERING_PLAN.md — the master plan
-2. docs/backward-engineering/00-file-inventory.yaml
-3. All batch notes: docs/backward-engineering/00-batch-*-notes.yaml
+1. .aiwork/2026-03-02_backward-engineering/plan.md — the master plan
+2. .aiwork/2026-03-02_backward-engineering/00-file-inventory.yaml
+3. All batch notes: .aiwork/2026-03-02_backward-engineering/00-batch-*-notes.yaml
 
 Now produce TWO documents following the exact structures in the plan:
 
-1. docs/backward-engineering/07-file-operations.yaml
+1. .aiwork/2026-03-02_backward-engineering/07-file-operations.yaml
    - Read ImageManager.php and all image/upload-related form factories and
      templates from source/
    - Check source/www/img/ and source/www/prilohy/ directory structures
@@ -329,7 +329,7 @@ Now produce TWO documents following the exact structures in the plan:
    - Verify: every file operation in ImageManager documented; every upload
      directory listed
 
-2. docs/backward-engineering/08-config-and-infra.yaml
+2. .aiwork/2026-03-02_backward-engineering/08-config-and-infra.yaml
    - Read all config files (.neon), Dockerfile, docker-compose.yml, k8s/,
      package.json, composer.json from source/
    - Capture environment requirements, DI container wiring, frontend build,
@@ -352,19 +352,19 @@ step_phase_5() {
 You are executing Phase 5 (final validation) of a backward-engineering process.
 
 Read ALL documents produced so far:
-1. BACKWARD_ENGINEERING_PLAN.md — the master plan
-2. docs/backward-engineering/00-file-inventory.yaml
-3. docs/backward-engineering/00-git-history.yaml
-4. docs/backward-engineering/01-data-model.yaml
-5. docs/backward-engineering/02-auth.yaml
-6. docs/backward-engineering/03-business-logic.yaml
-7. docs/backward-engineering/04-routes.yaml
-8. docs/backward-engineering/05-forms.yaml
-9. docs/backward-engineering/06-views.yaml
-10. docs/backward-engineering/07-file-operations.yaml
-11. docs/backward-engineering/08-config-and-infra.yaml
+1. .aiwork/2026-03-02_backward-engineering/plan.md — the master plan
+2. .aiwork/2026-03-02_backward-engineering/00-file-inventory.yaml
+3. .aiwork/2026-03-02_backward-engineering/00-git-history.yaml
+4. .aiwork/2026-03-02_backward-engineering/01-data-model.yaml
+5. .aiwork/2026-03-02_backward-engineering/02-auth.yaml
+6. .aiwork/2026-03-02_backward-engineering/03-business-logic.yaml
+7. .aiwork/2026-03-02_backward-engineering/04-routes.yaml
+8. .aiwork/2026-03-02_backward-engineering/05-forms.yaml
+9. .aiwork/2026-03-02_backward-engineering/06-views.yaml
+10. .aiwork/2026-03-02_backward-engineering/07-file-operations.yaml
+11. .aiwork/2026-03-02_backward-engineering/08-config-and-infra.yaml
 
-Now produce: docs/backward-engineering/09-completeness-matrix.yaml
+Now produce: .aiwork/2026-03-02_backward-engineering/09-completeness-matrix.yaml
 
 This is the final cross-reference that validates everything:
 
