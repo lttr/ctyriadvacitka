@@ -17,3 +17,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 The `.aiwork/` folder follows the aiwork folder protocol for organizing AI artifacts by task.
 
 Do not ignore the `.aiwork/` directory — it is committed for traceability.
+
+## Git Workflow
+
+After pushing changes to a branch, always provide the PR URL in this format:
+
+`https://github.com/lttr/ctyriadvacitka/compare/claude/<branch-name>`
