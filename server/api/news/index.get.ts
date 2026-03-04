@@ -1,4 +1,4 @@
-import { desc } from "drizzle-orm"
+import { count, desc } from "drizzle-orm"
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -6,12 +6,15 @@ export default defineEventHandler(async (event) => {
   const perPage = Math.min(50, Math.max(1, Number(query.perPage) || 10))
   const offset = (page - 1) * perPage
 
-  const items = await db
-    .select()
-    .from(tables.news)
-    .orderBy(desc(tables.news.datetime))
-    .limit(perPage)
-    .offset(offset)
+  const [items, [{ totalCount }]] = await Promise.all([
+    db
+      .select()
+      .from(tables.news)
+      .orderBy(desc(tables.news.datetime))
+      .limit(perPage)
+      .offset(offset),
+    db.select({ totalCount: count() }).from(tables.news),
+  ])
 
-  return { items, page, perPage }
+  return { items, page, perPage, totalCount }
 })
