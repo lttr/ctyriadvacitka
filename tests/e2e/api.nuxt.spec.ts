@@ -101,12 +101,13 @@ describe("public API integration tests", async () => {
   })
 
   describe("GET /api/news", () => {
-    it("returns paginated news with default page=1 perPage=10", async () => {
+    it("returns paginated news with default page=1 perPage=10 and totalCount", async () => {
       const result = await $fetch("/api/news")
 
       expect(result.page).toBe(1)
       expect(result.perPage).toBe(10)
       expect(result.items).toHaveLength(10) // 11 total, page 1 = 10
+      expect(result.totalCount).toBe(11)
     })
 
     it("supports page and perPage query params", async () => {
@@ -159,6 +160,63 @@ describe("public API integration tests", async () => {
       ).rejects.toMatchObject({
         statusCode: 404,
       })
+    })
+  })
+
+  // --- Page rendering ---
+
+  describe("Homepage", () => {
+    it("renders the intro article content", async () => {
+      const html = await $fetch("/")
+
+      expect(html).toContain("Čtyřiadvacítka")
+      expect(html).toContain("Vítejte na stránkách 24. oddílu")
+    })
+
+    it("renders sidebar navigation with menu articles", async () => {
+      const html = await $fetch("/")
+
+      expect(html).toContain("O nás")
+      expect(html).toContain("Vedení oddílu")
+      expect(html).toContain("Přihláška")
+    })
+
+    it("renders recent news in sidebar", async () => {
+      const html = await $fetch("/")
+
+      expect(html).toContain("Schůzka s rodiči")
+    })
+  })
+
+  describe("Article detail page", () => {
+    it("renders article content by slug", async () => {
+      const html = await $fetch("/clanek/o-nas")
+
+      expect(html).toContain("O nás")
+      expect(html).toContain("skautský oddíl")
+    })
+
+    it("returns 404 for non-existent article", async () => {
+      await expect($fetch("/clanek/non-existent")).rejects.toMatchObject({
+        statusCode: 404,
+      })
+    })
+  })
+
+  describe("News list page", () => {
+    it("renders paginated news list", async () => {
+      const html = await $fetch("/novinky")
+
+      expect(html).toContain("Novinky")
+      expect(html).toContain("Schůzka s rodiči")
+    })
+
+    it("supports page query parameter", async () => {
+      const html = await $fetch("/novinky?stranka=2")
+
+      expect(html).toContain("Novinky")
+      // Page 2 with default perPage=10 should have the remaining 1 item
+      expect(html).toContain("Zahájení nového roku")
     })
   })
 })
