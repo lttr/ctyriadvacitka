@@ -219,4 +219,89 @@ describe("public API integration tests", async () => {
       expect(html).toContain("Zahájení nového roku")
     })
   })
+
+  // --- Contact API ---
+
+  describe("POST /api/contact", () => {
+    it("accepts valid contact form submission", async () => {
+      const result = await $fetch("/api/contact", {
+        method: "POST",
+        body: {
+          name: "Jan Novák",
+          email: "jan@example.cz",
+          message: "Chtěl bych se zeptat na přijímání nových členů.",
+        },
+      })
+
+      expect(result).toHaveProperty("success", true)
+    })
+
+    it("rejects submission with missing name", async () => {
+      await expect(
+        $fetch("/api/contact", {
+          method: "POST",
+          body: {
+            email: "jan@example.cz",
+            message: "Chtěl bych se zeptat na přijímání nových členů.",
+          },
+        }),
+      ).rejects.toMatchObject({ statusCode: 400 })
+    })
+
+    it("rejects submission with invalid email", async () => {
+      await expect(
+        $fetch("/api/contact", {
+          method: "POST",
+          body: {
+            name: "Jan Novák",
+            email: "not-an-email",
+            message: "Chtěl bych se zeptat na přijímání nových členů.",
+          },
+        }),
+      ).rejects.toMatchObject({ statusCode: 400 })
+    })
+
+    it("rejects submission with short message", async () => {
+      await expect(
+        $fetch("/api/contact", {
+          method: "POST",
+          body: {
+            name: "Jan Novák",
+            email: "jan@example.cz",
+            message: "Ahoj",
+          },
+        }),
+      ).rejects.toMatchObject({ statusCode: 400 })
+    })
+
+    it("rejects empty body", async () => {
+      await expect(
+        $fetch("/api/contact", {
+          method: "POST",
+          body: {},
+        }),
+      ).rejects.toMatchObject({ statusCode: 400 })
+    })
+  })
+
+  // --- Contact page ---
+
+  describe("Contact page", () => {
+    it("renders contact page with contact information", async () => {
+      const html = await $fetch("/kontakt")
+
+      expect(html).toContain("Kontakt")
+      expect(html).toContain("info@24hk.cz")
+      expect(html).toContain("+420 123 456 789")
+      expect(html).toContain("Hradec Králové")
+    })
+
+    it("renders contact form", async () => {
+      const html = await $fetch("/kontakt")
+
+      expect(html).toContain("Jméno")
+      expect(html).toContain("E-mail")
+      expect(html).toContain("Zpráva")
+    })
+  })
 })
