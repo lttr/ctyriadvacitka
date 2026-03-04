@@ -20,7 +20,7 @@ unit — no separate API server, no separate frontend build.
 │  │  Pages        │    │  API Routes           │  │
 │  │  Components   │    │  Auth Middleware       │  │
 │  │  Layouts      │    │  Email (SMTP)         │  │
-│  │  Composables  │    │  File Storage (disk)  │  │
+│  │  Composables  │    │  NuxtHub Blob Storage │  │
 │  └──────┬───────┘    └──────────┬────────────┘  │
 │         │                       │                │
 │         └───────────┬───────────┘                │
@@ -61,9 +61,9 @@ unit — no separate API server, no separate frontend build.
 | `@nuxt/icon` | Icon components (Iconify) | Yes |
 | `@nuxt/image` | Image optimization | Yes — header images |
 | `@nuxtjs/color-mode` | Dark/light theme | **No** — original has no dark mode |
-| `@nuxtjs/plausible` | Analytics | **No** — low-traffic scout site, not needed initially |
+| `@nuxtjs/plausible` | Analytics | Yes — privacy-friendly, self-hosted analytics |
 | `@nuxtjs/seo` | SEO meta/sitemap | Yes — public content site benefits from SEO |
-| `@nuxthub/core` | Blob storage, DB, tasks | **No** — using plain SQLite + disk storage (simpler) |
+| `@nuxthub/core` | Blob storage, DB, KV, cache | Yes — managed file storage + DB integration |
 | `@lttr/nuxt-puleo` | Custom CSS framework | Yes |
 | `@vueuse/nuxt` | VueUse composables | Yes |
 | `@sentry/nuxt` | Error tracking | **Defer** — add later if needed |
@@ -81,6 +81,7 @@ unit — no separate API server, no separate frontend build.
 | Component | Package | Notes |
 |-----------|---------|-------|
 | Engine | SQLite | Single file, zero config, sufficient for low-traffic CMS |
+| Client | `@libsql/client` | LibSQL client (SQLite-compatible), used via NuxtHub |
 | ORM | Drizzle ORM | Type-safe queries, same as chrono-albums-2 |
 | Migrations | Drizzle Kit | `drizzle-kit generate` + `drizzle-kit migrate` |
 | Validation | drizzle-zod | Generate Zod schemas from Drizzle tables |
@@ -185,14 +186,17 @@ These become API calls from Vue components to Nitro endpoints.
 
 | Feature | Approach | Notes |
 |---------|----------|-------|
-| Header images | Disk (`public/uploads/header-images/`) | PRD §10.1 — PNG/JPG/GIF, no resize |
-| Article images | Disk (`public/uploads/article-images/`) | PRD §10.2 — inserted into content HTML |
+| Header images | NuxtHub Blob (`header-images/`) | PRD §10.1 — PNG/JPG/GIF, served via `@nuxt/image` |
+| Article images | NuxtHub Blob (`article-images/`) | PRD §10.2 — inserted into content HTML |
 | Contact photos | Static assets (`public/img/contacts/`) | PRD §10.3 — managed outside CMS |
-| Attachments | Disk (`public/uploads/attachments/`) | PRD §10.4 — directory listing enabled |
+| Attachments | NuxtHub Blob (`attachments/`) | PRD §10.4 — public download links |
 
-**Not using NuxtHub Blob Storage** — unnecessary for a self-hosted site with
-simple file uploads. Plain disk storage is simpler and matches the original
-behavior.
+Using **NuxtHub Blob Storage** for user-uploaded files. This provides a
+consistent API for file operations (`hubBlob().put()`, `hubBlob().list()`,
+`hubBlob().del()`) and keeps uploads out of the git-tracked `public/`
+directory. In self-hosted mode, blobs are stored on disk automatically.
+Static assets (contact photos) remain in `public/img/` as they are not
+managed through the CMS.
 
 ---
 
@@ -248,8 +252,8 @@ Adopted from chrono-albums-2:
   "lint:fix": "eslint --fix",
   "format": "prettier --list-different --write .",
   "verify": "npm run format && npm run lint:fix && npm run typecheck && npm test",
-  "db:generate": "drizzle-kit generate",
-  "db:migrate": "drizzle-kit migrate",
+  "db:generate": "npx nuxt db generate",
+  "db:migrate": "npx nuxt db migrate",
   "db:seed": "npx tsx scripts/seed.ts",
   "db:reset": "rm -f .data/db/sqlite.db && npm run db:migrate && npm run db:seed"
 }
@@ -263,7 +267,7 @@ Adopted from chrono-albums-2:
 |-----------|--------|-------|
 | Platform | Coolify | Self-hosted PaaS on VPS, same as chrono-albums-2 |
 | Build tool | nixpacks | Detects Node.js, runs build |
-| Start command | `pnpm run db:migrate && node .output/server/index.mjs` | Auto-migrate on start |
+| Start command | `pnpm exec nuxt db migrate && node .output/server/index.mjs` | Auto-migrate on start |
 | TLS | Managed by Coolify | Let's Encrypt |
 | Domain | TBD | Currently `ctyriadvacitka.skauting.cz` (original FTP host) |
 
@@ -283,6 +287,10 @@ SMTP_PORT=
 SMTP_USER=
 SMTP_PASS=
 SMTP_FROM=
+
+# Analytics
+NUXT_PUBLIC_PLAUSIBLE_DOMAIN=ctyriadvacitka.skauting.cz
+NUXT_PUBLIC_PLAUSIBLE_API_HOST=https://plausible.lttr.cz
 
 # App
 NUXT_PUBLIC_SITE_URL=https://ctyriadvacitka.skauting.cz
@@ -359,15 +367,12 @@ Components from chrono-albums-2 that **do not apply** to this project:
 
 | Component | Reason |
 |-----------|--------|
-| `@nuxthub/core` | No need for managed blob storage — plain disk is simpler for self-hosted |
 | `@nuxtjs/color-mode` | Original has no dark mode; out of scope |
-| `@nuxtjs/plausible` | Low-traffic scout site; analytics not in requirements |
 | `@sentry/nuxt` | Can add later; not needed for initial launch |
 | PhotoSwipe, justified-layout | No photo gallery feature (dropped in PRD §2) |
 | Sharp, FFmpeg, ExifReader | No image/video processing needed — images stored as-is |
 | heic2any, CompressorJS | No client-side media processing needed |
 | Google OAuth / better-auth invitations | Scout site uses username+password auth |
-| `@libsql/client` | Using plain SQLite driver (better-sqlite3 via Drizzle) instead of LibSQL |
 | date-fns | Evaluate need — may use native `Intl.DateTimeFormat` for Czech date formatting |
 
 ---
