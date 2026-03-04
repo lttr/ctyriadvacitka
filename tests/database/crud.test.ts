@@ -1,5 +1,5 @@
 import { createClient } from "@libsql/client"
-import { eq } from "drizzle-orm"
+import { desc, eq } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/libsql"
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest"
 
@@ -309,5 +309,41 @@ describe("site settings CRUD", () => {
     await expect(
       db.insert(schema.siteSettings).values({ key: "unique", value: "second" }),
     ).rejects.toThrow()
+  })
+})
+
+describe("ordering", () => {
+  it("selects articles ordered by datetime DESC", async () => {
+    await db.insert(schema.articles).values([
+      { title: "Starý", url: "stary", datetime: "2026-01-01T10:00:00.000Z" },
+      { title: "Nový", url: "novy", datetime: "2026-03-01T10:00:00.000Z" },
+      {
+        title: "Střední",
+        url: "stredni",
+        datetime: "2026-02-01T10:00:00.000Z",
+      },
+    ])
+
+    const results = await db
+      .select()
+      .from(schema.articles)
+      .orderBy(desc(schema.articles.datetime))
+
+    expect(results.map((r) => r.title)).toEqual(["Nový", "Střední", "Starý"])
+  })
+
+  it("selects news ordered by datetime DESC", async () => {
+    await db.insert(schema.news).values([
+      { title: "Leden", datetime: "2026-01-15T10:00:00.000Z" },
+      { title: "Březen", datetime: "2026-03-15T10:00:00.000Z" },
+      { title: "Únor", datetime: "2026-02-15T10:00:00.000Z" },
+    ])
+
+    const results = await db
+      .select()
+      .from(schema.news)
+      .orderBy(desc(schema.news.datetime))
+
+    expect(results.map((r) => r.title)).toEqual(["Březen", "Únor", "Leden"])
   })
 })
