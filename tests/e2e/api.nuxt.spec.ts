@@ -332,6 +332,56 @@ describe("public API integration tests", async () => {
     })
   })
 
+  // --- News detail API ---
+
+  describe("GET /api/news/[id]", () => {
+    it("returns a single news item by ID", async () => {
+      // First get the list to find a valid ID
+      const list = await $fetch("/api/news")
+      const firstItem = list.items[0]
+
+      const newsItem = await $fetch(`/api/news/${firstItem.id}`)
+
+      expect(newsItem.id).toBe(firstItem.id)
+      expect(newsItem.title).toBe(firstItem.title)
+      expect(newsItem.content).toBe(firstItem.content)
+      expect(newsItem.author).toBe(firstItem.author)
+      expect(newsItem.datetime).toBe(firstItem.datetime)
+    })
+
+    it("returns 404 for non-existent ID", async () => {
+      await expect($fetch("/api/news/99999")).rejects.toMatchObject({
+        statusCode: 404,
+      })
+    })
+
+    it("returns 400 for invalid ID", async () => {
+      await expect($fetch("/api/news/abc")).rejects.toMatchObject({
+        statusCode: 400,
+      })
+    })
+  })
+
+  // --- News detail page ---
+
+  describe("News detail page", () => {
+    it("renders news item content by ID", async () => {
+      // Get the ID of the first news item
+      const list = await $fetch("/api/news")
+      const firstItem = list.items[0]
+
+      const html = await $fetch(`/novinka/${firstItem.id}`)
+
+      expect(html).toContain(firstItem.title)
+    })
+
+    it("returns 404 for non-existent news item", async () => {
+      await expect($fetch("/novinka/99999")).rejects.toMatchObject({
+        statusCode: 404,
+      })
+    })
+  })
+
   // --- Events page ---
 
   describe("Events page", () => {
