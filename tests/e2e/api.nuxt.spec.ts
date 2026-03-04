@@ -304,4 +304,56 @@ describe("public API integration tests", async () => {
       expect(html).toContain("Zpráva")
     })
   })
+
+  // --- Article list page ---
+
+  describe("Article list page", () => {
+    it("renders all articles with titles", async () => {
+      const html = await $fetch("/clanky")
+
+      expect(html).toContain("Články")
+      expect(html).toContain("O nás")
+      expect(html).toContain("Vedení oddílu")
+      expect(html).toContain("Letní tábor 2026")
+    })
+
+    it("renders article links pointing to detail pages", async () => {
+      const html = await $fetch("/clanky")
+
+      expect(html).toContain('href="/clanek/o-nas"')
+      expect(html).toContain('href="/clanek/historie"')
+    })
+
+    it("renders article authors", async () => {
+      const html = await $fetch("/clanky")
+
+      expect(html).toContain("admin")
+      expect(html).toContain("editor")
+    })
+  })
+
+  // --- Events page ---
+
+  describe("Events page", () => {
+    it("renders events page with heading", async () => {
+      const html = await $fetch("/terminy")
+
+      expect(html).toContain("Termíny akcí")
+    })
+
+    it("renders Google Calendar iframe with correct calendar ID", async () => {
+      const html = await $fetch("/terminy")
+
+      expect(html).toContain("calendar.google.com/calendar/embed")
+      expect(html).toContain(
+        encodeURIComponent("example@group.calendar.google.com"),
+      )
+    })
+
+    it("renders iframe with accessible title", async () => {
+      const html = await $fetch("/terminy")
+
+      expect(html).toContain('title="Kalendář akcí oddílu"')
+    })
+  })
 })
