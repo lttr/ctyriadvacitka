@@ -267,56 +267,341 @@ These are inline operations triggered from existing pages (no separate URL):
 
 ---
 
-## 6. Layouts & Navigation
+## 6. Visual Design & Behavior
 
-### 6.1 Base Layout
+### 6.1 Design Language
 
-The root HTML layout wrapping all pages.
+The site uses a **Bulma-based CSS framework** (Skaut Design — a variant
+built for Czech Scout organizations). The visual identity is clean, minimal,
+and content-focused.
 
-**Contains:**
-- HTML `<head>` with meta tags (charset, viewport), Open Sans font, CSS
-- Page `<title>`: `{page title} | {webName}`
-- Flash message display area (Bulma notification styling by type:
-  success/warning/danger/info)
-- Main content area (centered column, responsive)
-- Sponsor logos section (Královéhradecký kraj, Město Hradec Králové, Nadace
-  ČEZ)
-- Footer with three navigation columns:
-  - Čtyřiadvacítka: links to public pages + dynamic article menu items
-  - Organizace: external links (Junák, Skaut HK, Facebook, etc.)
-  - Administrace: conditional links based on user role
-- Copyright footer
-- JavaScript includes
-- Analytics integration (Plausible)
+**Color palette:**
 
-### 6.2 Public Layout (extends Base)
+| Role | Color | Bulma class | Usage |
+|------|-------|-------------|-------|
+| Primary | Blue | `is-primary` | Links, buttons, inactive role toggles, labels |
+| Success | Green | `is-success` | Active role toggles, success flash messages |
+| Warning | Orange/Yellow | `is-warning` | Warning flash messages |
+| Danger | Red | `is-danger` | Delete buttons, error flash messages |
+| Info | Light blue | `is-info` | Informational flash messages |
 
-- **Navbar**: Logo (logo24.svg) + hamburger menu toggle for mobile
-  - Links: Novinky, Termíny, *dynamic article menu items*, Kontakty
-- **Hero section**: Random header image from the header images pool, overlaid
-  with text "Skautský oddíl" / "Čtyřiadvacítka"
+**Typography:**
+- Font family: **Open Sans** (loaded from Google Fonts)
+- Headings: Bulma/Skaut Design heading styles (h1–h6)
+- Body text: regular weight, default Bulma sizing
 
-### 6.3 Admin Layout (extends Base)
+**Spacing & layout:**
+- Content is centered in a responsive column:
+  - 4/5 width on desktop
+  - 2/3 width on widescreen
+- Bulma `columns`/`column` grid for multi-column sections
+- Bulma `field`/`control` wrappers for form layout
 
-- **Navbar**: Logo + "Administrace" text
-  - Always visible: Články, Novinky
-  - Admin-only: Web, Obrázky záhlaví, Uživatelé
-  - Back link: "Zpět" → public site
-- **Hero section**: Same random header image as public layout
+### 6.2 Page Structure
 
-### 6.4 Header Image Rotation
+Every page follows this vertical structure:
 
-On every page load, one image from the header images pool is randomly selected
-and used as the hero background. The pool is managed via the admin header images
-page.
+```
+┌──────────────────────────────────────────────┐
+│  Navbar (logo + navigation links)            │
+├──────────────────────────────────────────────┤
+│  Hero section (full-width background image   │
+│  with dark overlay + heading text)           │
+├──────────────────────────────────────────────┤
+│  Flash messages (if any)                     │
+├──────────────────────────────────────────────┤
+│  Page title (h1)                             │
+├──────────────────────────────────────────────┤
+│  Main content (centered column)              │
+│                                              │
+│                                              │
+├──────────────────────────────────────────────┤
+│  Sponsor logos (3 logos in a row)             │
+├──────────────────────────────────────────────┤
+│  Footer (3-column navigation)                │
+├──────────────────────────────────────────────┤
+│  Copyright line                              │
+└──────────────────────────────────────────────┘
+```
 
-### 6.5 Dynamic Menu Items
+### 6.3 Navbar
 
-Articles with `in_menu = true` appear as links in:
-- The public navbar (between static nav items)
-- The base layout footer navigation
+**Public navbar:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ [logo24.svg]  Novinky  Termíny  {dynamic articles}  Kontakty  │
+└─────────────────────────────────────────────────────────────┘
+```
 
-These are loaded on every page render.
+- Logo: SVG file `logo24.svg` (24th Scout Troop emblem)
+- On mobile: collapses to a hamburger menu (Bulma `navbar-burger`). Clicking
+  the burger toggles the nav link list.
+- Dynamic article links appear between the static items, loaded from
+  `articlesInMenu` (articles with `in_menu = true`)
+
+**Admin navbar:**
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ [logo24.svg] Administrace   Články  Novinky  [Web  Obr.záhlaví  Uživatelé]  Zpět │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+- "Web", "Obrázky záhlaví", "Uživatelé" visible only to admin role
+- "Zpět" links back to the public site
+
+### 6.4 Hero Section
+
+Full-width banner at the top of every page:
+
+- **Background:** A randomly selected image from the header images pool
+  (one random pick per page load). Images are large JPEGs (~1800×500px),
+  displayed with `background-size: cover`
+- **Overlay:** Dark semi-transparent overlay for text contrast
+- **Text:** "Skautský oddíl" (subtitle) above "Čtyřiadvacítka" (main heading)
+- **Decorative:** At wider viewports, a CSS clip-path creates a diagonal/wave
+  cut at the bottom edge of the hero
+- The hero is identical on public and admin layouts (same image pool, same
+  text)
+
+### 6.5 Flash Messages
+
+Displayed immediately below the hero, above the page title. Styled as Bulma
+`notification` components:
+
+| Type | Appearance | When used |
+|------|------------|-----------|
+| `success` | Green background | Successful operations (save, delete, login) |
+| `warning` | Yellow/orange background | Duplicate entries, permission issues |
+| `danger` | Red background | Errors (email failure, wrong password) |
+| `info` | Blue background | Informational notices (not logged in) |
+
+**Auto-dismiss:** Flash messages automatically hide after **5 seconds** via
+JavaScript.
+
+### 6.6 Forms
+
+All forms share a consistent visual style:
+
+- **Layout:** Each field wrapped in `div.field > div.control`
+- **Text inputs:** `input.is-medium` — medium-height inputs
+- **Textareas:** `textarea.is-medium`
+- **Labels:** `label.is-primary` — primary-colored label text
+- **Submit buttons:** `button.is-primary` — blue, primary-colored
+- **Required field error:** `Povinné pole.`
+- **Rich text fields** (article/news content): The plain textarea is replaced
+  by a WYSIWYG editor (the original used CKEditor 4.6.2; any comparable
+  rich text editor is acceptable)
+- **AJAX forms:** Web properties, header image upload, and article image
+  upload forms submit without full page reload. On success, relevant page
+  sections redraw (flash messages + data areas)
+
+### 6.7 Tables
+
+Admin list pages use HTML tables with Bulma styling:
+
+- **Article list table columns:** Title + date + URL | View | Edit | Delete |
+  Menu toggle
+- **News list table columns:** Title + date | Edit | Delete
+- **User management table columns:** Username (h2) | View profile | Delete |
+  Role toggles (3 buttons)
+
+**Role toggle buttons (user management):**
+- Three side-by-side buttons: `Uživatel` / `Redaktor` / `Administrátor`
+- The user's current role is highlighted in **green** (`is-success`)
+- Other roles shown in **blue** (`is-primary`)
+- Clicking a button changes the role via AJAX (no page reload)
+
+**Menu visibility toggle (article list):**
+- Single button per article
+- `in_menu = true`: Green button labeled `Zobrazeno v menu`
+- `in_menu = false`: Blue button labeled `Nezobrazeno v menu`
+- Toggles via AJAX
+
+### 6.8 Pagination
+
+Used on news list and article list pages:
+
+```
+          [« Předchozí]     [Další »]
+```
+
+- Centered navigation with Previous/Next links
+- "Předchozí" hidden on page 1
+- "Další" hidden on last page
+- News: 5 items per page
+- Articles: 10 items per page
+
+### 6.9 News List Items
+
+Each news item in the paginated list:
+
+```
+┌──────────────────────────────────┐
+│  Title (h2)                      │
+│  5. 3. 2026                      │
+│                                  │
+│  Full HTML content rendered      │
+│  as raw markup (no truncation)   │
+├──────────────────────────────────┤  ← horizontal rule between items
+│  Next item...                    │
+└──────────────────────────────────┘
+```
+
+### 6.10 Article List Items
+
+Each article in the paginated list is a **title link** to the article
+detail page. Simpler than news — just a list of clickable titles. Articles
+with `requestable = false` are hidden from non-admins.
+
+### 6.11 Article Detail
+
+```
+┌──────────────────────────────────┐
+│  [Upravit] (edit button,         │
+│   editors/admins only)           │
+│                                  │
+│  Full HTML content rendered      │
+│  as raw markup                   │
+│                                  │
+│  [Vytvořit stránku] (only when  │
+│   showing error page + editor)   │
+└──────────────────────────────────┘
+```
+
+### 6.12 Contact Page Layout
+
+```
+┌──────────────────────────────────┐
+│  Contact form                    │
+├──────────────────────────────────┤
+│  Vedení oddílu (Leadership)      │
+│                                  │
+│  ┌─────────┐ ┌─────────┐        │
+│  │ [photo] │ │ [photo] │  ...   │
+│  │ Name    │ │ Name    │        │
+│  │ Role    │ │ Role    │        │
+│  │ Nickname│ │ Nickname│        │
+│  │ Phone   │ │ Phone   │        │
+│  │ Email   │ │ Email   │        │
+│  └─────────┘ └─────────┘        │
+│                                  │
+│  Each leader in a Bulma "box"    │
+│  layout with photo (~180×180)    │
+├──────────────────────────────────┤
+│  Klubovny (Clubhouse)            │
+│  [photo of scout house]          │
+│  [Google Maps embed iframe]      │
+└──────────────────────────────────┘
+```
+
+- Email addresses are **obfuscated** against scrapers using JavaScript-based
+  rendering (e.g. `document.write` with concatenated parts)
+
+### 6.13 User Profile
+
+```
+┌──────────────────────────────────┐
+│  Name Surname                    │
+│  Přezdívka: Nickname             │
+│  Email: user@example.com         │
+│                                  │
+│  (own profile only:)             │
+│  [Upravit údaje]                 │
+│  [Změnit heslo]                  │
+│  [Odhlásit]                      │
+└──────────────────────────────────┘
+```
+
+### 6.14 Admin Article/News Editor
+
+```
+┌──────────────────────────────────┐
+│  Editor form (§7.6 / §7.7)      │
+│  - Title, URL, Date fields       │
+│  - [✓] Zobrazovat v seznamu      │
+│  - Content (WYSIWYG editor)      │
+│  - [Uložit článek]              │
+├──────────────────────────────────┤
+│  Article images upload (§7.8)    │
+│  [file input] [Přidat]          │
+│                                  │
+│  "Soubory se objeví v přílohy"  │
+│  (link to /attachments/)         │
+└──────────────────────────────────┘
+```
+
+### 6.15 Admin Header Images
+
+```
+┌──────────────────────────────────┐
+│  Obrázky záhlaví                 │
+│                                  │
+│  ┌──────────┬──────────┬───────┐ │
+│  │ [preview]│ filename │ [Smazat]│
+│  │ [preview]│ filename │ [Smazat]│
+│  │ ...      │          │       │ │
+│  └──────────┴──────────┴───────┘ │
+│                                  │
+│  Přidat nové obrázky             │
+│  [file input] [Přidat]          │
+└──────────────────────────────────┘
+```
+
+### 6.16 Sponsor Logos Section
+
+Three sponsor logos displayed in a row between the main content and the
+footer:
+
+- Královéhradecký kraj (`logo-khk.gif`, ~193×92)
+- Město Hradec Králové (`logo-hk.png`, ~180×96)
+- Nadace ČEZ (`logo-nadace.png`, ~180×100)
+
+### 6.17 Footer
+
+Three-column navigation footer:
+
+```
+┌──────────────────┬──────────────────┬──────────────────┐
+│  Čtyřiadvacítka  │  Organizace      │  Administrace    │
+│                  │                  │                  │
+│  Novinky         │  Junák (ext)     │  Přihlásit /     │
+│  Termíny         │  Skaut HK (ext)  │  Profil (name)   │
+│  {dynamic arts}  │  Facebook (ext)  │  Administrace    │
+│  Kontakty        │  ...             │  (if editor/     │
+│                  │                  │   admin)         │
+└──────────────────┴──────────────────┴──────────────────┘
+                    © Copyright line
+```
+
+- "Administrace" column content depends on user role:
+  - Not logged in: show "Přihlásit" and "Registrovat" links
+  - Logged in: show username link (to profile), "Odhlásit"
+  - Editor/admin: show "Administrace" link to admin panel
+
+### 6.18 Responsive Behavior
+
+- **Mobile-first:** Designed for small screens, enhanced for desktop
+- **Navbar:** Collapses to hamburger menu on mobile. JavaScript toggles the
+  collapsed menu on click.
+- **Hero:** Full-width at all breakpoints. Clip-path decoration only applied
+  at wider viewports.
+- **Content column:** Expands to full width on mobile, constrained on
+  desktop/widescreen
+- **Footer columns:** Stack vertically on mobile
+- **Leader cards (contact page):** Stack vertically on small screens
+- **Tables (admin):** Remain tabular (may require horizontal scroll on small
+  screens)
+
+### 6.19 Interactive Behaviors Summary
+
+| Behavior | Mechanism | Where |
+|----------|-----------|-------|
+| Hamburger menu toggle | JavaScript click handler | All pages (mobile) |
+| Flash message auto-hide | JavaScript timeout (5s) | All pages |
+| AJAX form submission | Form submit without reload | Web properties, image uploads |
+| AJAX data operations | Inline update without reload | Role change, user delete, menu toggle, image delete |
+| Rich text editing | WYSIWYG editor on textarea | Article editor, news editor |
+| Email obfuscation | JavaScript rendering | Contact page |
 
 ---
 
@@ -727,13 +1012,12 @@ forms section (§7) and page behaviors section (§8).
 
 ### 12.1 Design System
 
-- The original uses Skaut Design (a Bulma-based CSS framework for Czech
-  Scout organizations). The reimplementation should use a Bulma-compatible
-  CSS framework or equivalent that produces the same visual style.
-- Responsive design: mobile-first with hamburger menu
+See §6 for full visual design specification. Summary:
+
+- Bulma-based CSS framework (Skaut Design or equivalent)
 - Font: Open Sans (Google Fonts)
-- Form styling: Bulma `field`/`control` wrappers, `is-medium` inputs,
-  `is-primary` buttons
+- Responsive, mobile-first
+- All visual patterns documented in §6.1–§6.19
 
 ### 12.2 Analytics
 
