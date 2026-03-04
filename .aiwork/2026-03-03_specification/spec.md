@@ -33,8 +33,15 @@ Changes from the original application (documented in backward engineering):
 | **Drop** news detail route (`/novinky/<url>`) | Was non-functional in original. News shown only in paginated list. |
 | **Add** configurable contact information | Original had hardcoded leader names, phones, emails, and admin email addresses. |
 | **Add** configurable admin email recipients | Contact form email recipients should be manageable, not hardcoded. |
+| **Drop** editor landing page (`/administrace/redaktor`) | Static page with one sentence, no functionality. Admin navbar provides all links. |
+| **Drop** public user profile view (`/profil/<username>`) | Leaks personal info with no benefit. Profile editing and password change remain behind login. |
+| **Drop** standalone GET delete routes | GET-based deletions are an anti-pattern. Article and news deletion use POST from list pages instead. |
+| **Fix** GIF listing gap | Original listed only `*.png`/`*.jpg` in header images but accepted GIF uploads. Add `*.gif` to scan. |
+| **Fix** news editor submit label | Original said `Uložit článek` (Save article) — copy-paste error. Changed to `Uložit novinku`. |
+| **Merge** contact settings into admin dashboard | Contact person management (§7.11) merged into the admin dashboard alongside web properties. |
 | **Keep** events page with Google Calendar integration | Static page with external web component. |
 | **Keep** Czech localization throughout | All UI labels, flash messages, and error messages in Czech. |
+| **Keep** public registration | Provides onboarding path; admin promotes registered users to editor. |
 
 ---
 
@@ -127,7 +134,7 @@ Key-value configuration store for site-wide settings editable at runtime.
 | `webName` | Site title displayed in page `<title>` and header | Web properties form |
 | `webDescription` | Site tagline | Web properties form |
 | `contactEmail` | Comma-separated email addresses for contact form recipients | Web properties form |
-| `contactInfo` | JSON blob of contact persons (see §3.5) | Contact settings form |
+| `contactInfo` | JSON blob of contact persons (see §3.5) | Contact settings form (on admin dashboard) |
 
 ### 3.5 Contact Person (embedded in SiteSetting)
 
@@ -161,18 +168,21 @@ This replaces the hardcoded contact information from the original.
 - **Session identity data:** user id, role, username
 
 **Login flow:**
-1. User submits username and password via sign-in form
-2. System looks up user by username
-3. If not found → error: `Uživatel nenalezen.`
-4. Verify password against stored hash
-5. If mismatch → error: `Špatné heslo!`
-6. On success → create session, redirect to admin dashboard
-7. Flash: `Přihlášení proběhlo úspěšně.`
+1. If user is already authenticated → redirect to account settings
+2. User submits username and password via sign-in form
+3. System looks up user by username
+4. If not found → error: `Uživatel nenalezen.`
+5. Verify password against stored hash
+6. If mismatch → error: `Špatné heslo!`
+7. On success → create session, redirect to admin dashboard
+8. Flash: `Přihlášení proběhlo úspěšně.`
 
 **Logout flow:**
-1. Destroy session
-2. Flash: `Uživatel úspěšně odhlášen.`
-3. Redirect to homepage
+1. If user is not logged in → flash `Není přihlášen žádný uživatel.` (info),
+   redirect to homepage
+2. Destroy session
+3. Flash: `Uživatel úspěšně odhlášen.`
+4. Redirect to homepage
 
 ### 4.2 Roles
 
@@ -190,7 +200,6 @@ guest (unauthenticated)
 | Role | Resource | Actions | Notes |
 |------|----------|---------|-------|
 | guest | article | view | Public article and news viewing |
-| guest | user | view | Public user profiles |
 | editor | article | add | Create new articles and news |
 | admin | article | edit | Edit/delete any article or news; toggle menu visibility |
 | admin | web | edit | Edit site settings, manage header images |
@@ -206,6 +215,11 @@ Three levels of access protection applied at route level:
    - Failure: redirect with flash `Na tuto akci musíte být redaktor.`
 3. **adminRequired** — Checks if user has `admin` role
    - Failure: redirect with flash `Na tuto akci musíte být administrátor.`
+
+
+Note: Account settings routes (`/ucet`, `/ucet/zmenit-heslo`) do not need an
+ownership guard — they always operate on the authenticated user's own data
+(identity from session, not from URL parameter).
 
 ### 4.5 Template Flags
 
@@ -235,35 +249,33 @@ These boolean/object values must be available in every page render:
 | `/prihlasit` | Přihlásit | Sign-in form | none |
 | `/registrovat` | Registrovat | Registration form | none |
 | `/odhlasit` | — | Sign-out (action only, no page) | none |
-| `/profil/[<username>]` | *dynamic* | User profile page | none |
-| `/profil/editor/[<username>]` | *dynamic* | Edit own profile | login |
-| `/profil/zmenit-heslo/<username>` | Změna hesla | Change own password | login |
+| `/ucet` | Můj účet | Account settings — edit profile | login+owner |
+| `/ucet/zmenit-heslo` | Změna hesla | Change own password | login+owner |
 
 ### 5.2 Admin Pages
 
 | Route | Title | Description | Auth |
 |-------|-------|-------------|------|
-| `/administrace` | Administrace webu | Admin dashboard — site settings form | admin |
-| `/administrace/redaktor` | Rozcestník | Editor landing page (static) | editor |
+| `/administrace` | Administrace webu | Admin dashboard — site settings + contact settings | admin |
 | `/administrace/obrazky-zahlavi` | Obrázky záhlaví | Header image management | admin |
 | `/administrace/uzivatele` | Oprávnění uživatelů | User management (roles, deletion) | admin |
 | `/clanky/seznam` | Seznam článků | Article list with management controls | editor |
 | `/novinky/seznam` | Seznam novinek | News list with management controls | editor |
 | `/administrace/clanky/editor[/<url>]` | Editor článků | Create/edit article | editor |
-| `/administrace/clanky/odstranit/<url>` | — | Delete article (action only) | editor |
 | `/administrace/novinky/editor/[<id>]` | Editor novinek | Create/edit news | editor |
-| `/administrace/novinky/odstranit/<id>` | — | Delete news (action only) | editor |
 
 ### 5.3 AJAX Operations
 
 These are inline operations triggered from existing pages (no separate URL):
 
-| Parent page | Operation | Effect |
-|-------------|-----------|--------|
-| `/clanky/seznam` | Toggle menu visibility | Update article `in_menu` flag |
-| `/administrace/uzivatele` | Change user role | Update user `role` |
-| `/administrace/uzivatele` | Remove user | Delete user |
-| `/administrace/obrazky-zahlavi` | Remove header image | Delete image file |
+| Parent page | Operation | Effect | Flash |
+|-------------|-----------|--------|-------|
+| `/clanky/seznam` | Toggle menu visibility | Update article `in_menu` flag | — |
+| `/clanky/seznam` | Delete article | Delete article by URL slug (POST) | `Článek byl úspěšně odstraněn.` |
+| `/novinky/seznam` | Delete news | Delete news by ID (POST) | `Novinka byla úspěšně odstraněna.` |
+| `/administrace/uzivatele` | Change user role | Update user `role` | `Uživatel {username} má nyní roli {role}.` |
+| `/administrace/uzivatele` | Remove user | Delete user | `Uživatel byl úspěšně odstraněn.` |
+| `/administrace/obrazky-zahlavi` | Remove header image | Delete image file | `Obrázek odstraněn.` |
 
 ---
 
@@ -402,7 +414,7 @@ Admin list pages use HTML tables with Bulma styling:
 - **Article list table columns:** Title + date + URL | View | Edit | Delete |
   Menu toggle
 - **News list table columns:** Title + date | Edit | Delete
-- **User management table columns:** Username (h2) | View profile | Delete |
+- **User management table columns:** Username (h2) | Delete |
   Role toggles (3 buttons)
 
 **Role toggle buttons (user management):**
@@ -451,7 +463,7 @@ Each news item in the paginated list:
 
 Each article in the paginated list is a **title link** to the article
 detail page. Simpler than news — just a list of clickable titles. Articles
-with `requestable = false` are hidden from non-admins.
+with `requestable = false` are hidden from non-editors.
 
 ### 6.11 Article Detail
 
@@ -496,17 +508,22 @@ with `requestable = false` are hidden from non-admins.
 
 - Email addresses are **obfuscated** against scrapers using JavaScript-based
   rendering (e.g. `document.write` with concatenated parts)
+- Contact person photos are static assets in the `contact-photos/` directory,
+  managed outside the CMS (uploaded manually or via deployment)
+- The Google Maps embed iframe URL and the clubhouse photo are hardcoded
+  static content in the template
 
-### 6.13 User Profile
+### 6.13 Account Settings
 
 ```
 ┌──────────────────────────────────┐
-│  Name Surname                    │
-│  Přezdívka: Nickname             │
-│  Email: user@example.com         │
+│  Můj účet                        │
 │                                  │
-│  (own profile only:)             │
-│  [Upravit údaje]                 │
+│  Profile edit form (§7.4)        │
+│  - Jméno, Příjmení, Přezdívka   │
+│  - Přihlašovací jméno, E-mail   │
+│  - [Uložit]                     │
+│                                  │
 │  [Změnit heslo]                  │
 │  [Odhlásit]                      │
 └──────────────────────────────────┘
@@ -565,7 +582,7 @@ Three-column navigation footer:
 │  Čtyřiadvacítka  │  Organizace      │  Administrace    │
 │                  │                  │                  │
 │  Novinky         │  Junák (ext)     │  Přihlásit /     │
-│  Termíny         │  Skaut HK (ext)  │  Profil (name)   │
+│  Termíny         │  Skaut HK (ext)  │  Můj účet        │
 │  {dynamic arts}  │  Facebook (ext)  │  Administrace    │
 │  Kontakty        │  ...             │  (if editor/     │
 │                  │                  │   admin)         │
@@ -575,8 +592,8 @@ Three-column navigation footer:
 
 - "Administrace" column content depends on user role:
   - Not logged in: show "Přihlásit" and "Registrovat" links
-  - Logged in: show username link (to profile), "Odhlásit"
-  - Editor/admin: show "Administrace" link to admin panel
+  - Logged in: show "Můj účet" link (to account settings), "Odhlásit"
+  - Editor/admin: also show "Administrace" link to admin panel
 
 ### 6.18 Responsive Behavior
 
@@ -599,7 +616,7 @@ Three-column navigation footer:
 | Hamburger menu toggle | JavaScript click handler | All pages (mobile) |
 | Flash message auto-hide | JavaScript timeout (5s) | All pages |
 | AJAX form submission | Form submit without reload | Web properties, image uploads |
-| AJAX data operations | Inline update without reload | Role change, user delete, menu toggle, image delete |
+| AJAX data operations | Inline update without reload | Role change, user delete, menu toggle, image delete, article delete, news delete |
 | Rich text editing | WYSIWYG editor on textarea | Article editor, news editor |
 | Email obfuscation | JavaScript rendering | Contact page |
 
@@ -618,6 +635,8 @@ Three-column navigation footer:
 - **On success:** Flash `Přihlášení proběhlo úspěšně.` → redirect to admin
   dashboard
 - **On error:** Flash the authentication error message
+- **Redirect if logged in:** If user is already authenticated, redirect to
+  account settings
 
 ### 7.2 Sign Up (`/registrovat`)
 
@@ -636,7 +655,7 @@ Three-column navigation footer:
 - **Password mismatch message:** `Hesla se neschodují!`
 - **Behavior:** Hash password, create user with role `registered`
 - **Redirect if logged in:** If user is already authenticated, redirect to
-  profile
+  account settings
 
 ### 7.3 Contact (`/kontakt`)
 
@@ -654,7 +673,7 @@ Three-column navigation footer:
 - **Min length message:** `Zpráva musí být minimálně %d znaků dlouhá.`
 - **Textarea placeholder:** `Vaše zpráva`
 
-### 7.4 User Editor (`/profil/editor/<username>`)
+### 7.4 Account Settings (`/ucet`)
 
 | Field | Type | Label | Validation |
 |-------|------|-------|------------|
@@ -667,14 +686,15 @@ Three-column navigation footer:
 | role | hidden | — | — |
 
 - **Submit label:** Uložit
-- **On success:** Flash `Uživatel byl úspěšně editován.` → redirect to user
-  profile
+- **On success:** Flash `Uživatel byl úspěšně editován.` → redirect to
+  account settings
 - **On error (duplicate):** Flash `Uživatel s tímto jménem nebo emailem již
   existuje.`
 - **Pre-filled:** All fields populated from current user data
-- **Access:** Users can only edit their own profile
+- **Access:** Login required. Operates on the authenticated user's own data
+  (no username parameter needed — identity comes from session)
 
-### 7.5 Change Password (`/profil/zmenit-heslo/<username>`)
+### 7.5 Change Password (`/ucet/zmenit-heslo`)
 
 | Field | Type | Label | Validation |
 |-------|------|-------|------------|
@@ -683,11 +703,12 @@ Three-column navigation footer:
 | newPasswordAgain | password | Nové heslo znovu | required, must match `newPassword` |
 
 - **Submit label:** Změnit heslo
-- **On success:** Flash `Heslo bylo úspěšně změněno.` → redirect to profile
+- **On success:** Flash `Heslo bylo úspěšně změněno.` → redirect to account
+  settings
 - **On error (wrong current):** Flash `Současné heslo neodpovídá zadanému
   současnému heslu!`
 - **Password mismatch message:** `Hesla se neschodují!`
-- **Access:** Users can only change their own password
+- **Access:** Login required. Operates on the authenticated user's own data
 
 ### 7.6 Article Editor (`/administrace/clanky/editor[/<url>]`)
 
@@ -708,8 +729,8 @@ Three-column navigation footer:
 - **Rich text:** Content field must use a WYSIWYG editor (e.g. CKEditor,
   TipTap, ProseMirror)
 - **Pre-filled:** When editing existing article, all fields populated from DB
-- **Date format:** Input as `d.m.Y` (Czech format, e.g. `5.3.2026`), stored
-  as datetime
+- **Date format:** Input as `j.n.Y` (Czech format, no leading zeros, e.g.
+  `5.3.2026`), stored as datetime
 
 ### 7.7 News Editor (`/administrace/novinky/editor/[<id>]`)
 
@@ -720,7 +741,7 @@ Three-column navigation footer:
 | datetime | text | Datum | required. Default: current date in `j.n.Y` format |
 | content | textarea (rich text) | Obsah | required |
 
-- **Submit label:** Uložit článek
+- **Submit label:** Uložit novinku
 - **On success:** Flash `Novinka byla úspěšně uložena.` → redirect to news
   list
 - **Behavior:** Same insert/update logic as article editor. Auto-set author.
@@ -763,12 +784,12 @@ Same fields and validation as §7.8, but:
 - **Pre-filled:** Current values loaded from SiteSetting
 - **AJAX:** Form submission should not require full page reload
 
-### 7.11 Contact Settings (admin)
+### 7.11 Contact Settings (`/administrace`)
 
-A form or section for managing the contact persons displayed on the contact
-page. Must allow editing the JSON-structured contact data
-(`SiteSetting.contactInfo`). The exact UI is flexible — could be a structured
-form with repeatable groups or a simpler textarea for the JSON.
+Displayed on the admin dashboard below the web properties form. Manages the
+contact persons shown on the contact page (`SiteSetting.contactInfo`). The UI
+should allow editing a list of contact persons — either as a structured form
+with repeatable groups or as a simpler JSON textarea.
 
 **Per contact person:**
 - name (string)
@@ -776,7 +797,12 @@ form with repeatable groups or a simpler textarea for the JSON.
 - nickname (string)
 - phone (string)
 - email (string)
-- photo (string, filename of photo in contacts directory)
+- photo (string, filename of photo in `contact-photos/` directory — photos
+  are static assets managed outside the CMS)
+
+- **On success:** Flash `Kontaktní údaje byly upraveny.`
+- **Behavior:** Saved as JSON in `SiteSetting.contactInfo`
+- **Pre-filled:** Current value loaded from SiteSetting and parsed from JSON
 
 ---
 
@@ -792,7 +818,7 @@ form with repeatable groups or a simpler textarea for the JSON.
 ### 8.2 Article List (`/clanky[/<page>]`)
 
 - Display paginated list of article titles as links, 10 per page
-- Only articles with `requestable = true` shown (unless user is admin)
+- Only articles with `requestable = true` shown (unless user is editor/admin)
 - Pagination: Previous/Next links
 
 ### 8.3 Article Detail (`/<url>`)
@@ -812,8 +838,8 @@ form with repeatable groups or a simpler textarea for the JSON.
   - Each card: photo, name, role description, nickname, phone, email
   - Email addresses should be obfuscated against scrapers (JS-based or
     similar)
-- Section "Klubovny" with scout house photo
-- Embedded Google Maps iframe showing clubhouse location
+- Section "Klubovny" with scout house photo (hardcoded static content)
+- Embedded Google Maps iframe showing clubhouse location (hardcoded embed URL)
 
 ### 8.5 Events Page (`/terminy`)
 
@@ -822,15 +848,13 @@ form with repeatable groups or a simpler textarea for the JSON.
   component or equivalent) displaying events from
   `ctyriadvacitka@gmail.com` calendar with categories: vlčata, skauti, roveři
 
-### 8.6 User Profile (`/profil/<username>`)
+### 8.6 Account Settings (`/ucet`)
 
-- Display: name + surname, nickname, email
-- If viewing own profile (logged in, username matches): show action buttons:
-  - Upravit údaje → profile editor
-  - Změnit heslo → change password
+- Login required. Operates on the authenticated user's own data.
+- Display profile edit form (§7.4) pre-filled with current user data
+- Action links below the form:
+  - Změnit heslo → change password page
   - Odhlásit → sign out
-- If no username provided: redirect to logged-in user's profile, or to news
-  list if not logged in
 
 ### 8.7 Admin Article List (`/clanky/seznam`)
 
@@ -839,11 +863,12 @@ form with repeatable groups or a simpler textarea for the JSON.
   - Title + date + URL
   - View button → article public page
   - Edit button → article editor (visible if admin OR user is the author)
-  - Delete button → delete action (visible if admin OR user is the author)
+  - Delete button → POST delete (visible if admin OR user is the author).
+    Flash: `Článek byl úspěšně odstraněn.`
   - Menu visibility toggle (visible if admin OR user is the author):
     - Green "Zobrazeno v menu" when `in_menu = true`
     - Blue "Nezobrazeno v menu" when `in_menu = false`
-- Menu toggle is AJAX — updates without full page reload
+- Menu toggle and delete are POST operations — no full page reload
 - Non-requestable articles only visible if user is editor/admin
 
 ### 8.8 Admin News List (`/novinky/seznam`)
@@ -852,7 +877,8 @@ form with repeatable groups or a simpler textarea for the JSON.
 - Table of all news with columns:
   - Title + date
   - Edit button → news editor (visible if admin OR user is the author)
-  - Delete button → delete action (visible if admin OR user is the author)
+  - Delete button → POST delete (visible if admin OR user is the author).
+    Flash: `Novinka byla úspěšně odstraněna.`
 
 ### 8.9 Admin Article Editor (`/administrace/clanky/editor[/<url>]`)
 
@@ -871,15 +897,16 @@ form with repeatable groups or a simpler textarea for the JSON.
 - Table of current header images, each row showing:
   - Image preview thumbnail
   - Filename
-  - Delete button (AJAX — removes file, redraws list)
+  - Delete button (AJAX — removes file, redraws list).
+    Flash: `Obrázek odstraněn.`
 - Section "Přidat nové obrázky" with upload form (§7.9)
 
 ### 8.12 Admin User Management (`/administrace/uzivatele`)
 
 - Table of all users, each row showing:
   - Username (h2)
-  - View profile button → user profile
-  - Delete button (AJAX, with ACL check for `user:remove`)
+  - Delete button (AJAX, with ACL check for `user:remove`).
+    Flash: `Uživatel byl úspěšně odstraněn.`
   - Three role toggle buttons: Uživatel / Redaktor / Administrátor
     - Active role highlighted in green, others in blue
     - Clicking a role button changes the user's role (AJAX)
@@ -890,12 +917,8 @@ form with repeatable groups or a simpler textarea for the JSON.
 
 - Welcome text: `Vítejte v administraci`
 - Web properties form (§7.10)
+- Contact settings form (§7.11)
 - Access: admin only
-
-### 8.14 Editor Landing Page (`/administrace/redaktor`)
-
-- Static text: `Toto je rozcestník administrace pro redaktory`
-- Access: editor or admin
 
 ---
 
@@ -909,8 +932,8 @@ form with repeatable groups or a simpler textarea for the JSON.
 | List paginated | read | none | Ordered by datetime DESC, with limit/offset |
 | Count articles | read | none | Total count for pagination |
 | Get by URL slug | read | none | Returns single article or null |
-| Save (create/update) | write | editor | Parse datetime from `d.m.Y`, auto-set author. Insert if no id, update if id present |
-| Delete | delete | editor | Delete by URL slug |
+| Save (create/update) | write | editor | Parse datetime from `j.n.Y`, auto-set author. Insert if no id, update if id present |
+| Delete | delete | editor | Delete by URL slug. Flash: `Článek byl úspěšně odstraněn.` |
 | Toggle menu visibility | update | editor | Set `in_menu` to given boolean value by URL |
 | Get articles in menu | read | none | Return `url → title` map for articles with `in_menu = true` |
 
@@ -922,8 +945,8 @@ form with repeatable groups or a simpler textarea for the JSON.
 | List paginated | read | none | Ordered by datetime DESC, with limit/offset |
 | Count news | read | none | Total count for pagination |
 | Get by ID | read | none | Returns single news item or null |
-| Save (create/update) | write | editor | Parse datetime from `d.m.Y`, auto-set author. Insert if no id, update if id present |
-| Delete | delete | editor | Delete by primary key |
+| Save (create/update) | write | editor | Parse datetime from `j.n.Y`, auto-set author. Insert if no id, update if id present |
+| Delete | delete | editor | Delete by primary key. Flash: `Novinka byla úspěšně odstraněna.` |
 
 ### 9.3 User Operations
 
@@ -948,7 +971,7 @@ form with repeatable groups or a simpler textarea for the JSON.
 
 | Operation | Type | Auth | Behavior |
 |-----------|------|------|----------|
-| List images | read | admin | Scan header images directory for *.png and *.jpg files |
+| List images | read | admin | Scan header images directory for *.jpg, *.png, and *.gif files |
 | Upload images | write | admin | Save uploaded file(s) to header images directory. Original filename preserved |
 | Delete image | delete | admin | Delete file from disk by filename |
 
@@ -973,7 +996,7 @@ form with repeatable groups or a simpler textarea for the JSON.
 | Directory | Purpose | Access |
 |-----------|---------|--------|
 | `header-images/` | Hero/banner images for site header | Public (direct URL). Admin-managed |
-| `contact-photos/` | Contact person portrait photos | Public (direct URL). Static |
+| `contact-photos/` | Contact person portrait photos (~180×180) | Public (direct URL). Static — managed outside the CMS (uploaded manually or via deployment) |
 | `attachments/` | Article attachment images in year subdirs (e.g. `attachments/2026/`) | Public (direct URL). Directory listing enabled |
 | `static/` | Logos, favicon, CSS, JS | Public (direct URL). Static |
 
@@ -1002,8 +1025,8 @@ forms section (§7) and page behaviors section (§8).
 - Generic required field: `Povinné pole.`
 
 **Date format:**
-- Input: `d.m.Y` (e.g. `5.3.2026`)
-- Display: `j. n. Y` (e.g. `5. 3. 2026`)
+- Input: `j.n.Y` (no leading zeros, e.g. `5.3.2026`)
+- Display: `j. n. Y` (with spaces, e.g. `5. 3. 2026`)
 - Timezone: Europe/Prague
 
 ---
@@ -1096,16 +1119,12 @@ One admin account must be seeded for first access to the admin panel.
 | `/prihlasit` | sign_in | session.sign_in |
 | `/odhlasit` | — | session.sign_out |
 | `/registrovat` | sign_up | session.sign_up |
-| `/profil/<username>` | — | user.get_by_username |
-| `/profil/editor/<username>` | user_editor | user.save |
-| `/profil/zmenit-heslo/<username>` | change_password | user.change_password |
-| `/administrace` | web_properties | setting.get, setting.save |
-| `/administrace/redaktor` | — | — |
+| `/ucet` | user_editor | user.save |
+| `/ucet/zmenit-heslo` | change_password | user.change_password |
+| `/administrace` | web_properties, contact_settings | setting.get, setting.save |
 | `/administrace/obrazky-zahlavi` | header_images | image.list, image.upload, image.delete |
 | `/administrace/uzivatele` | — | user.list_all, user.change_role, user.delete |
-| `/clanky/seznam` | — | article.list_all, article.toggle_menu |
-| `/novinky/seznam` | — | news.list_all |
+| `/clanky/seznam` | — | article.list_all, article.toggle_menu, article.delete |
+| `/novinky/seznam` | — | news.list_all, news.delete |
 | `/administrace/clanky/editor/<url>` | article_editor, article_images | article.get_by_url, article.save, attachment.upload |
-| `/administrace/clanky/odstranit/<url>` | — | article.delete |
 | `/administrace/novinky/editor/<id>` | news_editor, article_images | news.get_by_id, news.save, attachment.upload |
-| `/administrace/novinky/odstranit/<id>` | — | news.delete |
