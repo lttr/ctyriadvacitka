@@ -6,7 +6,7 @@
         <h2>
           <NuxtLink :to="`/novinka/${item.id}`">{{ item.title }}</NuxtLink>
         </h2>
-        <time v-if="item.datetime">{{ formatDate(item.datetime) }}</time>
+        <time v-if="item.datetime">{{ formatCzechDate(item.datetime) }}</time>
         <div v-if="item.content" v-html="item.content"></div>
       </li>
     </ul>
@@ -37,6 +37,7 @@
 
 <script setup lang="ts">
 import { calculatePagination } from "~~/app/composables/usePagination"
+import { formatCzechDate } from "~~/shared/utils/date"
 
 useSeoMeta({
   title: "Novinky — Čtyřiadvacítka",
@@ -58,8 +59,4 @@ const pagination = computed(() =>
     totalCount: newsData.value?.totalCount ?? 0,
   }),
 )
-
-function formatDate(datetime: string): string {
-  return new Date(datetime).toLocaleDateString("cs-CZ")
-}
 </script>
