@@ -15,6 +15,11 @@
 </template>
 
 <script setup lang="ts">
+useSeoMeta({
+  title: "Články — Čtyřiadvacítka",
+  description: "Články 24. oddílu Junáka Hradec Králové",
+})
+
 const { data: articles } = await useFetch("/api/articles")
 
 function formatDate(datetime: string): string {

@@ -16,17 +16,18 @@
 </template>
 
 <script setup lang="ts">
-const { data: settings } = await useFetch("/api/settings")
+const { settings } = useSiteSettings()
 
-const calendarId = computed(
-  () => (settings.value as Record<string, string> | null)?.googleCalendarId,
-)
+const calendarId = computed(() => settings.value.googleCalendarId || "")
 
 const calendarSrc = computed(() => {
-  if (!calendarId.value) {
-    return ""
-  }
+  if (!calendarId.value) {return ""}
   const encoded = encodeURIComponent(calendarId.value)
   return `https://calendar.google.com/calendar/embed?src=${encoded}&ctz=Europe%2FPrague`
+})
+
+useSeoMeta({
+  title: "Termíny akcí — Čtyřiadvacítka",
+  description: "Kalendář plánovaných akcí 24. oddílu Junáka Hradec Králové",
 })
 </script>

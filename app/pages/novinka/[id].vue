@@ -25,6 +25,13 @@ if (error.value) {
   })
 }
 
+useSeoMeta({
+  title: () =>
+    newsItem.value
+      ? `${newsItem.value.title} — Čtyřiadvacítka`
+      : "Čtyřiadvacítka",
+})
+
 function formatDate(datetime: string): string {
   return new Date(datetime).toLocaleDateString("cs-CZ")
 }

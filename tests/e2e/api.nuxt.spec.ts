@@ -382,6 +382,77 @@ describe("public API integration tests", async () => {
     })
   })
 
+  // --- Error page ---
+
+  describe("Error page", () => {
+    it("renders 404 error page for non-existent route", async () => {
+      const html = await $fetch("/neexistujici-stranka", {
+        headers: { accept: "text/html" },
+        ignoreResponseError: true,
+      })
+
+      expect(html).toContain("Stránka nenalezena")
+      expect(html).toContain("Zpět na úvodní stránku")
+    })
+  })
+
+  // --- SEO meta tags ---
+
+  describe("SEO meta tags", () => {
+    it("renders site name in homepage title", async () => {
+      const html = await $fetch("/")
+
+      expect(html).toContain("24. oddíl Junáka Hradec Králové")
+    })
+
+    it("renders meta description on homepage", async () => {
+      const html = await $fetch("/")
+
+      expect(html).toContain(
+        "Webové stránky 24. oddílu Junáka v Hradci Králové",
+      )
+    })
+
+    it("renders page-specific title on novinky", async () => {
+      const html = await $fetch("/novinky")
+
+      expect(html).toContain("Novinky — Čtyřiadvacítka")
+    })
+
+    it("renders page-specific title on clanky", async () => {
+      const html = await $fetch("/clanky")
+
+      expect(html).toContain("Články — Čtyřiadvacítka")
+    })
+
+    it("renders page-specific title on kontakt", async () => {
+      const html = await $fetch("/kontakt")
+
+      expect(html).toContain("Kontakt — Čtyřiadvacítka")
+    })
+
+    it("renders page-specific title on terminy", async () => {
+      const html = await $fetch("/terminy")
+
+      expect(html).toContain("Termíny akcí — Čtyřiadvacítka")
+    })
+
+    it("renders article title in article detail page", async () => {
+      const html = await $fetch("/clanek/o-nas")
+
+      expect(html).toContain("O nás — Čtyřiadvacítka")
+    })
+
+    it("renders news title in news detail page", async () => {
+      const list = await $fetch("/api/news")
+      const firstItem = list.items[0]
+
+      const html = await $fetch(`/novinka/${firstItem.id}`)
+
+      expect(html).toContain(`${firstItem.title} — Čtyřiadvacítka`)
+    })
+  })
+
   // --- Events page ---
 
   describe("Events page", () => {
