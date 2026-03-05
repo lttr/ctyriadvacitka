@@ -13,6 +13,12 @@
       <li v-if="isAdmin">
         <NuxtLink to="/administrace/uzivatele">Uživatelé</NuxtLink>
       </li>
+      <li v-if="isAdmin">
+        <NuxtLink to="/administrace/web">Nastavení webu</NuxtLink>
+      </li>
+      <li v-if="isAdmin">
+        <NuxtLink to="/administrace/kontakty">Kontaktní údaje</NuxtLink>
+      </li>
       <li>
         <NuxtLink to="/">Zpět na web</NuxtLink>
       </li>
