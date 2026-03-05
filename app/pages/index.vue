@@ -15,7 +15,9 @@ const { settings } = useSiteSettings()
 const { data: articles } = await useFetch("/api/articles")
 const introArticle = computed(() => {
   const id = settings.value.introArticleId
-  if (!id || !articles.value) {return null}
+  if (!id || !articles.value) {
+    return null
+  }
   return articles.value.find((a: { id: number }) => String(a.id) === id)
 })
 

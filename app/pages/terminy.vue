@@ -21,7 +21,9 @@ const { settings } = useSiteSettings()
 const calendarId = computed(() => settings.value.googleCalendarId || "")
 
 const calendarSrc = computed(() => {
-  if (!calendarId.value) {return ""}
+  if (!calendarId.value) {
+    return ""
+  }
   const encoded = encodeURIComponent(calendarId.value)
   return `https://calendar.google.com/calendar/embed?src=${encoded}&ctz=Europe%2FPrague`
 })
