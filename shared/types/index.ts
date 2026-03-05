@@ -1,6 +1,12 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm"
 
-import type { articles, news, siteSettings, users } from "~~/server/db/schema"
+import type {
+  articles,
+  news,
+  sessions,
+  siteSettings,
+  users,
+} from "~~/server/db/schema"
 
 export type Article = InferSelectModel<typeof articles>
 export type NewArticle = InferInsertModel<typeof articles>
@@ -10,6 +16,9 @@ export type NewNews = InferInsertModel<typeof news>
 
 export type User = InferSelectModel<typeof users>
 export type NewUser = InferInsertModel<typeof users>
+
+export type Session = InferSelectModel<typeof sessions>
+export type NewSession = InferInsertModel<typeof sessions>
 
 export type SiteSetting = InferSelectModel<typeof siteSettings>
 export type NewSiteSetting = InferInsertModel<typeof siteSettings>

@@ -30,6 +30,15 @@ export const users = sqliteTable("users", {
   role: text().notNull().default("registered"),
 })
 
+export const sessions = sqliteTable("sessions", {
+  id: text().primaryKey(),
+  userId: int("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: text("expires_at").notNull(),
+  createdAt: text("created_at").notNull(),
+})
+
 export const siteSettings = sqliteTable("site_settings", {
   key: text().primaryKey(),
   value: text(),

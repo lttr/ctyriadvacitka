@@ -18,6 +18,7 @@ describe("public API integration tests", async () => {
 
     // Clear existing data and seed fresh
     await client.executeMultiple(`
+      DELETE FROM sessions;
       DELETE FROM articles;
       DELETE FROM news;
       DELETE FROM users;
