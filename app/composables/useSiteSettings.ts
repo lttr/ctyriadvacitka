@@ -19,7 +19,9 @@ const defaultSettings: SiteSettings = {
 export function parseSiteSettings(
   raw: Record<string, string> | null | undefined,
 ): SiteSettings {
-  if (!raw) {return { ...defaultSettings }}
+  if (!raw) {
+    return { ...defaultSettings }
+  }
 
   return {
     siteName: raw.siteName ?? "",

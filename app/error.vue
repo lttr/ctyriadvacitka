@@ -34,7 +34,9 @@ const props = defineProps<{
 }>()
 
 const title = computed(() => {
-  if (props.error.statusCode === 404) {return "Stránka nenalezena"}
+  if (props.error.statusCode === 404) {
+    return "Stránka nenalezena"
+  }
   return "Nastala chyba"
 })
 
