@@ -30,12 +30,58 @@ describe("public API integration tests", async () => {
   // --- Articles ---
 
   describe("GET /api/articles", () => {
-    it("returns all articles ordered by datetime DESC", async () => {
-      const articles = await $fetch("/api/articles")
+    it("returns paginated articles with default page=1 perPage=10 and totalCount", async () => {
+      const result = await $fetch("/api/articles")
 
-      expect(articles).toHaveLength(6)
+      expect(result.page).toBe(1)
+      expect(result.perPage).toBe(10)
+      expect(result.items).toHaveLength(6) // 6 total, all fit on page 1
+      expect(result.totalCount).toBe(6)
+    })
+
+    it("returns articles ordered by datetime DESC", async () => {
+      const result = await $fetch("/api/articles")
+
       // Most recent first (Letní tábor 2026 = 2026-02-15)
-      expect(articles[0].title).toBe("Letní tábor 2026")
+      expect(result.items[0].title).toBe("Letní tábor 2026")
+    })
+
+    it("supports page and perPage query params", async () => {
+      const result = await $fetch("/api/articles?page=1&perPage=3")
+
+      expect(result.page).toBe(1)
+      expect(result.perPage).toBe(3)
+      expect(result.items).toHaveLength(3)
+      expect(result.totalCount).toBe(6)
+    })
+
+    it("returns correct items on page 2", async () => {
+      const result = await $fetch("/api/articles?page=2&perPage=3")
+
+      expect(result.page).toBe(2)
+      expect(result.items).toHaveLength(3)
+    })
+
+    it("clamps perPage to max 50", async () => {
+      const result = await $fetch("/api/articles?perPage=100")
+
+      expect(result.perPage).toBe(50)
+    })
+
+    it("clamps page to min 1", async () => {
+      const result = await $fetch("/api/articles?page=-1")
+
+      expect(result.page).toBe(1)
+    })
+  })
+
+  describe("GET /api/articles/intro", () => {
+    it("returns the intro article based on site settings", async () => {
+      const article = await $fetch("/api/articles/intro")
+
+      expect(article.title).toBe("Úvod")
+      expect(article.url).toBe("uvod")
+      expect(article.content).toContain("Vítejte na stránkách 24. oddílu")
     })
   })
 
@@ -329,6 +375,13 @@ describe("public API integration tests", async () => {
 
       expect(html).toContain("admin")
       expect(html).toContain("editor")
+    })
+
+    it("supports page query parameter for pagination", async () => {
+      // With perPage=3, page 2 should show different articles
+      const html = await $fetch("/clanky?stranka=1")
+
+      expect(html).toContain("Články")
     })
   })
 
