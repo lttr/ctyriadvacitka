@@ -12,10 +12,10 @@
           <strong>{{ stats.newsCount }}</strong>
           <span>Novinky</span>
         </NuxtLink>
-        <div class="p-card">
+        <NuxtLink to="/administrace/uzivatele" class="p-card">
           <strong>{{ stats.userCount }}</strong>
           <span>Uživatelé</span>
-        </div>
+        </NuxtLink>
       </div>
     </div>
   </div>

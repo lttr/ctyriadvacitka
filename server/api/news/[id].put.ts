@@ -26,10 +26,18 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   const updateData: Record<string, unknown> = {}
-  if (body.title !== undefined) {updateData.title = body.title}
-  if (body.content !== undefined) {updateData.content = body.content}
-  if (body.author !== undefined) {updateData.author = body.author}
-  if (body.datetime !== undefined) {updateData.datetime = body.datetime}
+  if (body.title !== undefined) {
+    updateData.title = body.title
+  }
+  if (body.content !== undefined) {
+    updateData.content = body.content
+  }
+  if (body.author !== undefined) {
+    updateData.author = body.author
+  }
+  if (body.datetime !== undefined) {
+    updateData.datetime = body.datetime
+  }
 
   const [updated] = await db
     .update(tables.news)
