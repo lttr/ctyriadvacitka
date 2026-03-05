@@ -40,13 +40,27 @@ export default defineEventHandler(async (event) => {
   }
 
   const updateData: Record<string, unknown> = {}
-  if (body.title !== undefined) {updateData.title = body.title}
-  if (body.url !== undefined) {updateData.url = body.url}
-  if (body.content !== undefined) {updateData.content = body.content}
-  if (body.author !== undefined) {updateData.author = body.author}
-  if (body.datetime !== undefined) {updateData.datetime = body.datetime}
-  if (body.inMenu !== undefined) {updateData.inMenu = body.inMenu}
-  if (body.requestable !== undefined) {updateData.requestable = body.requestable}
+  if (body.title !== undefined) {
+    updateData.title = body.title
+  }
+  if (body.url !== undefined) {
+    updateData.url = body.url
+  }
+  if (body.content !== undefined) {
+    updateData.content = body.content
+  }
+  if (body.author !== undefined) {
+    updateData.author = body.author
+  }
+  if (body.datetime !== undefined) {
+    updateData.datetime = body.datetime
+  }
+  if (body.inMenu !== undefined) {
+    updateData.inMenu = body.inMenu
+  }
+  if (body.requestable !== undefined) {
+    updateData.requestable = body.requestable
+  }
 
   const [updated] = await db
     .update(tables.articles)
