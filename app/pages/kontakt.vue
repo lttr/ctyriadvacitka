@@ -59,10 +59,12 @@
 </template>
 
 <script setup lang="ts">
-const { data: settingsData } = await useFetch("/api/settings")
-const settings = computed(
-  () => settingsData.value as Record<string, string> | null,
-)
+const { settings } = useSiteSettings()
+
+useSeoMeta({
+  title: "Kontakt — Čtyřiadvacítka",
+  description: "Kontaktní údaje a formulář 24. oddílu Junáka Hradec Králové",
+})
 
 const form = ref({
   name: "",

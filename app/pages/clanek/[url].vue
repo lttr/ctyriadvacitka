@@ -19,4 +19,11 @@ if (error.value) {
     statusMessage: "Článek nenalezen",
   })
 }
+
+useSeoMeta({
+  title: () =>
+    article.value
+      ? `${article.value.title} — Čtyřiadvacítka`
+      : "Čtyřiadvacítka",
+})
 </script>

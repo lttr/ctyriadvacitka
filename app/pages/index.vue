@@ -10,18 +10,17 @@
 </template>
 
 <script setup lang="ts">
-const { data: settings } = await useFetch("/api/settings")
-const introArticleId = computed(
-  () => (settings.value as Record<string, string> | null)?.introArticleId,
-)
+const { settings } = useSiteSettings()
 
 const { data: articles } = await useFetch("/api/articles")
 const introArticle = computed(() => {
-  if (!introArticleId.value || !articles.value) {
-    return null
-  }
-  return articles.value.find(
-    (a: { id: number }) => String(a.id) === introArticleId.value,
-  )
+  const id = settings.value.introArticleId
+  if (!id || !articles.value) {return null}
+  return articles.value.find((a: { id: number }) => String(a.id) === id)
+})
+
+useSeoMeta({
+  title: settings.value.siteName || "Čtyřiadvacítka",
+  description: "Webové stránky 24. oddílu Junáka v Hradci Králové",
 })
 </script>

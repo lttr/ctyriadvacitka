@@ -38,6 +38,11 @@
 <script setup lang="ts">
 import { calculatePagination } from "~~/app/composables/usePagination"
 
+useSeoMeta({
+  title: "Novinky — Čtyřiadvacítka",
+  description: "Aktuální novinky 24. oddílu Junáka Hradec Králové",
+})
+
 const route = useRoute()
 const page = computed(() => Math.max(1, Number(route.query.stranka) || 1))
 
