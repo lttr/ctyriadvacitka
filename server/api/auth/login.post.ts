@@ -7,6 +7,8 @@ const loginSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  checkLoginRateLimit(event)
+
   const body = await readBody(event)
 
   const parsed = loginSchema.safeParse(body)
