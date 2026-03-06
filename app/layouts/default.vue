@@ -15,6 +15,7 @@
         <aside>
           <SidebarNav />
           <SidebarNews />
+          <SidebarLogin />
         </aside>
       </div>
     </div>
