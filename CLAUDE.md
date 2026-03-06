@@ -68,4 +68,4 @@ Rules sourced from [lttr/vue-nuxt-rules](https://github.com/lttr/vue-nuxt-rules)
 
 After pushing changes to a branch, always provide the PR URL in this format:
 
-`https://github.com/lttr/ctyriadvacitka/compare/claude/<branch-name>`
+[https://github.com/lttr/ctyriadvacitka/compare/<branch-name>](https://github.com/lttr/ctyriadvacitka/compare/<branch-name>)
