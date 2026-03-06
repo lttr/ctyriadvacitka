@@ -1,6 +1,8 @@
 import { contactFormSchema } from "~~/shared/types/contact"
 
 export default defineEventHandler(async (event) => {
+  checkContactRateLimit(event)
+
   const body = await readBody(event)
 
   const result = contactFormSchema.safeParse(body)
