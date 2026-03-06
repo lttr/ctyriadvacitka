@@ -7,7 +7,16 @@ export default withNuxt(customConfig, {
   rules: {
     "import-x/no-extraneous-dependencies": [
       "error",
-      { whitelist: ["h3", "nitropack", "vue", "vue-router", "#imports"] },
+      {
+        whitelist: [
+          "h3",
+          "nitropack",
+          "vue",
+          "vue-router",
+          "#imports",
+          "@nuxthub/blob",
+        ],
+      },
     ],
   },
 })
