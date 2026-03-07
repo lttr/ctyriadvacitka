@@ -40,6 +40,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: "guest",
+})
+
 useSeoMeta({
   title: "Přihlášení — Čtyřiadvacítka",
 })
