@@ -1,6 +1,14 @@
 <template>
   <div class="p-stack">
     <h1>Články</h1>
+    <form @submit.prevent>
+      <input
+        v-model="searchInput"
+        type="search"
+        placeholder="Hledat v článcích…"
+        aria-label="Hledat v článcích"
+      />
+    </form>
     <ul v-if="articlesData?.items.length" class="p-stack">
       <li v-for="article of articlesData.items" :key="article.id">
         <NuxtLink :to="`/clanek/${article.url}`">
@@ -49,9 +57,12 @@ useSeoMeta({
 const route = useRoute()
 const page = computed(() => Math.max(1, Number(route.query.stranka) || 1))
 
+const searchInput = ref((route.query.hledat as string) || "")
+const search = refDebounced(searchInput, 300)
+
 const { data: articlesData } = await useFetch("/api/articles", {
-  query: { page, perPage: 10 },
-  watch: [page],
+  query: { page, perPage: 10, search },
+  watch: [page, search],
 })
 
 const pagination = computed(() =>
