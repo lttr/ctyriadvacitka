@@ -17,7 +17,9 @@ function buildSearchClause(
   search: string,
 ) {
   const trimmed = search.trim()
-  if (!trimmed) {return undefined}
+  if (!trimmed) {
+    return undefined
+  }
   return or(
     sql`lower(${table.title}) like ${`%${trimmed.toLowerCase()}%`}`,
     sql`lower(${table.content}) like ${`%${trimmed.toLowerCase()}%`}`,
@@ -313,10 +315,7 @@ describe("news search", () => {
         .orderBy(desc(schema.news.datetime))
         .limit(1)
         .offset(0),
-      db
-        .select({ totalCount: count() })
-        .from(schema.news)
-        .where(whereClause),
+      db.select({ totalCount: count() }).from(schema.news).where(whereClause),
     ])
 
     expect(items).toHaveLength(1)
