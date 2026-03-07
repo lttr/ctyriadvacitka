@@ -1,6 +1,14 @@
 <template>
   <div class="p-stack">
     <h1>Novinky</h1>
+    <form @submit.prevent>
+      <input
+        v-model="searchInput"
+        type="search"
+        placeholder="Hledat v novinkách…"
+        aria-label="Hledat v novinkách"
+      />
+    </form>
     <ul v-if="newsData?.items.length">
       <li v-for="item of newsData.items" :key="item.id" class="p-stack">
         <h2>
@@ -47,9 +55,12 @@ useSeoMeta({
 const route = useRoute()
 const page = computed(() => Math.max(1, Number(route.query.stranka) || 1))
 
+const searchInput = ref((route.query.hledat as string) || "")
+const search = refDebounced(searchInput, 300)
+
 const { data: newsData } = await useFetch("/api/news", {
-  query: { page, perPage: 10 },
-  watch: [page],
+  query: { page, perPage: 10, search },
+  watch: [page, search],
 })
 
 const pagination = computed(() =>
