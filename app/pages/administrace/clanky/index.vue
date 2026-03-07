@@ -47,7 +47,7 @@
       </table>
     </div>
 
-    <p v-else-if="articles">Žádné články.</p>
+    <EmptyState v-else-if="articles" message="Žádné články." />
   </div>
 </template>
 

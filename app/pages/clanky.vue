@@ -20,7 +20,7 @@
         <span v-if="article.author"> — {{ article.author }}</span>
       </li>
     </ul>
-    <p v-else>Žádné články.</p>
+    <EmptyState v-else message="Žádné články." />
 
     <nav v-if="pagination.totalPages > 1" aria-label="Stránkování">
       <NuxtLink

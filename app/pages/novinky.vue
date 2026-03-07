@@ -18,7 +18,7 @@
         <div v-if="item.content" v-html="item.content"></div>
       </li>
     </ul>
-    <p v-else>Žádné novinky.</p>
+    <EmptyState v-else message="Žádné novinky." />
 
     <nav v-if="pagination.totalPages > 1" aria-label="Stránkování">
       <NuxtLink

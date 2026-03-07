@@ -37,7 +37,7 @@
       </table>
     </div>
 
-    <p v-else-if="newsData">Zadne novinky.</p>
+    <EmptyState v-else-if="newsData" message="Žádné novinky." />
   </div>
 </template>
 
