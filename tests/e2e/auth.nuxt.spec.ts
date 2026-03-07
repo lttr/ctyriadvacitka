@@ -239,6 +239,7 @@ describe("auth API integration tests", async () => {
       })
 
       expect(logoutResult).toHaveProperty("success", true)
+      expect(logoutResult).toHaveProperty("wasLoggedIn", true)
 
       // Session should now be invalid
       await expect(
@@ -246,6 +247,27 @@ describe("auth API integration tests", async () => {
           headers: { cookie: sessionCookie },
         }),
       ).rejects.toMatchObject({ statusCode: 401 })
+    })
+
+    it("handles logout gracefully when not logged in", async () => {
+      const logoutResult = await $fetch("/api/auth/logout", {
+        method: "POST",
+      })
+
+      expect(logoutResult).toHaveProperty("success", true)
+      expect(logoutResult).toHaveProperty("wasLoggedIn", false)
+      expect(logoutResult.message).toBe("Není přihlášen žádný uživatel.")
+    })
+
+    it("handles logout with invalid session cookie", async () => {
+      const logoutResult = await $fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { cookie: "session=nonexistent-session-id" },
+      })
+
+      expect(logoutResult).toHaveProperty("success", true)
+      expect(logoutResult).toHaveProperty("wasLoggedIn", false)
+      expect(logoutResult.message).toBe("Není přihlášen žádný uživatel.")
     })
   })
 
