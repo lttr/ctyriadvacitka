@@ -375,4 +375,62 @@ describe("article CRUD API tests", async () => {
       ).rejects.toMatchObject({ statusCode: 403 })
     })
   })
+
+  // --- PATCH /api/articles/[url]/toggle-requestable ---
+
+  describe("PATCH /api/articles/[url]/toggle-requestable", () => {
+    it("toggles requestable from false to true", async () => {
+      const sessionCookie = await loginAs("editor", "editor123")
+
+      // "historie" has requestable: false in seed
+      const result = await $fetch("/api/articles/historie/toggle-requestable", {
+        method: "PATCH",
+        headers: { cookie: sessionCookie },
+      })
+
+      expect(result.requestable).toBe(true)
+    })
+
+    it("toggles requestable from true to false", async () => {
+      const sessionCookie = await loginAs("editor", "editor123")
+
+      // "historie" was just toggled to true
+      const result = await $fetch("/api/articles/historie/toggle-requestable", {
+        method: "PATCH",
+        headers: { cookie: sessionCookie },
+      })
+
+      expect(result.requestable).toBe(false)
+    })
+
+    it("returns 404 for non-existent article", async () => {
+      const sessionCookie = await loginAs("editor", "editor123")
+
+      await expect(
+        $fetch("/api/articles/neexistujici/toggle-requestable", {
+          method: "PATCH",
+          headers: { cookie: sessionCookie },
+        }),
+      ).rejects.toMatchObject({ statusCode: 404 })
+    })
+
+    it("returns 401 for unauthenticated request", async () => {
+      await expect(
+        $fetch("/api/articles/historie/toggle-requestable", {
+          method: "PATCH",
+        }),
+      ).rejects.toMatchObject({ statusCode: 401 })
+    })
+
+    it("returns 403 for registered user", async () => {
+      const sessionCookie = await loginAs("uzivatel", "user123")
+
+      await expect(
+        $fetch("/api/articles/historie/toggle-requestable", {
+          method: "PATCH",
+          headers: { cookie: sessionCookie },
+        }),
+      ).rejects.toMatchObject({ statusCode: 403 })
+    })
+  })
 })
