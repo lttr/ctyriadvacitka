@@ -22,10 +22,7 @@ export default defineEventHandler(async (event) => {
       .orderBy(desc(tables.articles.datetime))
       .limit(perPage)
       .offset(offset),
-    db
-      .select({ totalCount: count() })
-      .from(tables.articles)
-      .where(whereClause),
+    db.select({ totalCount: count() }).from(tables.articles).where(whereClause),
   ])
 
   return { items, page, perPage, totalCount }
