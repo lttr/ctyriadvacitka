@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   type SiteSettings,
+  parseContactInfo,
   parseSiteSettings,
 } from "~~/app/composables/useSiteSettings"
 
@@ -25,6 +26,7 @@ describe("parseSiteSettings", () => {
       contactAddress: "Klubovna, Hradec Králové",
       introArticleId: "1",
       googleCalendarId: "example@group.calendar.google.com",
+      contactInfo: [],
     })
   })
 
@@ -38,6 +40,7 @@ describe("parseSiteSettings", () => {
       contactAddress: "",
       introArticleId: "",
       googleCalendarId: "",
+      contactInfo: [],
     })
   })
 
@@ -51,6 +54,7 @@ describe("parseSiteSettings", () => {
       contactAddress: "",
       introArticleId: "",
       googleCalendarId: "",
+      contactInfo: [],
     })
   })
 
@@ -64,6 +68,25 @@ describe("parseSiteSettings", () => {
     expect(result.contactEmail).toBe("test@test.cz")
     expect(result.contactPhone).toBe("")
     expect(result.contactAddress).toBe("")
+    expect(result.contactInfo).toEqual([])
+  })
+
+  it("parses contactInfo from JSON string", () => {
+    const persons = [
+      {
+        name: "Jan",
+        role: "vedoucí",
+        nickname: "Honza",
+        phone: "123",
+        email: "jan@test.cz",
+      },
+    ]
+    const result = parseSiteSettings({
+      siteName: "Test",
+      contactInfo: JSON.stringify(persons),
+    })
+
+    expect(result.contactInfo).toEqual(persons)
   })
 
   it("satisfies SiteSettings type contract", () => {
@@ -78,5 +101,44 @@ describe("parseSiteSettings", () => {
 
     expect(settings.siteName).toBe("Test")
     expect(settings.contactEmail).toBe("test@test.cz")
+  })
+})
+
+describe("parseContactInfo", () => {
+  it("parses valid JSON array of contact persons", () => {
+    const persons = [
+      {
+        name: "Jan",
+        role: "vedoucí",
+        nickname: "Honza",
+        phone: "123",
+        email: "jan@test.cz",
+      },
+      { name: "Petra", role: "zástupce", nickname: "", phone: "", email: "" },
+    ]
+
+    const result = parseContactInfo(JSON.stringify(persons))
+
+    expect(result).toEqual(persons)
+  })
+
+  it("returns empty array for null", () => {
+    expect(parseContactInfo(null)).toEqual([])
+  })
+
+  it("returns empty array for undefined", () => {
+    expect(parseContactInfo(undefined)).toEqual([])
+  })
+
+  it("returns empty array for empty string", () => {
+    expect(parseContactInfo("")).toEqual([])
+  })
+
+  it("returns empty array for invalid JSON", () => {
+    expect(parseContactInfo("not-json")).toEqual([])
+  })
+
+  it("returns empty array for non-array JSON", () => {
+    expect(parseContactInfo(JSON.stringify({ name: "test" }))).toEqual([])
   })
 })

@@ -199,6 +199,25 @@ export async function seedDatabase(db: LibSQLDatabase<typeof schema>) {
       key: "googleCalendarId",
       value: "example@group.calendar.google.com",
     },
+    {
+      key: "contactInfo",
+      value: JSON.stringify([
+        {
+          name: "Jan Novák",
+          role: "hlavní vedoucí oddílu",
+          nickname: "Honza",
+          phone: "+420 111 222 333",
+          email: "honza@24hk.cz",
+        },
+        {
+          name: "Petra Svobodová",
+          role: "vedoucí vlčat",
+          nickname: "Péťa",
+          phone: "+420 444 555 666",
+          email: "peta@24hk.cz",
+        },
+      ]),
+    },
   ])
 }
 
