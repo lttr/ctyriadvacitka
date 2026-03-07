@@ -18,6 +18,29 @@
       </dl>
     </section>
 
+    <section v-if="settings.contactInfo.length > 0" class="p-stack">
+      <h2>Vedení oddílu</h2>
+      <div
+        v-for="person of settings.contactInfo"
+        :key="person.name"
+        class="p-stack"
+      >
+        <h3>
+          {{ person.name }}
+          <small v-if="person.nickname">({{ person.nickname }})</small>
+        </h3>
+        <p>{{ person.role }}</p>
+        <p v-if="person.phone">
+          Telefon:
+          <a :href="`tel:${person.phone}`">{{ person.phone }}</a>
+        </p>
+        <p v-if="person.email">
+          E-mail:
+          <a :href="`mailto:${person.email}`">{{ person.email }}</a>
+        </p>
+      </div>
+    </section>
+
     <section class="p-stack">
       <h2>Napište nám</h2>
 

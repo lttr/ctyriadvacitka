@@ -1,3 +1,5 @@
+import type { ContactPerson } from "~~/shared/types/contact"
+
 export interface SiteSettings {
   siteName: string
   contactEmail: string
@@ -5,6 +7,7 @@ export interface SiteSettings {
   contactAddress: string
   introArticleId: string
   googleCalendarId: string
+  contactInfo: ContactPerson[]
 }
 
 const defaultSettings: SiteSettings = {
@@ -14,6 +17,24 @@ const defaultSettings: SiteSettings = {
   contactAddress: "",
   introArticleId: "",
   googleCalendarId: "",
+  contactInfo: [],
+}
+
+export function parseContactInfo(
+  raw: string | undefined | null,
+): ContactPerson[] {
+  if (!raw) {
+    return []
+  }
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) {
+      return parsed as ContactPerson[]
+    }
+    return []
+  } catch {
+    return []
+  }
 }
 
 export function parseSiteSettings(
@@ -30,6 +51,7 @@ export function parseSiteSettings(
     contactAddress: raw.contactAddress ?? "",
     introArticleId: raw.introArticleId ?? "",
     googleCalendarId: raw.googleCalendarId ?? "",
+    contactInfo: parseContactInfo(raw.contactInfo),
   }
 }
 
