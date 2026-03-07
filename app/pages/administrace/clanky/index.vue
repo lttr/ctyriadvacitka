@@ -12,6 +12,7 @@
             <th>Název</th>
             <th>URL</th>
             <th>Autor</th>
+            <th>Zobrazovat</th>
             <th>V menu</th>
             <th>Akce</th>
           </tr>
@@ -25,6 +26,9 @@
             </td>
             <td>{{ article.url }}</td>
             <td>{{ article.author || "—" }}</td>
+            <td>
+              {{ article.requestable ? "Ano" : "Ne" }}
+            </td>
             <td>
               <button type="button" @click="toggleMenu(article.url)">
                 {{ article.inMenu ? "V menu" : "—" }}
