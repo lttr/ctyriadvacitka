@@ -190,4 +190,61 @@ describe("admin article management pages", async () => {
       expect(result2.inMenu).toBe(false)
     })
   })
+
+  // --- Toggle requestable from list ---
+
+  describe("toggle requestable from list", () => {
+    it("toggles article requestable visibility", async () => {
+      const sessionCookie = await loginAs("editor", "editor123")
+
+      // historie has requestable: false in seed
+      const result = await $fetch("/api/articles/historie/toggle-requestable", {
+        method: "PATCH",
+        headers: { cookie: sessionCookie },
+      })
+
+      expect(result.requestable).toBe(true)
+
+      // Toggle back
+      const result2 = await $fetch(
+        "/api/articles/historie/toggle-requestable",
+        {
+          method: "PATCH",
+          headers: { cookie: sessionCookie },
+        },
+      )
+
+      expect(result2.requestable).toBe(false)
+    })
+
+    it("returns 404 for non-existent article", async () => {
+      const sessionCookie = await loginAs("editor", "editor123")
+
+      await expect(
+        $fetch("/api/articles/neexistujici/toggle-requestable", {
+          method: "PATCH",
+          headers: { cookie: sessionCookie },
+        }),
+      ).rejects.toMatchObject({ statusCode: 404 })
+    })
+
+    it("returns 401 for unauthenticated request", async () => {
+      await expect(
+        $fetch("/api/articles/historie/toggle-requestable", {
+          method: "PATCH",
+        }),
+      ).rejects.toMatchObject({ statusCode: 401 })
+    })
+
+    it("returns 403 for registered user", async () => {
+      const sessionCookie = await loginAs("uzivatel", "user123")
+
+      await expect(
+        $fetch("/api/articles/historie/toggle-requestable", {
+          method: "PATCH",
+          headers: { cookie: sessionCookie },
+        }),
+      ).rejects.toMatchObject({ statusCode: 403 })
+    })
+  })
 })

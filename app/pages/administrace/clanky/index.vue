@@ -27,7 +27,9 @@
             <td>{{ article.url }}</td>
             <td>{{ article.author || "—" }}</td>
             <td>
-              {{ article.requestable ? "Ano" : "Ne" }}
+              <button type="button" @click="toggleRequestable(article.url)">
+                {{ article.requestable ? "Ano" : "Ne" }}
+              </button>
             </td>
             <td>
               <button type="button" @click="toggleMenu(article.url)">
@@ -67,6 +69,13 @@ const { data: articles, refresh } = await useFetch("/api/articles", {
 
 async function toggleMenu(url: string) {
   await $fetch(`/api/articles/${url}/toggle-menu` as string, {
+    method: "PATCH",
+  })
+  await refresh()
+}
+
+async function toggleRequestable(url: string) {
+  await $fetch(`/api/articles/${url}/toggle-requestable` as string, {
     method: "PATCH",
   })
   await refresh()
