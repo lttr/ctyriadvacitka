@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     "@nuxtjs/seo",
     "@lttr/nuxt-puleo",
     "@vueuse/nuxt",
+    "nuxt-security",
   ],
 
   experimental: {
@@ -30,6 +31,19 @@ export default defineNuxtConfig({
 
   site: {
     indexable: false,
+  },
+
+  security: {
+    headers: {
+      contentSecurityPolicy: {
+        "img-src": ["'self'", "data:", "blob:"],
+        "script-src": ["'self'", "'nonce-{{nonce}}'", "'strict-dynamic'"],
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "connect-src": ["'self'"],
+        "frame-src": ["'self'", "https://calendar.google.com"],
+      },
+      crossOriginEmbedderPolicy: "unsafe-none",
+    },
   },
 
   devtools: { enabled: true },
