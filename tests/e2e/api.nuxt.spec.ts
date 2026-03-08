@@ -31,36 +31,37 @@ describe("public API integration tests", async () => {
   // --- Articles ---
 
   describe("GET /api/articles", () => {
-    it("returns paginated articles with default page=1 perPage=10 and totalCount", async () => {
+    it("returns only requestable articles for unauthenticated users", async () => {
       const result = await $fetch("/api/articles")
 
       expect(result.page).toBe(1)
       expect(result.perPage).toBe(10)
-      expect(result.items).toHaveLength(6) // 6 total, all fit on page 1
-      expect(result.totalCount).toBe(6)
+      // Only 2 of 6 seed articles are requestable: "Přihláška" and "Letní tábor 2026"
+      expect(result.items).toHaveLength(2)
+      expect(result.totalCount).toBe(2)
     })
 
     it("returns articles ordered by datetime DESC", async () => {
       const result = await $fetch("/api/articles")
 
-      // Most recent first (Letní tábor 2026 = 2026-02-15)
+      // Most recent requestable first (Letní tábor 2026 = 2026-02-15)
       expect(result.items[0].title).toBe("Letní tábor 2026")
     })
 
     it("supports page and perPage query params", async () => {
-      const result = await $fetch("/api/articles?page=1&perPage=3")
+      const result = await $fetch("/api/articles?page=1&perPage=1")
 
       expect(result.page).toBe(1)
-      expect(result.perPage).toBe(3)
-      expect(result.items).toHaveLength(3)
-      expect(result.totalCount).toBe(6)
+      expect(result.perPage).toBe(1)
+      expect(result.items).toHaveLength(1)
+      expect(result.totalCount).toBe(2)
     })
 
     it("returns correct items on page 2", async () => {
-      const result = await $fetch("/api/articles?page=2&perPage=3")
+      const result = await $fetch("/api/articles?page=2&perPage=1")
 
       expect(result.page).toBe(2)
-      expect(result.items).toHaveLength(3)
+      expect(result.items).toHaveLength(1)
     })
 
     it("clamps perPage to max 50", async () => {
@@ -185,6 +186,7 @@ describe("public API integration tests", async () => {
       const settings = await $fetch("/api/settings")
 
       expect(settings.siteName).toBe("24. oddíl Junáka Hradec Králové")
+      expect(settings.siteDescription).toBe("Skautský oddíl")
       expect(settings.contactEmail).toBe("info@24hk.cz")
       expect(settings.contactPhone).toBe("+420 123 456 789")
       expect(settings.contactAddress).toContain("Hradec Králové")
@@ -355,26 +357,25 @@ describe("public API integration tests", async () => {
   // --- Article list page ---
 
   describe("Article list page", () => {
-    it("renders all articles with titles", async () => {
+    it("renders requestable articles for unauthenticated users", async () => {
       const html = await $fetch("/clanky")
 
       expect(html).toContain("Články")
-      expect(html).toContain("O nás")
-      expect(html).toContain("Vedení oddílu")
+      // Only requestable articles are shown to unauthenticated users
+      expect(html).toContain("Přihláška")
       expect(html).toContain("Letní tábor 2026")
     })
 
     it("renders article links pointing to detail pages", async () => {
       const html = await $fetch("/clanky")
 
-      expect(html).toContain('href="/clanek/o-nas"')
-      expect(html).toContain('href="/clanek/historie"')
+      expect(html).toContain('href="/clanek/prihlaska"')
+      expect(html).toContain('href="/clanek/letni-tabor-2026"')
     })
 
     it("renders article authors", async () => {
       const html = await $fetch("/clanky")
 
-      expect(html).toContain("admin")
       expect(html).toContain("editor")
     })
 
@@ -459,12 +460,10 @@ describe("public API integration tests", async () => {
       expect(html).toContain("24. oddíl Junáka Hradec Králové")
     })
 
-    it("renders meta description on homepage", async () => {
+    it("renders site description from settings in homepage meta", async () => {
       const html = await $fetch("/")
 
-      expect(html).toContain(
-        "Webové stránky 24. oddílu Junáka v Hradci Králové",
-      )
+      expect(html).toContain("Skautský oddíl")
     })
 
     it("renders page-specific title on novinky", async () => {
