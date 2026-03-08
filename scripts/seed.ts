@@ -185,6 +185,7 @@ export async function seedDatabase(db: LibSQLDatabase<typeof schema>) {
 
   await db.insert(schema.siteSettings).values([
     { key: "siteName", value: "24. oddíl Junáka Hradec Králové" },
+    { key: "siteDescription", value: "Skautský oddíl" },
     { key: "contactEmail", value: "info@24hk.cz" },
     { key: "contactPhone", value: "+420 123 456 789" },
     {

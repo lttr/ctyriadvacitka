@@ -10,6 +10,7 @@ describe("parseSiteSettings", () => {
   it("parses a valid settings object", () => {
     const raw = {
       siteName: "24. oddíl Junáka Hradec Králové",
+      siteDescription: "Skautský oddíl",
       contactEmail: "info@24hk.cz",
       contactPhone: "+420 123 456 789",
       contactAddress: "Klubovna, Hradec Králové",
@@ -21,6 +22,7 @@ describe("parseSiteSettings", () => {
 
     expect(result).toEqual({
       siteName: "24. oddíl Junáka Hradec Králové",
+      siteDescription: "Skautský oddíl",
       contactEmail: "info@24hk.cz",
       contactPhone: "+420 123 456 789",
       contactAddress: "Klubovna, Hradec Králové",
@@ -35,6 +37,7 @@ describe("parseSiteSettings", () => {
 
     expect(result).toEqual({
       siteName: "",
+      siteDescription: "",
       contactEmail: "",
       contactPhone: "",
       contactAddress: "",
@@ -49,6 +52,7 @@ describe("parseSiteSettings", () => {
 
     expect(result).toEqual({
       siteName: "",
+      siteDescription: "",
       contactEmail: "",
       contactPhone: "",
       contactAddress: "",
@@ -65,6 +69,7 @@ describe("parseSiteSettings", () => {
     })
 
     expect(result.siteName).toBe("Test Site")
+    expect(result.siteDescription).toBe("")
     expect(result.contactEmail).toBe("test@test.cz")
     expect(result.contactPhone).toBe("")
     expect(result.contactAddress).toBe("")

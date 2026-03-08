@@ -2,6 +2,7 @@ import type { ContactPerson } from "~~/shared/types/contact"
 
 export interface SiteSettings {
   siteName: string
+  siteDescription: string
   contactEmail: string
   contactPhone: string
   contactAddress: string
@@ -12,6 +13,7 @@ export interface SiteSettings {
 
 const defaultSettings: SiteSettings = {
   siteName: "",
+  siteDescription: "",
   contactEmail: "",
   contactPhone: "",
   contactAddress: "",
@@ -46,6 +48,7 @@ export function parseSiteSettings(
 
   return {
     siteName: raw.siteName ?? "",
+    siteDescription: raw.siteDescription ?? "",
     contactEmail: raw.contactEmail ?? "",
     contactPhone: raw.contactPhone ?? "",
     contactAddress: raw.contactAddress ?? "",

@@ -9,6 +9,15 @@
       </div>
 
       <div>
+        <label for="siteDescription">Popis webu</label>
+        <input
+          id="siteDescription"
+          v-model="form.siteDescription"
+          type="text"
+        />
+      </div>
+
+      <div>
         <label for="introArticleId">ID úvodního článku</label>
         <input id="introArticleId" v-model="form.introArticleId" type="text" />
       </div>
@@ -47,6 +56,7 @@ const { settings } = useSiteSettings()
 
 const form = reactive({
   siteName: settings.value.siteName,
+  siteDescription: settings.value.siteDescription,
   introArticleId: settings.value.introArticleId,
   googleCalendarId: settings.value.googleCalendarId,
 })
@@ -63,6 +73,7 @@ async function save() {
       method: "PUT",
       body: {
         siteName: form.siteName,
+        siteDescription: form.siteDescription,
         introArticleId: form.introArticleId,
         googleCalendarId: form.googleCalendarId,
       },

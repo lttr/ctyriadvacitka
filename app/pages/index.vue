@@ -16,6 +16,8 @@ const { data: introArticle } = await useFetch("/api/articles/intro")
 
 useSeoMeta({
   title: settings.value.siteName || "Čtyřiadvacítka",
-  description: "Webové stránky 24. oddílu Junáka v Hradci Králové",
+  description:
+    settings.value.siteDescription ||
+    "Webové stránky 24. oddílu Junáka v Hradci Králové",
 })
 </script>
