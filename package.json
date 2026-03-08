@@ -24,6 +24,7 @@
   "dependencies": {
     "@iconify-json/uil": "^1.2.3",
     "@libsql/client": "^0.15.15",
+    "@lttr/nuxt-config-postcss": "^0.0.8",
     "@lttr/puleo": "^0.8.1",
     "@nuxthub/core": "^0.10.1",
     "@zod/core": "^0.11.6",
