@@ -14,6 +14,9 @@ importers:
       '@libsql/client':
         specifier: ^0.15.15
         version: 0.15.15
+      '@lttr/nuxt-config-postcss':
+        specifier: ^0.0.8
+        version: 0.0.8(magicast@0.5.2)
       '@lttr/puleo':
         specifier: ^0.8.1
         version: 0.8.1
