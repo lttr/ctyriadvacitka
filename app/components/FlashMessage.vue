@@ -1,7 +1,17 @@
 <template>
-  <div v-if="message" class="flash-message" :class="`flash-${type}`" role="status">
+  <div
+    v-if="message"
+    class="flash-message"
+    :class="`flash-${type}`"
+    role="status"
+  >
     <span>{{ message }}</span>
-    <button type="button" class="flash-close" aria-label="Zavřít" @click="clear">
+    <button
+      type="button"
+      class="flash-close"
+      aria-label="Zavřít"
+      @click="clear"
+    >
       &times;
     </button>
   </div>

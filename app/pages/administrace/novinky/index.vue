@@ -2,14 +2,14 @@
   <div>
     <div class="p-cluster" style="justify-content: space-between">
       <h1>Novinky</h1>
-      <NuxtLink to="/administrace/novinky/novy">Nova novinka</NuxtLink>
+      <NuxtLink to="/administrace/novinky/novy">Nová novinka</NuxtLink>
     </div>
 
     <div v-if="newsData && newsData.items.length > 0" class="p-stack">
       <table>
         <thead>
           <tr>
-            <th>Nazev</th>
+            <th>Název</th>
             <th>Autor</th>
             <th>Datum</th>
             <th>Akce</th>
@@ -23,7 +23,7 @@
               </NuxtLink>
             </td>
             <td>{{ item.author || "—" }}</td>
-            <td>{{ item.datetime ? formatDate(item.datetime) : "—" }}</td>
+            <td>{{ item.datetime ? formatCzechDate(item.datetime) : "—" }}</td>
             <td>
               <NuxtLink :to="`/administrace/novinky/${item.id}`">
                 Upravit
@@ -42,13 +42,15 @@
 </template>
 
 <script setup lang="ts">
+import { formatCzechDate } from "~~/shared/utils/date"
+
 definePageMeta({
   layout: "admin",
   middleware: "admin",
 })
 
 useSeoMeta({
-  title: "Novinky — Administrace — Ctyriadvacitka",
+  title: "Novinky — Administrace — Čtyřiadvacítka",
 })
 
 const { show } = useFlashMessage()
@@ -56,10 +58,6 @@ const { show } = useFlashMessage()
 const { data: newsData, refresh } = await useFetch("/api/news", {
   query: { perPage: 50 },
 })
-
-function formatDate(datetime: string): string {
-  return new Date(datetime).toLocaleDateString("cs-CZ")
-}
 
 async function deleteNewsItem(id: number) {
   if (!confirm("Opravdu smazat tuto novinku?")) {

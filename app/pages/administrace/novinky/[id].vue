@@ -4,7 +4,7 @@
 
     <form v-if="newsItem" class="p-stack" @submit.prevent="save">
       <div>
-        <label for="title">Nazev</label>
+        <label for="title">Název</label>
         <input id="title" v-model="form.title" type="text" required />
       </div>
 
@@ -20,9 +20,9 @@
 
       <div>
         <button type="submit" :disabled="saving">
-          {{ saving ? "Ukladam…" : "Ulozit" }}
+          {{ saving ? "Ukládám…" : "Uložit novinku" }}
         </button>
-        <NuxtLink to="/administrace/novinky">Zpet</NuxtLink>
+        <NuxtLink to="/administrace/novinky">Zpět</NuxtLink>
       </div>
 
       <p v-if="message" role="status">{{ message }}</p>
@@ -46,7 +46,7 @@ if (!newsItem.value) {
 }
 
 useSeoMeta({
-  title: `Upravit: ${newsItem.value.title} — Administrace — Ctyriadvacitka`,
+  title: `Upravit: ${newsItem.value.title} — Administrace — Čtyřiadvacítka`,
 })
 
 const form = reactive({
@@ -72,9 +72,9 @@ async function save() {
       },
     })
 
-    message.value = "Novinka byla ulozena."
+    message.value = "Novinka byla uložena."
   } catch {
-    message.value = "Nepodarilo se ulozit novinku."
+    message.value = "Nepodařilo se uložit novinku."
   } finally {
     saving.value = false
   }

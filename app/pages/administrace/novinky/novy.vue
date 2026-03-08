@@ -1,10 +1,10 @@
 <template>
   <div>
-    <h1>Nova novinka</h1>
+    <h1>Nová novinka</h1>
 
     <form class="p-stack" @submit.prevent="create">
       <div>
-        <label for="title">Nazev</label>
+        <label for="title">Název</label>
         <input id="title" v-model="form.title" type="text" required />
       </div>
 
@@ -20,7 +20,7 @@
 
       <div>
         <button type="submit" :disabled="saving">
-          {{ saving ? "Vytvarim…" : "Vytvorit" }}
+          {{ saving ? "Vytvářím…" : "Vytvořit" }}
         </button>
       </div>
 
@@ -36,7 +36,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: "Nova novinka — Administrace — Ctyriadvacitka",
+  title: "Nová novinka — Administrace — Čtyřiadvacítka",
 })
 
 const form = reactive({
@@ -64,7 +64,7 @@ async function create() {
     })
     await navigateTo("/administrace/novinky")
   } catch {
-    error.value = "Nepodarilo se vytvorit novinku."
+    error.value = "Nepodařilo se vytvořit novinku."
   } finally {
     saving.value = false
   }
