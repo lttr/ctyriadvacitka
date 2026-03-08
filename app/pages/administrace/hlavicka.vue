@@ -96,6 +96,8 @@ async function upload() {
   }
 }
 
+const { show } = useFlashMessage()
+
 async function remove(image: BlobItem) {
   deleting.value = image.pathname
 
@@ -103,6 +105,7 @@ async function remove(image: BlobItem) {
     await $fetch(`/api/header-images/${image.pathname}` as string, {
       method: "DELETE",
     })
+    show("Obrázek odstraněn.")
     await refresh()
   } catch {
     message.value = "Nepodařilo se smazat obrázek."

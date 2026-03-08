@@ -51,6 +51,8 @@ useSeoMeta({
   title: "Novinky — Administrace — Ctyriadvacitka",
 })
 
+const { show } = useFlashMessage()
+
 const { data: newsData, refresh } = await useFetch("/api/news", {
   query: { perPage: 50 },
 })
@@ -66,6 +68,7 @@ async function deleteNewsItem(id: number) {
   await $fetch(`/api/news/${id}` as string, {
     method: "DELETE",
   })
+  show("Novinka byla úspěšně odstraněna.")
   await refresh()
 }
 </script>

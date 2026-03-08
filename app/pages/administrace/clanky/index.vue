@@ -61,6 +61,8 @@ useSeoMeta({
   title: "Články — Administrace — Čtyřiadvacítka",
 })
 
+const { show } = useFlashMessage()
+
 const { data: articles, refresh } = await useFetch("/api/articles", {
   query: { perPage: 50 },
 })
@@ -79,6 +81,7 @@ async function deleteArticle(url: string) {
   await $fetch(`/api/articles/${url}` as string, {
     method: "DELETE",
   })
+  show("Článek byl úspěšně odstraněn.")
   await refresh()
 }
 </script>
