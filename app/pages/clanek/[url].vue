@@ -1,11 +1,22 @@
 <template>
   <article v-if="article" class="p-stack">
     <h1>{{ article.title }}</h1>
-    <div v-html="article.content"></div>
+    <p v-if="article.datetime || article.author" class="p-text-secondary">
+      <time v-if="article.datetime">{{
+        formatCzechDate(article.datetime)
+      }}</time>
+      <span v-if="article.author"> — {{ article.author }}</span>
+    </p>
+    <div v-if="article.content" v-html="article.content"></div>
+    <p>
+      <NuxtLink to="/clanky">Zpět na články</NuxtLink>
+    </p>
   </article>
 </template>
 
 <script setup lang="ts">
+import { formatCzechDate } from "~~/shared/utils/date"
+
 const route = useRoute("clanek-url")
 const url = computed(() => route.params.url)
 
