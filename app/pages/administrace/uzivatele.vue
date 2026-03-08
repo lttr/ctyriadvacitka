@@ -71,6 +71,8 @@ useSeoMeta({
 const { data: session } = await useFetch("/api/auth/session")
 const currentUsername = computed(() => session.value?.user?.username)
 
+const { show } = useFlashMessage()
+
 const { data: users, refresh } = await useFetch("/api/users")
 
 async function changeRole(username: string, role: string) {
@@ -88,6 +90,7 @@ async function deleteUser(username: string) {
   await $fetch(`/api/users/${username}`, {
     method: "DELETE",
   })
+  show("Uživatel byl úspěšně odstraněn.")
   await refresh()
 }
 </script>

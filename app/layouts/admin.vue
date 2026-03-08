@@ -10,6 +10,7 @@
     <div class="p-page-layout">
       <div class="p-content p-with-sidebar">
         <main>
+          <FlashMessage />
           <slot></slot>
         </main>
         <aside>
