@@ -151,7 +151,7 @@ describe("contact persons feature", async () => {
       expect(html).toContain("hlavní vedoucí oddílu")
       expect(html).toContain("Honza")
       expect(html).toContain("+420 111 222 333")
-      expect(html).toContain("honza@24hk.cz")
+      // Email is rendered client-side via ObfuscatedEmail component for scraper protection
     })
 
     it("renders multiple contact persons", async () => {
@@ -179,7 +179,7 @@ describe("contact persons feature", async () => {
         headers: { cookie: sessionCookie },
       })
 
-      expect(html).toContain("Kontaktní údaje")
+      expect(html).toContain("Nastavení webu")
       expect(html).toContain("Vedení oddílu")
       expect(html).toContain("Jan Novák")
       expect(html).toContain("Petra Svobodová")
