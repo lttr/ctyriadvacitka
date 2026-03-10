@@ -339,7 +339,7 @@ describe("public API integration tests", async () => {
       const html = await $fetch("/kontakt")
 
       expect(html).toContain("Kontakt")
-      expect(html).toContain("info@24hk.cz")
+      // Email is rendered client-side via ObfuscatedEmail for scraper protection
       expect(html).toContain("+420 123 456 789")
       expect(html).toContain("Hradec Králové")
     })
@@ -347,8 +347,8 @@ describe("public API integration tests", async () => {
     it("renders contact form", async () => {
       const html = await $fetch("/kontakt")
 
-      expect(html).toContain("Jméno")
-      expect(html).toContain("E-mail")
+      expect(html).toContain("Vaše jméno")
+      expect(html).toContain("Email")
       expect(html).toContain("Zpráva")
     })
   })
