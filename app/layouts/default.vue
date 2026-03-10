@@ -5,6 +5,7 @@
         <AppNavbar />
       </div>
     </header>
+    <HeroSection />
     <div class="p-page-layout">
       <div class="p-content p-with-sidebar">
         <main>
@@ -15,6 +16,11 @@
           <SidebarNews />
           <SidebarLogin />
         </aside>
+      </div>
+    </div>
+    <div class="p-page-layout">
+      <div class="p-content">
+        <SponsorLogos />
       </div>
     </div>
     <div class="p-page-layout">
