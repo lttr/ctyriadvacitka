@@ -18,5 +18,17 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: "Article not found" })
   }
 
+  // Non-requestable articles are only visible to editors and admins
+  if (!article.requestable) {
+    const user = await getSessionUser(event)
+    const isEditor = user?.role === "editor" || user?.role === "admin"
+    if (!isEditor) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Article not found",
+      })
+    }
+  }
+
   return article
 })
