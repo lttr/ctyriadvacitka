@@ -3,7 +3,7 @@
     <h3>Navigace</h3>
     <ul>
       <li v-for="article of menuArticles" :key="article.id">
-        <NuxtLink :to="`/clanek/${article.url}`">
+        <NuxtLink :to="`/${article.url}`">
           {{ article.title }}
         </NuxtLink>
       </li>

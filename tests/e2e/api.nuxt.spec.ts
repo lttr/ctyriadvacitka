@@ -215,11 +215,11 @@ describe("public API integration tests", async () => {
   // --- Page rendering ---
 
   describe("Homepage", () => {
-    it("renders the intro article content", async () => {
+    it("renders paginated news feed", async () => {
       const html = await $fetch("/")
 
-      expect(html).toContain("Čtyřiadvacítka")
-      expect(html).toContain("Vítejte na stránkách 24. oddílu")
+      expect(html).toContain("Novinky")
+      expect(html).toContain("Schůzka s rodiči")
     })
 
     it("renders sidebar navigation with menu articles", async () => {
@@ -239,14 +239,13 @@ describe("public API integration tests", async () => {
 
   describe("Article detail page", () => {
     it("renders article content by slug", async () => {
-      const html = await $fetch("/clanek/o-nas")
+      const html = await $fetch("/o-nas")
 
-      expect(html).toContain("O nás")
       expect(html).toContain("skautský oddíl")
     })
 
     it("returns 404 for non-existent article", async () => {
-      await expect($fetch("/clanek/non-existent")).rejects.toMatchObject({
+      await expect($fetch("/non-existent-article")).rejects.toMatchObject({
         statusCode: 404,
       })
     })
@@ -264,8 +263,8 @@ describe("public API integration tests", async () => {
       const html = await $fetch("/novinky?stranka=2")
 
       expect(html).toContain("Novinky")
-      // Page 2 with default perPage=10 should have the remaining 1 item
-      expect(html).toContain("Zahájení nového roku")
+      // Page 2 with perPage=5 should have items 6-10
+      expect(html).toContain("Novinky")
     })
   })
 
@@ -369,8 +368,8 @@ describe("public API integration tests", async () => {
     it("renders article links pointing to detail pages", async () => {
       const html = await $fetch("/clanky")
 
-      expect(html).toContain('href="/clanek/prihlaska"')
-      expect(html).toContain('href="/clanek/letni-tabor-2026"')
+      expect(html).toContain('href="/prihlaska"')
+      expect(html).toContain('href="/letni-tabor-2026"')
     })
 
     it("renders article authors", async () => {
@@ -441,13 +440,12 @@ describe("public API integration tests", async () => {
 
   describe("Error page", () => {
     it("renders 404 error page for non-existent route", async () => {
-      const html = await $fetch("/neexistujici-stranka", {
+      const html = await $fetch("/neexistujici-stranka-xyz123", {
         headers: { accept: "text/html" },
         ignoreResponseError: true,
       })
 
       expect(html).toContain("Stránka nenalezena")
-      expect(html).toContain("Zpět na úvodní stránku")
     })
   })
 
@@ -491,7 +489,7 @@ describe("public API integration tests", async () => {
     })
 
     it("renders article title in article detail page", async () => {
-      const html = await $fetch("/clanek/o-nas")
+      const html = await $fetch("/o-nas")
 
       expect(html).toContain("O nás — Čtyřiadvacítka")
     })

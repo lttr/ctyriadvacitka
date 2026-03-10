@@ -14,6 +14,7 @@ export const contactPersonSchema = z.object({
   nickname: z.string().optional().default(""),
   phone: z.string().optional().default(""),
   email: z.string().email("Neplatná emailová adresa").optional().default(""),
+  photo: z.string().optional().default(""),
 })
 
 export const contactPersonsSchema = z.array(contactPersonSchema)

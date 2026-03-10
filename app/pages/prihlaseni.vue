@@ -6,7 +6,7 @@
 
     <form @submit.prevent="handleSubmit">
       <div class="p-stack">
-        <label for="login-username">Uživatelské jméno</label>
+        <label for="login-username">Přihlašovací jméno</label>
         <input
           id="login-username"
           v-model="form.username"
@@ -65,7 +65,7 @@ async function handleSubmit() {
   try {
     await login(form.value.username, form.value.password)
     await fetchSession()
-    await navigateTo("/")
+    await navigateTo("/administrace")
   } catch (error: unknown) {
     const fetchError = error as { data?: { message?: string } }
     errorMessage.value =
