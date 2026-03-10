@@ -7,6 +7,7 @@
         </NuxtLink>
       </div>
     </header>
+    <HeroSection />
     <div class="p-page-layout">
       <div class="p-content p-with-sidebar">
         <main>

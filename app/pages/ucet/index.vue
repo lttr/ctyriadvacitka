@@ -44,6 +44,9 @@
     <p>
       <NuxtLink to="/ucet/zmenit-heslo">Změnit heslo</NuxtLink>
     </p>
+    <p>
+      <NuxtLink to="/odhlasit">Odhlásit</NuxtLink>
+    </p>
   </div>
 </template>
 
