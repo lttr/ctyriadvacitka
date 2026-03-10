@@ -2,7 +2,7 @@
   <nav>
     <ul>
       <li>
-        <NuxtLink to="/administrace">Přehled</NuxtLink>
+        <NuxtLink to="/administrace">Administrace</NuxtLink>
       </li>
       <li>
         <NuxtLink to="/administrace/clanky">Články</NuxtLink>
@@ -11,19 +11,13 @@
         <NuxtLink to="/administrace/novinky">Novinky</NuxtLink>
       </li>
       <li v-if="isAdmin">
+        <NuxtLink to="/administrace/hlavicka">Obrázky záhlaví</NuxtLink>
+      </li>
+      <li v-if="isAdmin">
         <NuxtLink to="/administrace/uzivatele">Uživatelé</NuxtLink>
       </li>
-      <li v-if="isAdmin">
-        <NuxtLink to="/administrace/web">Nastavení webu</NuxtLink>
-      </li>
-      <li v-if="isAdmin">
-        <NuxtLink to="/administrace/kontakty">Kontaktní údaje</NuxtLink>
-      </li>
-      <li v-if="isAdmin">
-        <NuxtLink to="/administrace/hlavicka">Obrázky hlavičky</NuxtLink>
-      </li>
       <li>
-        <NuxtLink to="/">Zpět na web</NuxtLink>
+        <NuxtLink to="/">Zpět</NuxtLink>
       </li>
     </ul>
   </nav>

@@ -11,7 +11,7 @@
     </form>
     <ul v-if="articlesData?.items.length" class="p-stack">
       <li v-for="article of articlesData.items" :key="article.id">
-        <NuxtLink :to="`/clanek/${article.url}`">
+        <NuxtLink :to="`/${article.url}`">
           <h2>{{ article.title }}</h2>
         </NuxtLink>
         <time v-if="article.datetime">{{

@@ -59,14 +59,14 @@ const searchInput = ref((route.query.hledat as string) || "")
 const search = refDebounced(searchInput, 300)
 
 const { data: newsData } = await useFetch("/api/news", {
-  query: { page, perPage: 10, search },
+  query: { page, perPage: 5, search },
   watch: [page, search],
 })
 
 const pagination = computed(() =>
   calculatePagination({
     page: newsData.value?.page ?? 1,
-    perPage: newsData.value?.perPage ?? 10,
+    perPage: newsData.value?.perPage ?? 5,
     totalCount: newsData.value?.totalCount ?? 0,
   }),
 )

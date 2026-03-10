@@ -2,9 +2,7 @@
   <div class="p-layout-wrapper">
     <header class="p-page-layout">
       <div class="p-content">
-        <NuxtLink to="/">
-          <strong>Čtyřiadvacítka</strong>
-        </NuxtLink>
+        <AppNavbar />
       </div>
     </header>
     <div class="p-page-layout">
@@ -19,10 +17,10 @@
         </aside>
       </div>
     </div>
-    <footer class="p-page-layout">
-      <div class="p-content p-secondary-text-regular">
-        24. oddíl Hradec Králové
+    <div class="p-page-layout">
+      <div class="p-content">
+        <AppFooter />
       </div>
-    </footer>
+    </div>
   </div>
 </template>
