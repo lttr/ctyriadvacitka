@@ -9,8 +9,8 @@
       </div>
 
       <div>
-        <label for="content">Obsah</label>
-        <textarea id="content" v-model="form.content" rows="15"></textarea>
+        <label>Obsah</label>
+        <RichTextEditor v-model="form.content" />
       </div>
 
       <div>
