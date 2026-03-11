@@ -16,7 +16,7 @@ beforeAll(() => {
       title TEXT NOT NULL,
       url TEXT NOT NULL UNIQUE,
       content TEXT,
-      requestable INTEGER NOT NULL DEFAULT 0,
+      requestable INTEGER NOT NULL DEFAULT 1,
       in_menu INTEGER NOT NULL DEFAULT 0,
       author TEXT,
       datetime TEXT
