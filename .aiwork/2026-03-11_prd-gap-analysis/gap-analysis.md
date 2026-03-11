@@ -150,6 +150,14 @@ Comprehensive audit of the PRD (`.aiwork/2026-03-03_specification/prd.md`) again
 
 ---
 
+## Recently Resolved
+
+| # | Item | Resolution |
+|---|------|------------|
+| 1 | WYSIWYG editor for article/news content | Implemented with TipTap (`@tiptap/vue-3`, `@tiptap/starter-kit`, `@tiptap/extension-link`). Reusable `RichTextEditor.client.vue` component replaces plain `<textarea>` in all 4 editor forms. Toolbar: bold, italic, headings, lists, blockquote, link, undo/redo. |
+
+---
+
 ## Key Functional Gaps Summary
 
 | # | Gap | Severity | PRD Reference |
