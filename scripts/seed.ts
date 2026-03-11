@@ -84,6 +84,16 @@ export async function seedDatabase(db: LibSQLDatabase<typeof schema>) {
       datetime: "2026-01-15T10:00:00.000Z",
     },
     {
+      title: "Stránka nebyla nalezena",
+      url: "chyba",
+      content:
+        "<p>Požadovaná stránka nebyla nalezena. Zkontrolujte prosím adresu.</p>",
+      requestable: false,
+      inMenu: false,
+      author: "admin",
+      datetime: "2026-01-01T00:00:00.000Z",
+    },
+    {
       title: "Historie oddílu",
       url: "historie",
       content:

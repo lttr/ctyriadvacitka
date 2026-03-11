@@ -1,6 +1,6 @@
 <template>
   <div class="p-stack">
-    <h1>Administrace webu</h1>
+    <h1>Vítejte v administraci</h1>
 
     <div v-if="stats" class="p-cluster">
       <NuxtLink to="/administrace/clanky" class="p-card">

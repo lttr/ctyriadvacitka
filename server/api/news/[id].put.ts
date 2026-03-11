@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 
 export default defineEventHandler(async (event) => {
-  await requireRole(event, "editor")
+  const user = await requireRole(event, "editor")
 
   const idParam = getRouterParam(event, "id")
   const id = Number(idParam)
@@ -21,6 +21,10 @@ export default defineEventHandler(async (event) => {
 
   if (!existing) {
     throw createError({ statusCode: 404, statusMessage: "News item not found" })
+  }
+
+  if (user.role !== "admin" && existing.author !== user.username) {
+    throw createError({ statusCode: 403, statusMessage: "Nedostatečná oprávnění" })
   }
 
   const body = await readBody(event)

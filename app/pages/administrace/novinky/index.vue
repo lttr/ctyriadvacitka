@@ -25,12 +25,14 @@
             <td>{{ item.author || "—" }}</td>
             <td>{{ item.datetime ? formatCzechDate(item.datetime) : "—" }}</td>
             <td>
-              <NuxtLink :to="`/administrace/novinky/${item.id}`">
-                Upravit
-              </NuxtLink>
-              <button type="button" @click="deleteNewsItem(item.id)">
-                Smazat
-              </button>
+              <template v-if="canEdit(item)">
+                <NuxtLink :to="`/administrace/novinky/${item.id}`">
+                  Upravit
+                </NuxtLink>
+                <button type="button" @click="deleteNewsItem(item.id)">
+                  Smazat
+                </button>
+              </template>
             </td>
           </tr>
         </tbody>
@@ -53,11 +55,16 @@ useSeoMeta({
   title: "Novinky — Administrace — Čtyřiadvacítka",
 })
 
+const { user, isAdmin } = useAuth()
 const { show } = useFlashMessage()
 
 const { data: newsData, refresh } = await useFetch("/api/news", {
   query: { perPage: 50 },
 })
+
+function canEdit(item: { author: string | null }) {
+  return isAdmin.value || item.author === user.value?.username
+}
 
 async function deleteNewsItem(id: number) {
   if (!confirm("Opravdu smazat tuto novinku?")) {
