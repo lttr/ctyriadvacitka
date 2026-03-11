@@ -146,7 +146,7 @@ better-auth configured with:
 | CSS framework | `@lttr/puleo` | Author's own framework, used in chrono-albums-2 |
 | Icons | `@iconify-json/uil` | Unicons via `@nuxt/icon` |
 | Composables | `@vueuse/core` | Utility composables |
-| Rich text editor | TBD | For article content editing (HTML body). Evaluate: Tiptap, ProseMirror, or simple textarea with markdown. |
+| Rich text editor | `@tiptap/vue-3` + `@tiptap/starter-kit` + `@tiptap/extension-link` | TipTap WYSIWYG editor for article/news content editing (HTML body). Client-only component (`RichTextEditor.client.vue`). |
 
 ### Layout Structure (from PRD §6)
 
