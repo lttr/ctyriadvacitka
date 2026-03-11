@@ -51,7 +51,11 @@ export default defineNuxtConfig({
         "script-src": ["'self'", "'nonce-{{nonce}}'", "'strict-dynamic'"],
         "style-src": ["'self'", "'unsafe-inline'"],
         "connect-src": ["'self'"],
-        "frame-src": ["'self'", "https://calendar.google.com"],
+        "frame-src": [
+          "'self'",
+          "https://calendar.google.com",
+          "https://www.google.com",
+        ],
       },
       crossOriginEmbedderPolicy: "unsafe-none",
     },

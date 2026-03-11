@@ -1,7 +1,7 @@
 <template>
   <div class="p-stack">
     <h1>Termíny akcí</h1>
-    <p>Kalendář plánovaných akcí oddílu.</p>
+    <p>Schůzky jsou každé pondělí od 17:00 do 18:30.</p>
     <iframe
       v-if="calendarId"
       :src="calendarSrc"

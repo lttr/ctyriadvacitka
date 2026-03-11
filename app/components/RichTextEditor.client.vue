@@ -17,7 +17,7 @@
       >
         I
       </button>
-      <span class="toolbar-separator" ></span>
+      <span class="toolbar-separator"></span>
       <button
         type="button"
         :class="{ active: editor.isActive('heading', { level: 2 }) }"
@@ -34,7 +34,7 @@
       >
         H3
       </button>
-      <span class="toolbar-separator" ></span>
+      <span class="toolbar-separator"></span>
       <button
         type="button"
         :class="{ active: editor.isActive('bulletList') }"
@@ -59,7 +59,7 @@
       >
         &ldquo;
       </button>
-      <span class="toolbar-separator" ></span>
+      <span class="toolbar-separator"></span>
       <button
         type="button"
         :class="{ active: editor.isActive('link') }"
@@ -68,7 +68,7 @@
       >
         🔗
       </button>
-      <span class="toolbar-separator" ></span>
+      <span class="toolbar-separator"></span>
       <button
         type="button"
         title="Zpět"
@@ -120,7 +120,9 @@ watch(model, (newValue) => {
 })
 
 function toggleLink() {
-  if (!editor.value) {return}
+  if (!editor.value) {
+    return
+  }
 
   if (editor.value.isActive("link")) {
     editor.value.chain().focus().unsetLink().run()

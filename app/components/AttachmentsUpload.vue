@@ -28,7 +28,11 @@
     <div v-if="attachments?.length">
       <h3>Nahrané přílohy</h3>
       <div class="p-grid">
-        <div v-for="attachment of attachments" :key="attachment.pathname" class="p-card">
+        <div
+          v-for="attachment of attachments"
+          :key="attachment.pathname"
+          class="p-card"
+        >
           <img
             :src="`/api/attachments/${attachment.pathname}`"
             :alt="attachment.pathname"

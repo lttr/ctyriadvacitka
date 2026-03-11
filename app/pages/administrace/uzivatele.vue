@@ -56,7 +56,7 @@
 <script setup lang="ts">
 definePageMeta({
   layout: "admin",
-  middleware: "admin",
+  middleware: "admin-only",
 })
 
 useSeoMeta({
@@ -76,11 +76,17 @@ const { show } = useFlashMessage()
 
 const { data: users, refresh } = await useFetch("/api/users")
 
+const roleLabels: Record<string, string> = {
+  registered: "uživatel",
+  editor: "redaktor",
+  admin: "administrátor",
+}
 async function changeRole(username: string, role: string) {
   await $fetch(`/api/users/${username}/role`, {
     method: "PATCH",
     body: { role },
   })
+  show(`Uživatel ${username} má nyní roli ${roleLabels[role] || role}.`)
   await refresh()
 }
 

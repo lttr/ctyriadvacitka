@@ -49,6 +49,7 @@ useSeoMeta({
 })
 
 const { login, fetchSession } = useAuth()
+const { show } = useFlashMessage()
 
 const form = ref({
   username: "",
@@ -65,6 +66,7 @@ async function handleSubmit() {
   try {
     await login(form.value.username, form.value.password)
     await fetchSession()
+    show("Přihlášení proběhlo úspěšně.")
     await navigateTo("/administrace")
   } catch (error: unknown) {
     const fetchError = error as { data?: { message?: string } }

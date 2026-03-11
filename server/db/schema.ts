@@ -5,7 +5,7 @@ export const articles = sqliteTable("articles", {
   title: text().notNull(),
   url: text().notNull().unique(),
   content: text(),
-  requestable: int({ mode: "boolean" }).notNull().default(false),
+  requestable: int({ mode: "boolean" }).notNull().default(true),
   inMenu: int("in_menu", { mode: "boolean" }).notNull().default(false),
   author: text(),
   datetime: text(),

@@ -19,11 +19,6 @@
       </div>
 
       <div>
-        <label for="author">Autor</label>
-        <input id="author" v-model="form.author" type="text" />
-      </div>
-
-      <div>
         <button type="submit" :disabled="saving">
           {{ saving ? "Ukládám…" : "Uložit novinku" }}
         </button>
@@ -45,6 +40,7 @@ definePageMeta({
 
 const route = useRoute("administrace-novinky-id")
 const newsId = route.params.id
+const { user } = useAuth()
 
 const { data: newsItem } = await useFetch<News>(`/api/news/${newsId}` as string)
 
@@ -62,7 +58,6 @@ const form = reactive({
   date: newsItem.value.datetime
     ? new Date(newsItem.value.datetime).toISOString().slice(0, 10)
     : "",
-  author: newsItem.value.author ?? "",
 })
 
 const saving = ref(false)
@@ -78,14 +73,14 @@ async function save() {
       body: {
         title: form.title,
         content: form.content || null,
-        author: form.author || null,
+        author: user.value?.username || null,
         datetime: form.date
           ? new Date(form.date + "T12:00:00").toISOString()
           : null,
       },
     })
 
-    message.value = "Novinka byla uložena."
+    message.value = "Novinka byla úspěšně uložena."
   } catch {
     message.value = "Nepodařilo se uložit novinku."
   } finally {

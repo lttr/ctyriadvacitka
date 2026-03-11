@@ -73,17 +73,18 @@
     </section>
 
     <section class="p-stack">
-      <h2>Kontaktní údaje</h2>
-      <dl v-if="settings">
-        <dt>E-mail</dt>
-        <dd>
-          <ObfuscatedEmail :email="settings.contactEmail" />
-        </dd>
-        <dt>Telefon</dt>
-        <dd>{{ settings.contactPhone }}</dd>
-        <dt>Adresa</dt>
-        <dd>{{ settings.contactAddress }}</dd>
-      </dl>
+      <h2>Klubovny</h2>
+      <p>
+        Naše klubovny se nacházejí v areálu junácké základny v Hradci Králové.
+      </p>
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2551.2!2d15.8326!3d50.2094!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNTDCsDEyJzM0LjAiTiAxNcKwNDknNTcuNCJF!5e0!3m2!1scs!2scz!4v1"
+        title="Mapa kluboven"
+        width="100%"
+        height="400"
+        style="border: 0"
+        loading="lazy"
+      ></iframe>
     </section>
   </div>
 </template>
