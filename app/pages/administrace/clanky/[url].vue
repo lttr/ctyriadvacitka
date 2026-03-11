@@ -48,6 +48,8 @@
 
       <p v-if="message" role="status">{{ message }}</p>
     </form>
+
+    <AttachmentsUpload />
   </div>
 </template>
 

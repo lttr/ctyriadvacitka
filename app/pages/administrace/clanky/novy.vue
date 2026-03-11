@@ -47,6 +47,8 @@
 
       <p v-if="error" role="alert">{{ error }}</p>
     </form>
+
+    <AttachmentsUpload />
   </div>
 </template>
 

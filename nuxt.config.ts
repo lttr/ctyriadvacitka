@@ -33,6 +33,17 @@ export default defineNuxtConfig({
     indexable: false,
   },
 
+  sitemap: {
+    sources: ["/api/__sitemap__/urls"],
+    exclude: [
+      "/administrace/**",
+      "/ucet/**",
+      "/prihlaseni",
+      "/registrace",
+      "/odhlasit",
+    ],
+  },
+
   security: {
     headers: {
       contentSecurityPolicy: {

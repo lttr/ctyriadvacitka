@@ -21,8 +21,8 @@ Comprehensive audit of the PRD (`.aiwork/2026-03-03_specification/prd.md`) again
 - Non-requestable articles hidden from non-editors
 - Three default URL slugs work: `uvod`, `chyba`, and others
 
-**Missing Entirely:**
-- **Article attachments/images upload UI** — PRD §7.8 and §8.9 specify a separate "Article images upload form" on the article editor page with label "Přidat nové obrázky" and text "Soubory se objeví v přílohy". The pages don't show this section.
+**No Issues:**
+- Article attachments/images upload UI — Implemented via reusable `AttachmentsUpload.vue` component on both article create and edit pages. Uses `attachments/{year}/` blob prefix with multi-file upload, JPEG/PNG/GIF validation, and AJAX delete with flash messages.
 
 ---
 
@@ -35,8 +35,8 @@ Comprehensive audit of the PRD (`.aiwork/2026-03-03_specification/prd.md`) again
 - Author field auto-population
 - Full HTML content rendering
 
-**Missing Entirely:**
-- **News attachments/images upload UI** — PRD §8.10 specifies article images upload form should appear on news editor page too.
+**No Issues:**
+- News attachments/images upload UI — Same `AttachmentsUpload.vue` component added to both news create and edit pages.
 
 ---
 
@@ -136,8 +136,8 @@ Comprehensive audit of the PRD (`.aiwork/2026-03-03_specification/prd.md`) again
 - Meta descriptions on pages
 - Semantic HTML structure
 
-**Missing Entirely:**
-- Sitemap generation (PRD §10 mentions it should exist)
+**No Issues:**
+- Sitemap generation — Configured via `@nuxtjs/sitemap` (part of `@nuxtjs/seo`). Dynamic URLs for articles and news fetched from database via `server/api/__sitemap__/urls.ts`. Admin, account, and auth pages excluded.
 
 ---
 
@@ -150,6 +150,9 @@ Comprehensive audit of the PRD (`.aiwork/2026-03-03_specification/prd.md`) again
 | 3 | Missing datetime input in news editor | Added `<input type="date">` to both create and edit news forms. Same approach as articles. |
 | 4 | User role toggles are `<select>` not buttons | Replaced `<select>` with three side-by-side buttons (Uživatel / Redaktor / Administrátor) with active role highlighted in green. |
 | 5 | Error page missing "Vytvořit stránku" button | Added button on 404 error page for editors when the URL matches `/clanek/[url]`. Links to article editor pre-filled with the requested URL slug. |
+| 6 | Article attachments upload UI missing | Implemented reusable `AttachmentsUpload.vue` component with multi-file upload (JPEG/PNG/GIF), blob storage in `attachments/{year}/` prefix, list with previews, and AJAX delete. Added to article create and edit pages below the main form. |
+| 7 | News attachments upload UI missing | Same `AttachmentsUpload.vue` component added to news create and edit pages below the main form. |
+| 8 | No sitemap generation | Configured `@nuxtjs/sitemap` with dynamic URL source (`server/api/__sitemap__/urls.ts`) that fetches public articles and news from database. Admin/auth pages excluded. |
 
 ---
 
@@ -159,11 +162,11 @@ Comprehensive audit of the PRD (`.aiwork/2026-03-03_specification/prd.md`) again
 |---|-----|----------|---------------|--------|
 | 1 | Missing datetime input in article editor | **Critical** | §7.6, §8.9 | **Resolved** |
 | 2 | Missing datetime input in news editor | **Critical** | §7.7, §8.10 | **Resolved** |
-| 3 | Missing article attachments upload UI | **High** | §7.8, §8.9 | Open |
-| 4 | Missing news attachments upload UI | **High** | §8.10 | Open |
+| 3 | Missing article attachments upload UI | **High** | §7.8, §8.9 | **Resolved** |
+| 4 | Missing news attachments upload UI | **High** | §8.10 | **Resolved** |
 | 5 | User role toggles are `<select>` not buttons | **Medium** | §6.7 | **Resolved** |
 | 6 | Error page missing "Vytvořit stránku" button | **Medium** | §8.3 | **Resolved** |
-| 7 | No sitemap generation | **Low** | §10 | Open |
+| 7 | No sitemap generation | **Low** | §10 | **Resolved** |
 
 ---
 
