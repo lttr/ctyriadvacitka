@@ -32,8 +32,7 @@ export default defineEventHandler(async (event) => {
     } catch {
       throw createError({
         statusCode: 400,
-        statusMessage:
-          "Obrázek musí být ve formátu JPEG, PNG nebo GIF.",
+        statusMessage: "Obrázek musí být ve formátu JPEG, PNG nebo GIF.",
       })
     }
 

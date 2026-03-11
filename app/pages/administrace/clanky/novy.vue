@@ -23,11 +23,6 @@
         <input id="datetime" v-model="form.date" type="date" />
       </div>
 
-      <div>
-        <label for="author">Autor</label>
-        <input id="author" v-model="form.author" type="text" />
-      </div>
-
       <div class="p-cluster">
         <label>
           <input v-model="form.inMenu" type="checkbox" />
@@ -35,7 +30,7 @@
         </label>
         <label>
           <input v-model="form.requestable" type="checkbox" />
-          Přihláška
+          Zobrazovat v seznamu
         </label>
       </div>
 
@@ -63,6 +58,7 @@ useSeoMeta({
 })
 
 const route = useRoute()
+const { user } = useAuth()
 const today = new Date().toISOString().slice(0, 10)
 
 const form = reactive({
@@ -70,11 +66,11 @@ const form = reactive({
   url: (route.query.url as string) || "",
   content: "",
   date: today,
-  author: "",
   inMenu: false,
-  requestable: false,
+  requestable: true,
 })
 
+const { show } = useFlashMessage()
 const saving = ref(false)
 const error = ref("")
 
@@ -89,7 +85,7 @@ async function create() {
         title: form.title,
         url: form.url,
         content: form.content || null,
-        author: form.author || null,
+        author: user.value?.username || null,
         datetime: form.date
           ? new Date(form.date + "T12:00:00").toISOString()
           : null,
@@ -97,7 +93,8 @@ async function create() {
         requestable: form.requestable,
       },
     })
-    await navigateTo("/administrace/clanky")
+    show("Článek byl úspěšně uložen.")
+    await navigateTo(`/${form.url}`)
   } catch (e: unknown) {
     const fetchError = e as { statusCode?: number; statusMessage?: string }
     if (fetchError.statusCode === 409) {

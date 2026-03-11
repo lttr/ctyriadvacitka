@@ -147,7 +147,7 @@ import type { ContactPerson } from "~~/shared/types/contact"
 
 definePageMeta({
   layout: "admin",
-  middleware: "admin",
+  middleware: "admin-only",
 })
 
 useSeoMeta({

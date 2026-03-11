@@ -19,11 +19,6 @@
       </div>
 
       <div>
-        <label for="author">Autor</label>
-        <input id="author" v-model="form.author" type="text" />
-      </div>
-
-      <div>
         <button type="submit" :disabled="saving">
           {{ saving ? "Vytvářím…" : "Vytvořit" }}
         </button>
@@ -46,15 +41,16 @@ useSeoMeta({
   title: "Nová novinka — Administrace — Čtyřiadvacítka",
 })
 
+const { user } = useAuth()
 const today = new Date().toISOString().slice(0, 10)
 
 const form = reactive({
   title: "",
   content: "",
   date: today,
-  author: "",
 })
 
+const { show } = useFlashMessage()
 const saving = ref(false)
 const error = ref("")
 
@@ -68,12 +64,13 @@ async function create() {
       body: {
         title: form.title,
         content: form.content || null,
-        author: form.author || null,
+        author: user.value?.username || null,
         datetime: form.date
           ? new Date(form.date + "T12:00:00").toISOString()
           : null,
       },
     })
+    show("Novinka byla úspěšně uložena.")
     await navigateTo("/administrace/novinky")
   } catch {
     error.value = "Nepodařilo se vytvořit novinku."

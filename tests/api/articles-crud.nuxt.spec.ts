@@ -60,7 +60,7 @@ describe("article CRUD API tests", async () => {
       expect(article.content).toBe("<p>Obsah nového článku.</p>")
       expect(article.author).toBe("editor")
       expect(article.inMenu).toBe(false)
-      expect(article.requestable).toBe(false)
+      expect(article.requestable).toBe(true)
     })
 
     it("creates an article as admin", async () => {

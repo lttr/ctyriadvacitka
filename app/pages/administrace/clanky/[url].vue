@@ -23,11 +23,6 @@
         <input id="datetime" v-model="form.date" type="date" />
       </div>
 
-      <div>
-        <label for="author">Autor</label>
-        <input id="author" v-model="form.author" type="text" />
-      </div>
-
       <div class="p-cluster">
         <label>
           <input v-model="form.inMenu" type="checkbox" />
@@ -35,7 +30,7 @@
         </label>
         <label>
           <input v-model="form.requestable" type="checkbox" />
-          Přihláška
+          Zobrazovat v seznamu
         </label>
       </div>
 
@@ -61,6 +56,7 @@ definePageMeta({
 
 const route = useRoute("administrace-clanky-url")
 const articleUrl = route.params.url
+const { user } = useAuth()
 
 const { data: article } = await useFetch<Article>(
   `/api/articles/${articleUrl}` as string,
@@ -81,7 +77,6 @@ const form = reactive({
   date: article.value.datetime
     ? new Date(article.value.datetime).toISOString().slice(0, 10)
     : "",
-  author: article.value.author ?? "",
   inMenu: article.value.inMenu ?? false,
   requestable: article.value.requestable ?? false,
 })
@@ -100,7 +95,7 @@ async function save() {
         title: form.title,
         url: form.url,
         content: form.content || null,
-        author: form.author || null,
+        author: user.value?.username || null,
         datetime: form.date
           ? new Date(form.date + "T12:00:00").toISOString()
           : null,
@@ -109,7 +104,7 @@ async function save() {
       },
     })
 
-    message.value = "Článek byl uložen."
+    message.value = "Článek byl úspěšně uložen."
 
     // If URL changed, redirect to the new URL
     if (form.url !== articleUrl) {

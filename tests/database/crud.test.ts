@@ -75,7 +75,7 @@ describe("articles CRUD", () => {
     expect(results).toHaveLength(1)
     expect(results[0].title).toBe("Úvod")
     expect(results[0].url).toBe("uvod")
-    expect(results[0].requestable).toBe(false)
+    expect(results[0].requestable).toBe(true)
     expect(results[0].inMenu).toBe(false)
   })
 
@@ -115,7 +115,7 @@ describe("articles CRUD", () => {
     expect(results).toHaveLength(0)
   })
 
-  it("defaults requestable and inMenu to false", async () => {
+  it("defaults requestable to true and inMenu to false", async () => {
     await db
       .insert(schema.articles)
       .values({ title: "Defaults", url: "defaults" })
@@ -125,7 +125,7 @@ describe("articles CRUD", () => {
       .from(schema.articles)
       .where(eq(schema.articles.url, "defaults"))
       .then((r) => r[0])
-    expect(result?.requestable).toBe(false)
+    expect(result?.requestable).toBe(true)
     expect(result?.inMenu).toBe(false)
   })
 })

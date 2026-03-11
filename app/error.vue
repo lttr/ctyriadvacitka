@@ -13,9 +13,7 @@
           <h1>{{ title }}</h1>
           <p>{{ message }}</p>
           <p v-if="createArticleUrl">
-            <NuxtLink :to="createArticleUrl">
-              Vytvořit stránku
-            </NuxtLink>
+            <NuxtLink :to="createArticleUrl"> Vytvořit stránku </NuxtLink>
           </p>
           <p>
             <NuxtLink to="/">Zpět na úvodní stránku</NuxtLink>
