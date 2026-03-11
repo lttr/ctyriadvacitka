@@ -21,24 +21,19 @@
             </td>
             <td>{{ user.email || "—" }}</td>
             <td>
-              <label :for="`role-${user.username}`" class="sr-only">
-                Role uživatele {{ user.username }}
-              </label>
-              <select
-                :id="`role-${user.username}`"
-                :value="user.role"
-                :disabled="user.username === currentUsername"
-                @change="
-                  changeRole(
-                    user.username,
-                    ($event.target as HTMLSelectElement).value,
-                  )
-                "
-              >
-                <option value="registered">Registrovaný</option>
-                <option value="editor">Editor</option>
-                <option value="admin">Administrátor</option>
-              </select>
+              <div class="role-buttons">
+                <button
+                  v-for="role of roles"
+                  :key="role.value"
+                  type="button"
+                  class="role-button"
+                  :class="{ active: user.role === role.value }"
+                  :disabled="user.username === currentUsername"
+                  @click="changeRole(user.username, role.value)"
+                >
+                  {{ role.label }}
+                </button>
+              </div>
             </td>
             <td>
               <button
@@ -71,6 +66,12 @@ useSeoMeta({
 const { data: session } = await useFetch("/api/auth/session")
 const currentUsername = computed(() => session.value?.user?.username)
 
+const roles = [
+  { value: "registered", label: "Uživatel" },
+  { value: "editor", label: "Redaktor" },
+  { value: "admin", label: "Administrátor" },
+]
+
 const { show } = useFlashMessage()
 
 const { data: users, refresh } = await useFetch("/api/users")
@@ -94,3 +95,32 @@ async function deleteUser(username: string) {
   await refresh()
 }
 </script>
+
+<style scoped>
+.role-buttons {
+  display: flex;
+  gap: 0;
+}
+
+.role-button {
+  padding: 0.25em 0.5em;
+  border: 1px solid var(--color-border, #ccc);
+  background: transparent;
+  cursor: pointer;
+}
+
+.role-button + .role-button {
+  border-left: 0;
+}
+
+.role-button.active {
+  background-color: var(--color-success, #4caf50);
+  color: white;
+  border-color: var(--color-success, #4caf50);
+}
+
+.role-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+</style>

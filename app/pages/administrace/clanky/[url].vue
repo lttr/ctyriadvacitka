@@ -19,6 +19,11 @@
       </div>
 
       <div>
+        <label for="datetime">Datum</label>
+        <input id="datetime" v-model="form.date" type="date" />
+      </div>
+
+      <div>
         <label for="author">Autor</label>
         <input id="author" v-model="form.author" type="text" />
       </div>
@@ -71,6 +76,9 @@ const form = reactive({
   title: article.value.title,
   url: article.value.url,
   content: article.value.content ?? "",
+  date: article.value.datetime
+    ? new Date(article.value.datetime).toISOString().slice(0, 10)
+    : "",
   author: article.value.author ?? "",
   inMenu: article.value.inMenu ?? false,
   requestable: article.value.requestable ?? false,
@@ -91,6 +99,9 @@ async function save() {
         url: form.url,
         content: form.content || null,
         author: form.author || null,
+        datetime: form.date
+          ? new Date(form.date + "T12:00:00").toISOString()
+          : null,
         inMenu: form.inMenu,
         requestable: form.requestable,
       },
