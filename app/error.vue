@@ -12,6 +12,11 @@
         <main class="p-stack">
           <h1>{{ title }}</h1>
           <p>{{ message }}</p>
+          <p v-if="createArticleUrl">
+            <NuxtLink :to="createArticleUrl">
+              Vytvořit stránku
+            </NuxtLink>
+          </p>
           <p>
             <NuxtLink to="/">Zpět na úvodní stránku</NuxtLink>
           </p>
@@ -45,6 +50,24 @@ const message = computed(() => {
     return "Požadovaná stránka nebyla nalezena. Zkontrolujte prosím adresu."
   }
   return "Omlouváme se, něco se pokazilo. Zkuste to prosím později."
+})
+
+const { isEditor, fetchSession } = useAuth()
+await fetchSession()
+
+const route = useRoute()
+
+const createArticleUrl = computed(() => {
+  if (props.error.statusCode !== 404 || !isEditor.value) {
+    return null
+  }
+  const path = route.fullPath
+  const match = path.match(/^\/clanek\/([^/]+)/)
+  const slug = match?.[1]
+  if (!slug) {
+    return null
+  }
+  return `/administrace/clanky/novy?url=${encodeURIComponent(slug)}`
 })
 
 useHead({

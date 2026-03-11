@@ -19,6 +19,11 @@
       </div>
 
       <div>
+        <label for="datetime">Datum</label>
+        <input id="datetime" v-model="form.date" type="date" />
+      </div>
+
+      <div>
         <label for="author">Autor</label>
         <input id="author" v-model="form.author" type="text" />
       </div>
@@ -55,10 +60,14 @@ useSeoMeta({
   title: "Nový článek — Administrace — Čtyřiadvacítka",
 })
 
+const route = useRoute()
+const today = new Date().toISOString().slice(0, 10)
+
 const form = reactive({
   title: "",
-  url: "",
+  url: (route.query.url as string) || "",
   content: "",
+  date: today,
   author: "",
   inMenu: false,
   requestable: false,
@@ -79,7 +88,9 @@ async function create() {
         url: form.url,
         content: form.content || null,
         author: form.author || null,
-        datetime: new Date().toISOString(),
+        datetime: form.date
+          ? new Date(form.date + "T12:00:00").toISOString()
+          : null,
         inMenu: form.inMenu,
         requestable: form.requestable,
       },

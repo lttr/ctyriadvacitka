@@ -14,6 +14,11 @@
       </div>
 
       <div>
+        <label for="datetime">Datum</label>
+        <input id="datetime" v-model="form.date" type="date" />
+      </div>
+
+      <div>
         <label for="author">Autor</label>
         <input id="author" v-model="form.author" type="text" />
       </div>
@@ -52,6 +57,9 @@ useSeoMeta({
 const form = reactive({
   title: newsItem.value.title,
   content: newsItem.value.content ?? "",
+  date: newsItem.value.datetime
+    ? new Date(newsItem.value.datetime).toISOString().slice(0, 10)
+    : "",
   author: newsItem.value.author ?? "",
 })
 
@@ -69,6 +77,9 @@ async function save() {
         title: form.title,
         content: form.content || null,
         author: form.author || null,
+        datetime: form.date
+          ? new Date(form.date + "T12:00:00").toISOString()
+          : null,
       },
     })
 
