@@ -1,11 +1,17 @@
 <template>
-  <article v-if="article" class="p-stack">
-    <p v-if="isEditor">
-      <NuxtLink :to="`/administrace/clanky/editor/${article.url}`">
+  <article v-if="displayArticle" class="p-stack">
+    <p v-if="isEditor && !isErrorPage">
+      <NuxtLink :to="`/administrace/clanky/${displayArticle.url}`">
         Upravit
       </NuxtLink>
     </p>
-    <div v-if="article.content" v-html="article.content"></div>
+    <p v-if="isEditor && isErrorPage">
+      <NuxtLink :to="`/administrace/clanky/novy?url=${slug}`">
+        Vytvořit stránku
+      </NuxtLink>
+    </p>
+    <!-- eslint-disable-next-line vue/no-v-html -->
+    <div v-if="displayArticle.content" v-html="displayArticle.content"></div>
   </article>
 </template>
 
@@ -22,7 +28,23 @@ const { data: article, error } = await useFetch(
   () => `/api/articles/${slug.value}`,
 )
 
-if (error.value) {
+const isErrorPage = computed(() => !!error.value)
+
+const { data: errorArticle } = error.value
+  ? await useFetch("/api/articles/chyba")
+  : { data: ref<Article | null>(null) }
+
+const displayArticle = computed(() => {
+  if (article.value) {
+    return article.value
+  }
+  if (errorArticle?.value) {
+    return errorArticle.value
+  }
+  return null
+})
+
+if (error.value && !errorArticle?.value) {
   throw createError({
     statusCode: 404,
     statusMessage: "Stránka nenalezena",
@@ -31,8 +53,8 @@ if (error.value) {
 
 useSeoMeta({
   title: () =>
-    article.value
-      ? `${article.value.title} — Čtyřiadvacítka`
+    displayArticle.value
+      ? `${displayArticle.value.title} — Čtyřiadvacítka`
       : "Čtyřiadvacítka",
 })
 </script>

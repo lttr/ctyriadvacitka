@@ -27,22 +27,34 @@
             <td>{{ article.url }}</td>
             <td>{{ article.author || "—" }}</td>
             <td>
-              <button type="button" @click="toggleRequestable(article.url)">
+              <button
+                v-if="canEdit(article)"
+                type="button"
+                @click="toggleRequestable(article.url)"
+              >
                 {{ article.requestable ? "Ano" : "Ne" }}
               </button>
+              <span v-else>{{ article.requestable ? "Ano" : "Ne" }}</span>
             </td>
             <td>
-              <button type="button" @click="toggleMenu(article.url)">
+              <button
+                v-if="canEdit(article)"
+                type="button"
+                @click="toggleMenu(article.url)"
+              >
                 {{ article.inMenu ? "V menu" : "—" }}
               </button>
+              <span v-else>{{ article.inMenu ? "V menu" : "—" }}</span>
             </td>
             <td>
-              <NuxtLink :to="`/administrace/clanky/${article.url}`">
-                Upravit
-              </NuxtLink>
-              <button type="button" @click="deleteArticle(article.url)">
-                Smazat
-              </button>
+              <template v-if="canEdit(article)">
+                <NuxtLink :to="`/administrace/clanky/${article.url}`">
+                  Upravit
+                </NuxtLink>
+                <button type="button" @click="deleteArticle(article.url)">
+                  Smazat
+                </button>
+              </template>
             </td>
           </tr>
         </tbody>
@@ -63,11 +75,16 @@ useSeoMeta({
   title: "Články — Administrace — Čtyřiadvacítka",
 })
 
+const { user, isAdmin } = useAuth()
 const { show } = useFlashMessage()
 
 const { data: articles, refresh } = await useFetch("/api/articles", {
   query: { perPage: 50 },
 })
+
+function canEdit(article: { author: string | null }) {
+  return isAdmin.value || article.author === user.value?.username
+}
 
 async function toggleMenu(url: string) {
   await $fetch(`/api/articles/${url}/toggle-menu` as string, {
