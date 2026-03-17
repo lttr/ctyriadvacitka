@@ -233,21 +233,27 @@ For completeness, these are things I checked and found correct:
 
 ## Summary Table
 
-| # | Type | Severity | Item |
-|---|------|----------|------|
-| 1.1 | Missing | Medium | Delete flash messages |
-| 1.2 | Missing | Low | Sign-in redirect for logged-in users |
-| 1.3 | Missing | Low | Sign-out when not logged in |
-| 1.4 | Missing | Low | Contact photo management clarification |
-| 1.5 | Missing | Low | Google Maps embed details |
-| 1.6 | Missing | Medium | Ownership enforcement on profile/password |
-| 1.7 | Missing | Low | GIF listing gap (fix or acknowledge) |
-| 2.1 | Contradiction | Low | Date format input vs default |
-| 2.2 | Contradiction | Medium | Requestable visibility admin vs editor |
-| 2.3 | Contradiction | Low | News editor submit label |
-| 3.1 | Simplify | Low | Drop editor landing page |
-| 3.2 | Simplify | Low | Fix news submit label |
-| 3.3 | Simplify | Medium | Make deletes POST-only |
-| 3.4 | Simplify | Low | Consider dropping public profiles |
-| 3.5 | Simplify | Low | Consider dropping public registration |
-| 3.6 | Simplify | Low | Unify contact settings with web properties |
+| # | Type | Severity | Item | Status |
+|---|------|----------|------|--------|
+| 1.1 | Missing | Medium | Delete flash messages | **Resolved** — all four delete operations show flash messages |
+| 1.2 | Missing | Low | Sign-in redirect for logged-in users | **Resolved** — `guest` middleware on sign-in page redirects logged-in users |
+| 1.3 | Missing | Low | Sign-out when not logged in | **Resolved** — `/odhlasit` shows "Není přihlášen žádný uživatel." and redirects |
+| 1.4 | Missing | Low | Contact photo management clarification | **Out of scope** — contact photos are static assets managed outside CMS |
+| 1.5 | Missing | Low | Google Maps embed details | **Out of scope** — events page uses Google Calendar embed, no Maps |
+| 1.6 | Missing | Medium | Ownership enforcement on profile/password | **Resolved** — profile routes use `/ucet` (self-only), no username in URL |
+| 1.7 | Missing | Low | GIF listing gap (fix or acknowledge) | **Resolved** — blob storage lists all files regardless of extension |
+| 2.1 | Contradiction | Low | Date format input vs default | **Resolved** — native HTML `<input type="date">` handles format natively |
+| 2.2 | Contradiction | Medium | Requestable visibility admin vs editor | **Resolved** — unified to editor+ everywhere |
+| 2.3 | Contradiction | Low | News editor submit label | **Resolved** — correctly says "Uložit novinku" |
+| 3.1 | Simplify | Low | Drop editor landing page | **Adopted** — route not implemented, editors go directly to admin dashboard |
+| 3.2 | Simplify | Low | Fix news submit label | **Adopted** — correctly says "Uložit novinku" |
+| 3.3 | Simplify | Medium | Make deletes POST-only | **Adopted** — all deletions use POST/DELETE via AJAX from list pages |
+| 3.4 | Simplify | Low | Consider dropping public profiles | **Adopted** — public profile page not implemented; profile editing at `/ucet` behind auth |
+| 3.5 | Simplify | Low | Consider dropping public registration | **Not adopted** — registration kept as onboarding path per PRD §2 |
+| 3.6 | Simplify | Low | Unify contact settings with web properties | **Adopted** — merged into admin dashboard at `/administrace` |
+
+---
+
+## Resolution Date
+
+All items resolved as of 2026-03-17. News detail page (`/novinka/[id]`) removed per scope decision.

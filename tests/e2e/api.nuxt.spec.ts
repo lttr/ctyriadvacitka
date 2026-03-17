@@ -416,26 +416,6 @@ describe("public API integration tests", async () => {
     })
   })
 
-  // --- News detail page ---
-
-  describe("News detail page", () => {
-    it("renders news item content by ID", async () => {
-      // Get the ID of the first news item
-      const list = await $fetch("/api/news")
-      const firstItem = list.items[0]
-
-      const html = await $fetch(`/novinka/${firstItem.id}`)
-
-      expect(html).toContain(firstItem.title)
-    })
-
-    it("returns 404 for non-existent news item", async () => {
-      await expect($fetch("/novinka/99999")).rejects.toMatchObject({
-        statusCode: 404,
-      })
-    })
-  })
-
   // --- Error page ---
 
   describe("Error page", () => {
@@ -494,14 +474,6 @@ describe("public API integration tests", async () => {
       expect(html).toContain("O nás — Čtyřiadvacítka")
     })
 
-    it("renders news title in news detail page", async () => {
-      const list = await $fetch("/api/news")
-      const firstItem = list.items[0]
-
-      const html = await $fetch(`/novinka/${firstItem.id}`)
-
-      expect(html).toContain(`${firstItem.title} — Čtyřiadvacítka`)
-    })
   })
 
   // --- Events page ---
