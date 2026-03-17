@@ -11,9 +11,7 @@
     </form>
     <ul v-if="newsData?.items.length">
       <li v-for="item of newsData.items" :key="item.id" class="p-stack">
-        <h2>
-          <NuxtLink :to="`/novinka/${item.id}`">{{ item.title }}</NuxtLink>
-        </h2>
+        <h2>{{ item.title }}</h2>
         <time v-if="item.datetime">{{ formatCzechDate(item.datetime) }}</time>
         <div v-if="item.content" v-html="item.content"></div>
       </li>

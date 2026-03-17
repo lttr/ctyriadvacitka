@@ -170,6 +170,17 @@ Comprehensive audit of the PRD (`.aiwork/2026-03-03_specification/prd.md`) again
 
 ---
 
+## Post-Review Changes (2026-03-17)
+
+| # | Change | Details |
+|---|--------|---------|
+| 1 | Removed news detail page | Deleted `/novinka/[id].vue` — news shown only in paginated list per PRD §2 scope decision. Removed links from `/novinky` listing, news URLs from sitemap, and related tests. |
+| 2 | Public profile page — out of scope | No `/profil/<username>` route. Profile editing at `/ucet` behind auth only. |
+| 3 | Editor landing page — out of scope | No `/administrace/redaktor` route. Editors use admin dashboard directly. |
+| 4 | All spec-review items verified | Delete flash messages, sign-in redirect, sign-out edge case, GIF listing, requestable visibility, news submit label — all confirmed correctly implemented. |
+
+---
+
 ## What Works Well
 
 1. Core CRUD operations for articles and news
