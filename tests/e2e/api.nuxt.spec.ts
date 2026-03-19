@@ -473,7 +473,6 @@ describe("public API integration tests", async () => {
 
       expect(html).toContain("O nás — Čtyřiadvacítka")
     })
-
   })
 
   // --- Events page ---

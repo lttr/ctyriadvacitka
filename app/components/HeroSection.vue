@@ -2,7 +2,7 @@
   <section
     class="p-hero"
     :style="
-      heroImage ? { backgroundImage: `url(${heroImage.url})` } : undefined
+      heroImage?.url ? { backgroundImage: `url(${heroImage.url})` } : undefined
     "
   >
     <div class="p-hero-overlay">

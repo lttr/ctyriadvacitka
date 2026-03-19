@@ -45,7 +45,7 @@ const { user } = useAuth()
 const { data: newsItem } = await useFetch<News>(`/api/news/${newsId}` as string)
 
 if (!newsItem.value) {
-  throw createError({ statusCode: 404, statusMessage: "Novinka nenalezena" })
+  throw createError({ statusCode: 404, message: "Novinka nenalezena" })
 }
 
 useSeoMeta({

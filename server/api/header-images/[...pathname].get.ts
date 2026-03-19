@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   if (!pathname) {
     throw createError({
       statusCode: 400,
-      statusMessage: "Pathname is required",
+      message: "Pathname is required",
     })
   }
 

@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   try {
     form = await readFormData(event)
   } catch {
-    throw createError({ statusCode: 400, statusMessage: "File is required" })
+    throw createError({ statusCode: 400, message: "File is required" })
   }
 
   const files = form.getAll("files") as File[]
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   if (!files.length || !(files[0] instanceof File)) {
     throw createError({
       statusCode: 400,
-      statusMessage: "Musíte vybrat nejméně 1 obrázek!",
+      message: "Musíte vybrat nejméně 1 obrázek!",
     })
   }
 
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     } catch {
       throw createError({
         statusCode: 400,
-        statusMessage: "Obrázek musí být ve formátu JPEG, PNG nebo GIF.",
+        message: "Obrázek musí být ve formátu JPEG, PNG nebo GIF.",
       })
     }
 

@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   if (!idParam || Number.isNaN(id)) {
     throw createError({
       statusCode: 400,
-      statusMessage: "Invalid id parameter",
+      message: "Invalid id parameter",
     })
   }
 
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     .where(eq(tables.news.id, id))
 
   if (!newsItem) {
-    throw createError({ statusCode: 404, statusMessage: "News item not found" })
+    throw createError({ statusCode: 404, message: "News item not found" })
   }
 
   return newsItem

@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   if (!url) {
     throw createError({
       statusCode: 400,
-      statusMessage: "Missing url parameter",
+      message: "Missing url parameter",
     })
   }
 
@@ -18,11 +18,11 @@ export default defineEventHandler(async (event) => {
     .get()
 
   if (!existing) {
-    throw createError({ statusCode: 404, statusMessage: "Article not found" })
+    throw createError({ statusCode: 404, message: "Article not found" })
   }
 
   if (user.role !== "admin" && existing.author !== user.username) {
-    throw createError({ statusCode: 403, statusMessage: "Nedostatečná oprávnění" })
+    throw createError({ statusCode: 403, message: "Nedostatečná oprávnění" })
   }
 
   const [updated] = await db

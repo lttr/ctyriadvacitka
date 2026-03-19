@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   if (!idParam || Number.isNaN(id)) {
     throw createError({
       statusCode: 400,
-      statusMessage: "Invalid id parameter",
+      message: "Invalid id parameter",
     })
   }
 
@@ -20,11 +20,11 @@ export default defineEventHandler(async (event) => {
     .get()
 
   if (!existing) {
-    throw createError({ statusCode: 404, statusMessage: "News item not found" })
+    throw createError({ statusCode: 404, message: "News item not found" })
   }
 
   if (user.role !== "admin" && existing.author !== user.username) {
-    throw createError({ statusCode: 403, statusMessage: "Nedostatečná oprávnění" })
+    throw createError({ statusCode: 403, message: "Nedostatečná oprávnění" })
   }
 
   await db.delete(tables.news).where(eq(tables.news.id, id))

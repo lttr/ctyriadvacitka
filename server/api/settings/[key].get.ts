@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   if (!key) {
     throw createError({
       statusCode: 400,
-      statusMessage: "Missing key parameter",
+      message: "Missing key parameter",
     })
   }
 
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     .where(eq(tables.siteSettings.key, key))
 
   if (!setting) {
-    throw createError({ statusCode: 404, statusMessage: "Setting not found" })
+    throw createError({ statusCode: 404, message: "Setting not found" })
   }
 
   return setting

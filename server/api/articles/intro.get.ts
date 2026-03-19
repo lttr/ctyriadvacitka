@@ -9,7 +9,7 @@ export default defineEventHandler(async () => {
   if (!setting?.value) {
     throw createError({
       statusCode: 404,
-      statusMessage: "Intro article not configured",
+      message: "Intro article not configured",
     })
   }
 
@@ -21,7 +21,7 @@ export default defineEventHandler(async () => {
   if (!article) {
     throw createError({
       statusCode: 404,
-      statusMessage: "Intro article not found",
+      message: "Intro article not found",
     })
   }
 

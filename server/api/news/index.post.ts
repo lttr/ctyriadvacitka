@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   if (!body?.title || typeof body.title !== "string") {
-    throw createError({ statusCode: 400, statusMessage: "Title is required" })
+    throw createError({ statusCode: 400, message: "Title is required" })
   }
 
   const [newsItem] = await db

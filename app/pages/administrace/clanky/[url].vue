@@ -63,7 +63,7 @@ const { data: article } = await useFetch<Article>(
 )
 
 if (!article.value) {
-  throw createError({ statusCode: 404, statusMessage: "Článek nenalezen" })
+  throw createError({ statusCode: 404, message: "Článek nenalezen" })
 }
 
 useSeoMeta({

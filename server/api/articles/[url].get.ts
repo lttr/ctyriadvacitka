@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   if (!url) {
     throw createError({
       statusCode: 400,
-      statusMessage: "Missing url parameter",
+      message: "Missing url parameter",
     })
   }
 
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     .where(eq(tables.articles.url, url))
 
   if (!article) {
-    throw createError({ statusCode: 404, statusMessage: "Article not found" })
+    throw createError({ statusCode: 404, message: "Article not found" })
   }
 
   // Non-requestable articles are only visible to editors and admins
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     if (!isEditor) {
       throw createError({
         statusCode: 404,
-        statusMessage: "Article not found",
+        message: "Article not found",
       })
     }
   }

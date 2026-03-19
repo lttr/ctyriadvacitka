@@ -47,7 +47,7 @@ const displayArticle = computed(() => {
 if (error.value && !errorArticle?.value) {
   throw createError({
     statusCode: 404,
-    statusMessage: "Stránka nenalezena",
+    message: "Stránka nenalezena",
   })
 }
 

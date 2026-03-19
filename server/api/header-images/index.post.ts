@@ -9,12 +9,12 @@ export default defineEventHandler(async (event) => {
   try {
     form = await readFormData(event)
   } catch {
-    throw createError({ statusCode: 400, statusMessage: "File is required" })
+    throw createError({ statusCode: 400, message: "File is required" })
   }
   const file = form.get("file") as File | null
 
   if (!file || !(file instanceof File)) {
-    throw createError({ statusCode: 400, statusMessage: "File is required" })
+    throw createError({ statusCode: 400, message: "File is required" })
   }
 
   try {
@@ -25,8 +25,7 @@ export default defineEventHandler(async (event) => {
   } catch {
     throw createError({
       statusCode: 400,
-      statusMessage:
-        "Invalid file type. Allowed: JPEG, PNG, WebP, GIF (max 5MB)",
+      message: "Invalid file type. Allowed: JPEG, PNG, WebP, GIF (max 5MB)",
     })
   }
 

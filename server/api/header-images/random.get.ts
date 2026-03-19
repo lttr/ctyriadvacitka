@@ -6,7 +6,7 @@ export default defineEventHandler(async () => {
   const { blobs } = await blob.list({ prefix: HEADER_IMAGES_PREFIX })
 
   if (blobs.length === 0) {
-    return null
+    return { pathname: null, url: null }
   }
 
   const randomBlob = blobs[Math.floor(Math.random() * blobs.length)]!
